@@ -1,0 +1,41 @@
+// tabletScroll.scss
+.tablet-container {
+  // min-height: 200vh; // Space for scroll animation
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+  padding: 4rem 0;
+  margin-top: 0; // Adjust/remove negative margin if not needed
+  margin-bottom: 0;
+  border: 2px solid blue; 
+  .img-wrapper {
+    position: relative; 
+    position: sticky;
+    top: 50vh;
+    left: 0;
+    transform-origin: center;
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    img {
+      width: 100%;
+      height: auto;
+      transform-origin: center bottom;
+      will-change: transform;
+      backface-visibility: hidden;
+      filter: drop-shadow(0 40px 40px rgba(0,0,0,0.15));
+    }
+    .inner-content {
+      position: absolute;
+      top: 50%;       // Adjust based on where your iPad's display area is
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;     // Ensure this content appears above the iPad svg
+      width: 90%;     // Adjust width as needed
+      // Optionally add styling like background color, padding, etc.
+    }
+  }
+}

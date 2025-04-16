@@ -1,0 +1,465 @@
+.features-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  .features-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    .features-dot-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #5e5e5e;
+    }
+    .features-slogan {
+      text-align: center;
+      font-size: 4rem;
+      font-weight: 600;
+      padding: 0 15px;
+      background: linear-gradient(95deg, #000000, #828281);
+      background-clip: text;
+      color: transparent;
+      display: block;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+      line-height: 5rem;
+    }
+  }
+  .features-flex {
+    display: flex;
+    flex-wrap: wrap; // Allow items to wrap into two rows
+    width: 60%;
+    gap: 20px;
+    justify-content: center;
+    align-items: stretch;
+    padding: 20px;
+  }
+
+  .box {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    /* Center content in each box */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // flex-direction: column;
+    font-size: 1.2rem;
+    padding: 30px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    .header-description {
+      z-index: 2;
+      h3 {
+        font-size: 1.7rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      p {
+        font-size: 1rem;
+        line-height: 1.4;
+      }
+    }
+  }
+
+  /* Top row */
+  /* Box n2: smaller box (top-left) */
+  .box2 {
+    /* Use a flexible basis so it takes up less space */
+    flex: 1 1 30%;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    .header-description {
+      z-index: 2;
+      h3 {
+        font-size: 1.7rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      p {
+        font-size: 1rem;
+        line-height: 1.4;
+        margin-bottom: 1.5rem;
+      }
+    }
+
+    .analytics {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      height: 180px; /* Fixed height based on tallest shape */
+      align-items: flex-end;
+      .shape1 {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #e37300;
+        align-self: end;
+        animation: fade 1.5s ease-in-out 1;
+      }
+      .shape2 {
+        width: 30px;
+        height: 90px;
+        background-color: #e37300;
+        border-radius: 50px;
+        align-self: end;
+        animation: grow 2s ease-in-out 1;
+      }
+      .shape3 {
+        width: 30px;
+        height: 140px;
+        background-color: #f8ab00;
+        border-radius: 50px;
+        align-self: end;
+        animation: grow3 2.5s ease-in-out 1;
+      }
+      .shape4 {
+        width: 30px;
+        height: 180px;
+        background-color: #f8ab00;
+        border-radius: 50px;
+        align-self: end;
+        animation: grow2 3s ease-in-out 1;
+      }
+    }
+  }
+
+  /* Box n1: wider box (top-right) */
+  .box1 {
+    flex: 1 1 60%;
+    min-width: 200px;
+    /* Layout: text on the left, images on the right, in one row */
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    position: relative;
+
+    .header-description {
+      z-index: 2;
+      h3 {
+        font-size: 1.7rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      p {
+        font-size: 1rem;
+        line-height: 1.4;
+        // width: 100%;
+        margin-bottom: 1.5rem;
+      }
+      .image-container1 {
+        display: flex;
+        width: 100%;
+        justify-content: flex-end;
+        align-items: flex-end;
+        .feature-img1 {
+          width: 300px;
+          height: auto;
+          position: relative;
+          z-index: 1;
+        }
+      }
+    }
+    .image-container {
+      display: flex;
+      gap: 1rem;
+      margin-top: auto;
+      width: 100%;
+      justify-content: center;
+      align-items: flex-end;
+      position: relative;
+      .phone-container {
+        position: relative; // This makes it the reference for absolutely positioned children.
+        width: 100%;
+        height: auto;
+        // Optionally, constrain the container to the visible area of the phone image:
+        overflow: hidden;
+      }
+      .feature-img2 {
+        width: 300px;
+        height: auto;
+        // position: relative;
+        display: block;
+        // top: -40px; // Pushes image up (adjust as needed)
+        // z-index: 1;
+      }
+      .feature-img2 {
+        width: 350px;
+      }
+    }
+  }
+
+  /* Bottom row */
+  /* Boxes n3 and n4 are equal */
+  .box3,
+  .box4 {
+    flex: 1 1 45%;
+    min-width: 150px;
+  }
+  .box3 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    .star-conatiner {
+      width: 200px;
+      height: 200px;
+      border-radius: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      // position: relative;
+      background: #fef8b6; /* Fallback */
+      background: linear-gradient(45deg, #fef8b6 0%, #fff09c 100%);
+      box-shadow: 0 10px 30px rgba(255, 235, 120, 0.4);
+      .star {
+        width: 80px;
+        height: 80px;
+        filter: drop-shadow(0 0 8px rgba(255, 230, 0, 0.6));
+        transition: transform 0.3s ease;
+      }
+    }
+  }
+  .box4 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    .header-description {
+      width: 100%;
+    }
+    .shapes-container {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      /* Adjust height as necessary */
+      margin: 0 auto;
+      overflow: hidden;
+      flex-wrap: wrap;
+
+      /* 
+          This helps create a "layer" in which to place the shapes 
+          (circle, arrow, rectangles) absolutely. 
+        */
+
+      .shape1 {
+        /* The circle at the top */
+        position: absolute;
+        top: 0; /* Stick to top of container */
+        left: 50%; /* Center horizontally */
+        transform: translateX(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #d9d9d9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        color: #333;
+        font-weight: 600;
+      }
+
+      .shape2 {
+        /* Arrow container */
+        position: absolute;
+        top: 50px; /* Slightly below circle */
+        left: 50%;
+        transform: translateX(-50%);
+        width: 35px;
+        height: 35px;
+        z-index: 10;
+        img {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+      }
+
+      .shape3 {
+        /* Container of the small rectangles in a row */
+        position: absolute;
+        top: 100px; /* A bit below the arrow */
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.5rem;
+
+        .rectangle1,
+        .rectangle2,
+        .rectangle3 {
+          width: 200px;
+          height: 30px;
+          background-color: #d9d9d9;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          color: #333;
+          border-radius: 100px;
+        }
+        .rectangle3 {
+          width: 150px;
+          background-color: #f8ab00;
+        }
+        .rectangle1 {
+          width: 100px;
+          background-color: #a3ed95;
+        }
+      }
+
+      .out-rectangle {
+        /* The larger rectangle at the bottom */
+        position: absolute;
+        //   bottom: 0;          /* Stick to bottom of container */
+        left: 50%; /* Center horizontally */
+        top: 60%;
+        transform: translateX(-100%);
+        width: 150px;
+        height: 30px;
+        background-color: #3e4fe5;
+        border: 2px solid #a5b4fc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        border-radius: 100px;
+      }
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////
+  @media screen and (max-width: 768px) {
+    // Let the flex container take full width
+    .features-flex {
+      width: 95%;
+      gap: 1.5rem;
+    }
+
+    .box {
+      padding: 20px;
+      font-size: 1rem;
+    }
+
+    .box1,
+    .box2,
+    .box3,
+    .box4 {
+      flex: 1 1 100%; // Make each box full width
+      min-width: auto;
+    }
+    .box1 {
+      padding-bottom: 0;
+      .header-description {
+        .image-container1 {
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 0;
+        }
+      }
+    }
+    // Adjust headings and other typography
+    .features-slogan {
+      font-size: 2.5rem;
+      line-height: 3rem;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .features-header {
+
+      .features-slogan {
+        font-size: 2.5rem;
+        line-height: 3rem;
+      }
+    }
+
+
+    // Reduce margins/paddings if needed
+    .box {
+      padding: 15px;
+    }
+    .box1 {
+      padding-bottom: 0;
+      flex-direction: column;
+      .header-description {
+        .image-container1 {
+          justify-content: center;
+          align-items: center;
+          margin-bottom: 0;
+          .feature-img1 {
+            // width: 150px;
+            // height: auto;
+            // position: relative;
+            // z-index: 1;
+            display: none;
+          }
+        }
+      }
+      .image-container {
+        .phone-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          .feature-img2 {
+            width: 250px;
+          }
+        }
+      }
+    }
+
+    .box3 {
+      .star-conatiner {
+        width: 150px;
+        height: 150px;
+        border-radius: 30px;
+        
+      }
+    }
+
+
+  }
+}
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////// KEY FRAMES //////////////////////////////////////
+@keyframes fade {
+  0% {
+    opacity: 0;
+  }
+  to {
+    opacity: 100%;
+  }
+}
+@keyframes grow {
+  0% {
+    height: 20%;
+  }
+  to {
+    height: 90px;
+  }
+}
+@keyframes grow2 {
+  0% {
+    height: 20%;
+  }
+  to {
+    height: 180px;
+  }
+}
+@keyframes grow3 {
+  0% {
+    height: 20%;
+  }
+  to {
+    height: 140px;
+  }
+}

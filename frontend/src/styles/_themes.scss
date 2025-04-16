@@ -1,0 +1,310 @@
+// @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+// @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+// Light Theme Variables
+$light-bg: #ffffff;
+$light-text: #1d2126;
+$light-hover-bg: #f0f0f0;
+$light-hover-color: #333;
+$light-gradient: linear-gradient(0deg, #635ef2, #252273);
+
+// Dark Theme Variables
+$dark-bg: #121212;
+$dark-text: rgb(255, 251, 246);
+$dark-primary-color: #ccf2c2;
+$dark-hover-bg: #555;
+$dark-hover-color: #f0f0f0;
+$dark-gradient: linear-gradient(0deg, #ccf2c2, #c4d977); // Dark Gradient
+
+// Light theme variables
+$light-theme: (
+  background-color: #ffffff,
+  text-color: #000000,
+  primary-color: #ff0055,
+  gradient: $light-gradient,
+);
+
+// Dark theme variables
+$dark-theme: (
+  background-color: #121212,
+  text-color: #ffffff,
+  primary-color: #ccf2c2,
+  gradient: $dark-gradient,
+  // Dark theme gradient
+);
+// Apply styles for data-theme
+html[data-theme="light"] {
+  background-color: $light-bg;
+  color: $light-text;
+  // font-family: "Poppins", sans-serif;
+  // font-family: "Rubik", sans-serif;
+  font-family: "Montserrat", sans-serif;
+  #hero-section {
+    #hero_heading_section {
+      .hero-description {
+        color: #121212;
+        font-size: 1.2rem;
+        text-align: center;
+        font-weight: 500;
+      }
+    }
+  }
+  .whowe-section {
+    background-color: $dark-text;
+  }
+  .feature-container {
+    background-color: $dark-text;
+  }
+  .feature-section {
+    .feature-item {
+      border: 1px solid #555;
+      background-color: #f9f4ed;
+      h3 {
+        color: $dark-bg;
+        font-weight: 500;
+        line-height: 30px;
+      }
+
+      p {
+        color: $dark-bg;
+      }
+    }
+  }
+  #mobile_menu {
+    background-color: $light-bg;
+  }
+  #footer-section {
+    background-color: white;
+    h3 {
+      color: #121212;
+    }
+  }
+  button {
+    cursor: pointer;
+  }
+  #menus-section {
+    h1 {
+      color: $light-text;
+    }
+    .template-item {
+      background-color: white;
+    }
+  }
+  .dashboard-navbar {
+    border-bottom: 1.5px solid #f5f5f5;
+  }
+  .searchbar-container {
+    .d-search-bar {
+      background-color: #f5f5f5;
+      .search-input {
+        color: #333;
+      }
+    }
+    .views-icons-container {
+      .active {
+        background-color: #ececec;
+      }
+    }
+  }
+  .menus-list {
+    color: #333;
+    .menu-card {
+      background: #fefefe;
+      border: 1.5px solid #d9d9d9;
+      .menu-status {
+        border-top: 1.5px solid #d9d9d9;
+        color: #757575;
+        .status-icon {
+          &.active {
+            color: #757575;
+          }
+        }
+      }
+      .view-menu-content {
+        border: 1.5px solid #d9d9d9;
+        color: #333;
+        &:hover {
+          border: 1.5px solid #333;
+          background: #333;
+          color: #fff;
+        }
+      }
+    }
+    .menus-wrapper.list-view {
+      .menu-card {
+        .menu-header {
+          h3 {
+            color: #333;
+          }
+        }
+        .menu-card-bottom{
+        .menu-status {
+          color: #757575;
+          .status-icon {
+            &.active {
+              color: #757575;
+            }
+          }
+          span {
+            color: #757575;
+          }
+        }
+        .view-menu-content {
+          border: 1.5px solid #d9d9d9;
+          color: #333;
+          &:hover {
+            border: 1.5px solid #333;
+            background: #333;
+            color: #fff;
+          }
+          @media (max-width: 768px) {
+            border: none;
+          }
+        }
+      }
+      }
+    }
+  }
+  .pagination{
+    // color: #333;
+    .pagination-button{
+      color: #333;
+      &:disabled {
+        color: #757575;
+      }
+    }
+    .pagination-number{
+      color: #333;
+      &.active {
+        background: #333;
+        color: #fff;
+      }
+    }
+  }
+}
+
+html[data-theme="dark"] {
+  background-color: #111;
+  color: $dark-text;
+  // font-family: "Poppins", sans-serif;
+  // font-family: "Rubik", sans-serif;
+  font-family: "Montserrat", sans-serif;
+  #hero-section {
+    #hero_heading_section {
+      .hero-description {
+        font-size: 1.2rem;
+        text-align: center;
+        font-weight: 500;
+        padding: 0 15px;
+        background: linear-gradient(0deg, #ccf2c2, #c4d977);
+        background-clip: text;
+        color: transparent;
+        display: block;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 2px 16px rgba(174, 207, 242, 0.24);
+      }
+    }
+  }
+  .whowe-section {
+    background-color: #0d0d0d;
+  }
+  #navbar {
+    .slide-item {
+      background-color: #333;
+      font-weight: 500;
+    }
+  }
+  #mobile_menu {
+    background-color: $dark-bg;
+  }
+  #footer-section {
+    background-color: #0d0d0d;
+  }
+  .d-search-bar {
+    background-color: #2c2c2c;
+    .search-input {
+      color: #ececec;
+    }
+  }
+  .menus-list {
+    color: #fff;
+    .menu-card {
+      background: #181818;
+      border: 1.5px solid #333;
+      .menu-card-bottom{
+        border-top: 1.5px solid #333;
+      .menu-status {
+        .status-icon {
+          .active-menu-img {
+            margin-right: 5px;
+          }
+          &.active {
+            color: #d9d9d9;
+          }
+        }
+        .menu-stats {
+          display: flex;
+          gap: 1rem;
+          padding-right: 10px;
+          span {
+            color: #d9d9d9;
+          }
+        }
+      }
+    }
+    }
+  }
+  .pagination{
+    .pagination-button{
+      color: #D9D9D9;
+      &:disabled {
+        color: #757575;
+      }
+    }
+    .pagination-number{
+      color: #D9D9D9;
+      &.active {
+        background: #333;
+        color: #fff;
+      }
+    }
+  }
+  button {
+    // background-color: #C4D977;
+    // color: #121212;
+    // border: none;
+    // font-weight: 500;
+    // padding: 0.5rem 1rem;
+    cursor: pointer;
+
+    // &:hover {
+    //   opacity: 0.8;
+    // }
+  }
+}
+
+// Mixin for applying theme styles
+@mixin apply-theme($theme) {
+  background-color: map-get($theme, background-color);
+  color: map-get($theme, text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  a {
+    color: map-get($theme, primary-color);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  button {
+    background-color: map-get($theme, primary-color);
+    color: map-get($theme, text-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}

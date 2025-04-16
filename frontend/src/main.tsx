@@ -1,0 +1,26 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import { Provider } from "react-redux";
+import App from "./App.tsx";
+import "./index.css";
+import store from "./redux/store.ts";
+import TabletScroll from "./components/TabletScroll.tsx";
+
+
+// import Logout from './pages/Logout.tsx';
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <Provider store={store}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/home" element={<Home />} />
+
+          </Routes>
+        </BrowserRouter>
+    </Provider>
+  </StrictMode>
+);

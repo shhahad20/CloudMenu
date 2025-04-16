@@ -1,0 +1,7 @@
+node_modules
+.env
+src/config/index.ts
+dist/src/config/index.js
+src/config/supabaseClient.ts
+dist/src/config/supabaseClient.js
+myNotes.txt

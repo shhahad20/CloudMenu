@@ -1,0 +1,73 @@
+.coffee-overlay {
+    position: absolute;
+    top: 10%;      // Adjust to position vertically within the phone screen
+    left: 5%;      // Adjust to position horizontally
+    width: 90%;    // Adjust width to roughly match the phone's screen area
+    height: 100%;   // Adjust height as needed
+    pointer-events: none; // Optional: if you want clicks to pass through
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    .coffee-header {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+     
+    .cappuccino-image {
+      width: 150px;  // Adjust size accordingly
+      height: auto;
+      margin-bottom: 1rem;
+    }
+    
+    .ingredient-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+  
+      .ingredient-chip {
+        font-size: 0.6rem;
+        background-color: #e1e1e1;
+        padding: 5px 8px;
+        border-radius: 100px;
+        &.espresso {
+          background-color: #BC754F;
+          color: #fff;
+        }
+        &.steamed-milk {
+          background-color: #56B6FA;
+          color: #fff;
+        }
+        &.foam {
+          background-color: #f1f1f1;
+          color: #333;
+        }
+      }
+    }
+    
+    .coffee-sub {
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+  }
+  ///////////////////////////////////////////////////////////////////
+  @media screen and (max-width: 480px) {
+    .coffee-overlay {
+      top: 18%;
+      left: 4%;
+      width: 92%;
+      height: 96%;
+
+      .cappuccino-image {
+        width: 100px;  // Adjust size accordingly
+      }
+      .ingredient-row {
+        .ingredient-chip{
+          font-size: 0.5rem;
+          padding: 2px 4px;
+        }
+
+      }
+    }
+  }
