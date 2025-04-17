@@ -6,7 +6,9 @@
     align-items: center;
     flex-direction: column;
     margin-top: 12rem;
+    margin-bottom: 12rem;
     gap: 1.5rem;
+    // height: 70vh;
     .hero-heading {
         // font-weight: 700;
         text-align: center;
@@ -14,7 +16,7 @@
         font-family: "Montserrat", sans-serif;
         text-align: center;
         font-size: 6rem;
-        font-weight: 600;
+        font-weight: 700;
         padding: 0 15px;
         background: linear-gradient(95deg, #000000, #828281);
         background-clip: text;
@@ -22,7 +24,7 @@
         display: block;
         -webkit-text-fill-color: transparent;
         text-shadow: 0 1px 20px rgba(174, 207, 242, 0.24);
-        line-height: 5rem;
+        line-height: 6rem;
     }
  
     .sub-heading {

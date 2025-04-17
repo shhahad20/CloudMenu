@@ -1,8 +1,33 @@
 import React from "react";
 import { motion } from "framer-motion";
+import CoffeeAnimation from "./UI/CoffeeAnimation";
 
 import "../styles/features.scss";
-import CoffeeAnimation from "./UI/CoffeeAnimation";
+const analyticsContainerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.3, // animate each bar one after the other
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const barVariants = (finalHeight: number, duration = 1.5) => ({
+  hidden: { opacity: 0, height: 0 },
+  visible: {
+    opacity: 1,
+    height: finalHeight,
+    transition: { duration },
+  },
+});
+const phoneContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { when: "beforeChildren", staggerChildren: 0.25 },
+  },
+};
 
 const containerVariant = {
   hidden: {},
@@ -88,12 +113,21 @@ const Features: React.FC = () => {
               our SEO-optimized features.
             </p>
           </div>
-          <div className="analytics">
-            <div className="shape1"></div>
-            <div className="shape2"></div>
-            <div className="shape3"></div>
-            <div className="shape4"></div>
-          </div>
+          <motion.div
+            className="analytics"
+            variants={analyticsContainerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+          >
+            <motion.div
+              className="shape1"
+              variants={barVariants(30, 1.5)} // final height in px, duration
+            />
+            <motion.div className="shape2" variants={barVariants(90, 2.0)} />
+            <motion.div className="shape3" variants={barVariants(140, 2.5)} />
+            <motion.div className="shape4" variants={barVariants(180, 3.0)} />
+          </motion.div>
         </div>
         <div className="box box1">
           <div className="header-description">
@@ -111,14 +145,20 @@ const Features: React.FC = () => {
             </div>
           </div>
           <div className="image-container">
-          <div className="phone-container">
-            <img
-              src="/iphone-feat1.svg"
-              alt="Mobile-Friendly"
-              className="feature-img2"
-            />
-            <CoffeeAnimation />
-          </div>
+            <motion.div
+              className="phone-container"
+              variants={phoneContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              <img
+                src="/iphone-feat1.svg"
+                alt="Mobile-Friendly"
+                className="feature-img2"
+              />
+              <CoffeeAnimation />
+            </motion.div>
           </div>
         </div>
         <div className="box box3">
@@ -173,6 +213,7 @@ const Features: React.FC = () => {
             variants={containerVariant}
             initial="hidden"
             animate="visible"
+            viewport={{ once: true, amount: 0.5 }}
           >
             <motion.div
               className="shape1"

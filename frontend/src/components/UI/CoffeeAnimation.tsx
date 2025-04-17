@@ -2,17 +2,20 @@ import React from "react";
 import { motion } from "framer-motion";
 import "../../styles/coffeeAnimation.scss";
 
+// const containerVariants = {
+//     hidden: { opacity: 0 },
+//     visible: {
+//       opacity: 1,
+//       transition: {
+//         staggerChildren: 0.25, // Stagger each child by 0.25s
+//         when: "beforeChildren",
+//       },
+//     },
+//   };
 const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.25, // Stagger each child by 0.25s
-        when: "beforeChildren",
-      },
-    },
-  };
-  
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
   // Variant for the header ("Cappuccino")
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -60,9 +63,9 @@ const CoffeeAnimation: React.FC = () => {
       <motion.div
         className="coffee-overlay"
         variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
+        // initial="hidden"
+        // whileInView="visible"
+        // viewport={{ once: true }}
       >
         <motion.h2 className="coffee-header" variants={headerVariants}>Cappuccino</motion.h2>
         <motion.img

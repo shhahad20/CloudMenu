@@ -7,6 +7,8 @@ const Home: React.FC = () => {
   return (
     <section id="home-section" style={{ paddingTop: "5rem" }}>
       <Hero />
+      <Hero />
+
       {/* <AnimatedSVG /> */}
       <Features />
       </section>

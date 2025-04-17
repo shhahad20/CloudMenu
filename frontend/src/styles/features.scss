@@ -4,11 +4,13 @@
   align-items: center;
   flex-direction: column;
   width: 100%;
+  margin-top: 5rem;
   .features-header {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    gap: 0;
     .features-dot-title {
       font-weight: 700;
       font-size: 14px;
@@ -89,44 +91,63 @@
       }
     }
 
+    // .analytics {
+    //   display: flex;
+    //   justify-content: center;
+    //   gap: 25px;
+    //   height: 180px; /* Fixed height based on tallest shape */
+    //   align-items: flex-end;
+    //   .shape1 {
+    //     width: 30px;
+    //     height: 30px;
+    //     border-radius: 50%;
+    //     background-color: #e37300;
+    //     align-self: end;
+    //     animation: fade 1.5s ease-in-out 1;
+    //   }
+    //   .shape2 {
+    //     width: 30px;
+    //     height: 90px;
+    //     background-color: #e37300;
+    //     border-radius: 50px;
+    //     align-self: end;
+    //     animation: grow 2s ease-in-out 1;
+    //   }
+    //   .shape3 {
+    //     width: 30px;
+    //     height: 140px;
+    //     background-color: #f8ab00;
+    //     border-radius: 50px;
+    //     align-self: end;
+    //     animation: grow3 2.5s ease-in-out 1;
+    //   }
+    //   .shape4 {
+    //     width: 30px;
+    //     height: 180px;
+    //     background-color: #f8ab00;
+    //     border-radius: 50px;
+    //     align-self: end;
+    //     animation: grow2 3s ease-in-out 1;
+    //   }
+    // }
     .analytics {
       display: flex;
       justify-content: center;
       gap: 25px;
-      height: 180px; /* Fixed height based on tallest shape */
+      height: 180px;
       align-items: flex-end;
-      .shape1 {
+  
+      // Remove any animation: xxx; from these:
+      .shape1, .shape2, .shape3, .shape4 {
         width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background-color: #e37300;
-        align-self: end;
-        animation: fade 1.5s ease-in-out 1;
-      }
-      .shape2 {
-        width: 30px;
-        height: 90px;
-        background-color: #e37300;
+        background-color: #e37300; // override per shape if needed
         border-radius: 50px;
-        align-self: end;
-        animation: grow 2s ease-in-out 1;
       }
-      .shape3 {
-        width: 30px;
-        height: 140px;
-        background-color: #f8ab00;
-        border-radius: 50px;
-        align-self: end;
-        animation: grow3 2.5s ease-in-out 1;
-      }
-      .shape4 {
-        width: 30px;
-        height: 180px;
-        background-color: #f8ab00;
-        border-radius: 50px;
-        align-self: end;
-        animation: grow2 3s ease-in-out 1;
-      }
+  
+      .shape1 { background-color: #e37300; }
+      .shape2 { background-color: #e37300; }
+      .shape3 { background-color: #f8ab00; }
+      .shape4 { background-color: #f8ab00; }
     }
   }
 
@@ -182,15 +203,11 @@
         overflow: hidden;
       }
       .feature-img2 {
-        width: 300px;
+        width: 350px;
         height: auto;
         // position: relative;
         display: block;
-        // top: -40px; // Pushes image up (adjust as needed)
         // z-index: 1;
-      }
-      .feature-img2 {
-        width: 350px;
       }
     }
   }
@@ -337,7 +354,48 @@
     }
   }
 
-  /////////////////////////////////////////////////////////////////////
+  //////////////////////////// Responsive Styles ///////////////////////////////
+  ///////////////////////////// MEDIA QUERIES /////////////////////////////
+  @media screen and (max-width: 1024px) {
+    // Let the flex container take full width
+    .features-flex {
+      width: 95%;
+      gap: 1rem;
+    }
+
+    .box {
+      padding: 20px;
+      font-size: 1rem;
+    }
+
+    .box1 {
+      padding-bottom: 0;
+      .header-description {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        .image-container1 {
+          justify-content: center;
+          align-items: flex-end; 
+          margin-bottom: 0;
+          height: 100%; 
+          .feature-img1 {
+            width: 200px;
+            height: auto;
+            position: relative;
+            z-index: 1;
+          }
+        }
+      }
+    }
+    .box3 {
+      .star-conatiner {
+        width: 150px;
+        height: 150px;
+        border-radius: 30px;
+      }
+    }
+  }
   @media screen and (max-width: 768px) {
     // Let the flex container take full width
     .features-flex {
@@ -376,13 +434,11 @@
 
   @media screen and (max-width: 480px) {
     .features-header {
-
       .features-slogan {
         font-size: 2.5rem;
         line-height: 3rem;
       }
     }
-
 
     // Reduce margins/paddings if needed
     .box {
@@ -422,11 +478,8 @@
         width: 150px;
         height: 150px;
         border-radius: 30px;
-        
       }
     }
-
-
   }
 }
 ///////////////////////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 .coffee-overlay {
     position: absolute;
     top: 10%;      // Adjust to position vertically within the phone screen
-    left: 5%;      // Adjust to position horizontally
+    left: 3.5%;      // Adjust to position horizontally
     width: 90%;    // Adjust width to roughly match the phone's screen area
     height: 100%;   // Adjust height as needed
     pointer-events: none; // Optional: if you want clicks to pass through
@@ -52,6 +52,44 @@
     }
   }
   ///////////////////////////////////////////////////////////////////
+  @media screen and (max-width: 1024px) {
+    .coffee-overlay {
+      top: 20%;
+      left: 4%;
+      width: 92%;
+      height: 96%;
+
+      .cappuccino-image {
+        width: 110px;  // Adjust size accordingly
+      }
+      .ingredient-row {
+        .ingredient-chip{
+          font-size: 0.5rem;
+          padding: 2px 4px;
+        }
+
+      }
+    }
+  }
+  @media screen and (max-width: 768px) {
+    .coffee-overlay {
+      top: 15%;
+      left: 4%;
+      width: 92%;
+      height: 96%;
+
+      .cappuccino-image {
+        width: 135px;  // Adjust size accordingly
+      }
+      .ingredient-row {
+        .ingredient-chip{
+          font-size: 0.6rem;
+          padding: 2px 4px;
+        }
+
+      }
+    }
+  }
   @media screen and (max-width: 480px) {
     .coffee-overlay {
       top: 18%;
