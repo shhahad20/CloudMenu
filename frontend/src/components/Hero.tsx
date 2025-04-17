@@ -21,7 +21,7 @@ const Hero: React.FC = () => {
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, [headers.length]);
 
-  return ( 
+  return (
     <motion.div
       className="hero-container"
       initial={{ opacity: 0, y: 20 }}
@@ -42,29 +42,27 @@ const Hero: React.FC = () => {
       </p>
       <h1 className="hero-heading">Make Your Menu a Work of Art</h1>
       <div className="contact-btn-wrapper">
-          <button
-            className="circle-arrow-btn"
-            onClick={() => alert("Button Clicked!")}
-          >
-            <span className="btn-text">Our services</span>
-            <span className="icon-container">
-              <span className="arrow">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </span>
+        <button
+          className="circle-arrow-btn"
+          onClick={() => alert("Button Clicked!")}
+        >
+          <span className="btn-text">Our Services</span>
+          <span className="icon-container">
+            <span className="arrow">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </span>
-          </button>
-        </div> 
-               
+          </span>
+        </button>
+      </div>
     </motion.div>
-
   );
 };
 
