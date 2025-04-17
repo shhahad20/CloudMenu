@@ -1,7 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Readex+Pro:wght@200..700&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
 /* html[data-theme="light"] {
   background-color: #ffffff;
@@ -18,12 +19,14 @@ body {
   font-family: "Montserrat",Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-family: "Montserrat", sans-serif;
   height: 100%;
+  font-family: inherit;
 }
 h1,h2,h3,h4,h5,h6,p{
   color: #1E1E1E;
 }
 :root{
   font-family: "Montserrat", sans-serif;
+  /* font-family: "Readex Pro", sans-serif; */
 
 }
 /* :root {

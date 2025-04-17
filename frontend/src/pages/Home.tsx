@@ -3,6 +3,7 @@ import Hero from "../components/Hero";
 // import AnimatedSVG from "../components/Preview";
 import Features from "../components/Features";
 import VideoSection from "../components/VideoSection";
+import ShortAboutUs from "../components/ShortAboutUs";
 
 const Home: React.FC = () => {
   return (
@@ -11,6 +12,7 @@ const Home: React.FC = () => {
       {/* <AnimatedSVG /> */}
       <Features />
       <VideoSection/>
+      <ShortAboutUs/>
       </section>
   );
 };
