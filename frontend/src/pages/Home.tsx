@@ -4,6 +4,7 @@ import Hero from "../components/Hero";
 import Features from "../components/Features";
 import VideoSection from "../components/VideoSection";
 import ShortAboutUs from "../components/ShortAboutUs";
+import Newsletter from "../components/Newsletter";
 
 const Home: React.FC = () => {
   return (
@@ -13,6 +14,7 @@ const Home: React.FC = () => {
       <Features />
       <VideoSection/>
       <ShortAboutUs/>
+      <Newsletter/>
       </section>
   );
 };
