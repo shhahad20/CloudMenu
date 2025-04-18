@@ -65,23 +65,21 @@ const Newsletter: React.FC = () => {
         </div>
       </div>
       <div className="news-text">
-      <p>Subscribe to our newsletter for the latest news and happenings.</p>
-      <p>We promise to keep your inbox clean. ✨</p>
+        <p>Subscribe to our newsletter for the latest news and happenings.</p>
+        <p>We promise to keep your inbox clean. ✨</p>
       </div>
-<div className="newsletter-input-container">
-
-
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Enter your Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <button type="submit">Newsletter Signup</button>
-      </form>
-      {message && <p>{message}</p>}
+      <div className="newsletter-input-container">
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Enter your Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <button type="submit">Newsletter Signup</button>
+        </form>
+        {message && <p>{message}</p>}
       </div>
     </div>
   );
