@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import App from "./App.tsx";
 import "./index.css";
 import store from "./redux/store.ts";
-import TabletScroll from "./components/TabletScroll.tsx";
+import MenuTemplates from "./pages/MenuTemplates.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -18,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/home" element={<Home />} />
+            <Route path="/menus" element={<MenuTemplates />} />
 
           </Routes>
         </BrowserRouter>
