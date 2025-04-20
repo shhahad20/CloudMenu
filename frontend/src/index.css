@@ -13,7 +13,11 @@ html[data-theme="dark"] {
   background-color: #171717;
   color: #ffffff;
 } */
-
+.transition-all {
+  transition-property: opacity, transform, border-color, background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
 body {
   margin: 0;
   font-family: "Montserrat",Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

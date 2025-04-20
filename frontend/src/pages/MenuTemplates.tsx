@@ -2,13 +2,14 @@ import React from "react";
 import "../styles/menuTemplates.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import SearchBar from "../components/UI/SearchBar";
 
 interface Template {
   id: number;
   title: string;
   imageUrl: string;
   description: string;
-  price: string;           // ← new
+  price: string; // ← new
 }
 
 const templates: Template[] = [
@@ -17,7 +18,7 @@ const templates: Template[] = [
     title: "Classic Café",
     imageUrl: "/templates/classic-cafe.jpg",
     description: "A clean, elegant layout with serif headings.",
-    price: "Free",        // ← new
+    price: "Free", // ← new
   },
   {
     id: 2,
@@ -46,10 +47,16 @@ const templates: Template[] = [
 const MenuTemplates: React.FC = () => {
   return (
     <>
-      <Navbar/>
+      <Navbar />
       <section id="menu-templates-section">
         <div className="templates-container">
           <h2 className="section-title">Menu Templates</h2>
+          <div className="searchbar-container">
+          <SearchBar
+            onSearch={(query) => console.log("Searching for:", query)}
+          />
+          </div>
+
           <div className="templates-grid">
             {templates.map((tpl) => (
               <div key={tpl.id} className="template-card">
@@ -74,7 +81,7 @@ const MenuTemplates: React.FC = () => {
           </div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </>
   );
 };

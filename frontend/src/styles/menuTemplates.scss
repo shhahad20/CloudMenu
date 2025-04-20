@@ -18,7 +18,13 @@ $break-lg: 900px;
     max-width: $max-width;
     margin: 0 auto;
     text-align: center;
-
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    .searchbar-container{
+      width: 50%;
+    }
     .section-title {
         text-align: center;
         font-size: 2rem;
