@@ -18,7 +18,7 @@ const templates: Template[] = [
     title: "Classic Café",
     imageUrl: "/templates/classic-cafe.jpg",
     description: "A clean, elegant layout with serif headings.",
-    price: "Free", // ← new
+    price: "Free",
   },
   {
     id: 2,
@@ -52,12 +52,31 @@ const MenuTemplates: React.FC = () => {
         <div className="templates-container">
           <h2 className="section-title">Menu Templates</h2>
           <div className="searchbar-container">
-          <SearchBar
-            onSearch={(query) => console.log("Searching for:", query)}
-          />
+            <SearchBar
+              onSearch={(query) => console.log("Searching for:", query)}
+            />
           </div>
 
           <div className="templates-grid">
+            <div className="template-card custom-card">
+              <div className="price-tag custom-tag-price">Custom</div>
+              <div className="template-content">
+              <img
+                className="template-image"
+                src="/"
+                alt="Request a Custom Menu"
+              />
+                <h3>Request a Custom Menu</h3>
+                <p>
+                  Request a design that matches your unique taste. ersonalize
+                  your ideal menu—tell us your preferences, and we’ll handle the
+                  rest!
+                </p>
+                <a href="/" className="btn-view">
+                  View Template ↗
+                </a>
+              </div>
+            </div>
             {templates.map((tpl) => (
               <div key={tpl.id} className="template-card">
                 {/* Price badge */}
