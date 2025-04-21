@@ -22,7 +22,7 @@ const Navbar: React.FC = () => {
           <Link to="/menus">Menus</Link>
           <Link to="/pricing">Pricing</Link>
           <Link to="/faqs">FAQs</Link>
-          <Link to="/contact">Sign up</Link>
+          <Link to="/signup">Sign up</Link>
         </div>
 
         {/* Account Menu */}

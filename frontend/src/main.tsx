@@ -7,6 +7,7 @@ import App from "./App.tsx";
 import "./index.css";
 import store from "./redux/store.ts";
 import MenuTemplates from "./pages/MenuTemplates.tsx";
+import Signup from "./pages/Signup.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/" element={<App />} />
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
+            <Route path="/signup" element={<Signup />} />
 
           </Routes>
         </BrowserRouter>
