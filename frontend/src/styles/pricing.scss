@@ -1,0 +1,176 @@
+.pricing-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    text-align: center;
+    min-height: 60vh;
+    margin-top: 10rem;
+    .pricing-header {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: 600;
+        padding: 0 15px;
+        background: linear-gradient(95deg, #000000, #666666);
+        background-clip: text;
+        color: transparent;
+        display: block;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+        line-height: 5rem;
+    }
+  }
+  
+/* ─── Toggle ────────────────────────────────────────────────────────── */
+.toggle-switch {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #b3b3b3;
+    border-radius: 999px;
+    padding: 0.25rem;
+    margin-bottom: 2rem;
+    user-select: none;
+    font-weight: 500;
+  
+    span {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 999px;                /* pill shape behind text */
+      &.active {
+        background: #1e1e1e;               /* highlight */
+        color: #fff;
+      }
+    }
+  
+    // .switch {
+    //   width: 50px;
+    //   height: 24px;
+    //   background: #b3b3b3;
+    //   border-radius: 999px;
+    //   margin: 0 0.5rem;
+    //   position: relative;
+    //   cursor: pointer;
+  
+    //   .thumb {
+    //     width: 20px;
+    //     height: 20px;
+    //     background: #1e1e1e;
+    //     border-radius: 50%;
+    //     position: absolute;
+    //     top: 2px;
+    //     left: 2px;                         /* default */
+    //   }
+    // }
+  
+    &.yearly .switch .thumb {
+      left: 28px;                          /* move when yearly */
+    }
+  }
+
+  /* ─── Cards Grid ───────────────────────────────────────────────────── */
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .pricing-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #B3B3B3;
+    border-radius: 16px;
+    padding: 2rem;                 /* bumped padding for height */
+    min-height: 460px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+   /* ─ Badge ─ */
+   .plan-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #A3ED95;
+    color: #1E1E1E;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+    .plan-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.25rem;
+    }
+  
+    .plan-price {
+      display: flex;
+      align-items: baseline;
+      margin-bottom: 1rem;
+        
+      .amount {
+        font-size: 2rem;
+        font-weight: 600;
+      }
+      .suffix {
+        margin-left: 0.25rem;
+        color: #666;
+      }
+    }
+  
+    .features {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0; 
+      text-align: left;
+      width: 100%;
+
+  
+      li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+  
+        .feature-icon {
+          flex-shrink: 0;
+          margin-right: 0.75rem;
+        }
+  
+        span {
+          flex: 1;
+        }
+      }
+    }
+  
+    .select-btn {
+      margin-top: auto;
+      padding: 0.75rem 1.5rem;
+      background: #1E1E1E;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  }
+  
+
+  @media screen and (max-width: 480px){
+    .pricing-container{
+        .pricing-header {
+            font-size: 2rem;
+            line-height: 3rem;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+    }
+    .pricing-card{
+        .plan-name{
+            font-size: 1.5rem;
+        }
+    }
+  
+
+}
