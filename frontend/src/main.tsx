@@ -9,6 +9,7 @@ import store from "./redux/store.ts";
 import MenuTemplates from "./pages/MenuTemplates.tsx";
 import Signup from "./pages/Signup.tsx";
 import SignIn from "./pages/SignIn.tsx";
+import FAQ from "./pages/FAQ.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -23,6 +24,8 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/menus" element={<MenuTemplates />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/faqs" element={<FAQ />} />
+
 
           </Routes>
         </BrowserRouter>
