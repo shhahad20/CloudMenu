@@ -1,72 +1,60 @@
-import { NextFunction, Request, Response } from 'express'
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-// import { queryDB } from './userController.js';
-import ApiError from '../errors/ApiError.js';
-import { dev } from '../config/index.js';
-import { supabase } from '../config/supabaseClient.js';
-import { token } from 'morgan';
+import { Request, Response } from 'express';
+import { supabase, adminSupabase } from '../config/supabaseClient.js';
 
+export const signup = async (req: Request, res: Response) => {
+  const { email, password, username } = req.body;
+  if (!email || !password || !username) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
 
-export const handleLogin = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { email, password } = req.body;
+  // 1) Create the user in Supabase Auth
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { username } }
+  });
 
-        // Fetch user from Supabase
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', email)
-            .single(); 
+  if (signUpError) {
+    return res.status(400).json({ error: signUpError.message });
+  }
+  const userId = signUpData.user?.id!;
+  
+  // 2) Insert into your own profiles table via service role
+  const { error: profileError } = await adminSupabase
+    .from('profiles')
+    .insert({ id: userId, username });
 
-        if (error || !user) {
-            throw ApiError.notFound(`User with email: ${email} does not exist!`);
-        }
+  if (profileError) {
+    console.error('Error inserting profile:', profileError);
+    // we don't fail signup for this—profile can be incomplete
+  }
 
-        const matchPassword = bcrypt.compareSync(password, user.password);
-        if (!matchPassword) {
-            throw ApiError.unauthorized('Wrong password.');
-        }
-
-        const accessToken = jwt.sign({ id: user.id, role: user.role }, dev.jwt.key, { expiresIn: '24h' });
-        res.cookie('access_token', accessToken, {
-            maxAge: 24 * 60 * 60 * 1000,
-            httpOnly: true,
-            // !!!! sameSite: none requires HTTPS !!!! 
-            // sameSite: 'none',
-            secure: process.env.NODE_ENV === 'production',
-        });
-
-        res.status(200).json({
-            status: 200,
-            message: `Welcome ${user.first_name} as ${user.role}`,
-            user: {
-                id: user.id,
-                first_name: user.first_name,
-                role: user.role,
-                email: user.email,
-            },
-            token: accessToken,
-        });
-    } catch (error) {
-        next(error);
-    }
+  // 3) Success response
+  return res.json({
+    message: 'Signup successful! Please confirm your email before signing in.'
+  });
 };
 
-export const handleLogout = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        res.clearCookie('access_token', {
-            // expires: new Date(0),
-            httpOnly: true,
-            // !!!! sameSite: none requires HTTPS !!!! 
-            // sameSite: 'none', 
-            secure: process.env.NODE_ENV === 'production',
-        });
+export const signin = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password required.' });
+  }
 
-        res.status(200).json({
-            message: 'User is logged out.',
-        });
-    } catch (error) {
-        next(error);
-    }
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    return res.status(401).json({ error: error.message });
+  }
+
+  // data.session contains the access_token (JWT)
+  return res.json({
+    message: 'Signin successful!',
+    user: data.user,
+    access_token: data.session?.access_token,
+    expires_in: data.session?.expires_in
+  });
 };
