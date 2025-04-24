@@ -1,22 +1,51 @@
-// src/components/SignIn.tsx
 import React, { useState } from "react";
-import "../styles/signup.scss";  // we’ll reuse the same CSS classes
+import { useNavigate } from "react-router-dom";
+import { API_URL } from "../api/api"; 
+
+import "../styles/signup.scss";  
 
 const SignIn: React.FC = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState<string|null>(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Sign‑in submitted:", formData);
-    // your sign‑in logic here
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Signin failed");
+      }
+
+      // Persist JWT
+      localStorage.setItem("access_token", json.access_token);
+
+      // Go to dashboard or home
+      navigate("/", { replace: true });
+    } catch (err: unknown) {
+      let errorMessage = "An unknown error occurred";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,6 +62,8 @@ const SignIn: React.FC = () => {
       <div className="form-section">
         <h2 className="signup-header">Sign In</h2>
         <p className="signup-subheader">Enter your details to access your account</p>
+        {error && <p className="form-error">{error}</p>}
+
 
         <form onSubmit={handleSubmit}>
           <div>
@@ -59,7 +90,7 @@ const SignIn: React.FC = () => {
             />
           </div>
 
-          <button type="submit">Sign In</button>
+          <button type="submit" disabled={loading}> {loading ? "Signing in…" : "Sign In"}</button>
         </form>
 
         <p className="sign-in-note">
