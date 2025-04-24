@@ -58,3 +58,26 @@ export const signin = async (req: Request, res: Response) => {
     expires_in: data.session?.expires_in
   });
 };
+
+export const signout = async (req: Request, res: Response) => {
+  const header = req.headers.authorization;
+  
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid token.' });
+  }
+
+  const token = header.split(' ')[1];
+
+  try {
+    // Admin API approach for token revocation
+    const { error } = await supabase.auth.admin.signOut(token);
+    
+    if (error) throw error;
+    
+    return res.json({ message: 'Successfully logged out.' });
+  } catch (error) {
+    return res.status(400).json({ 
+      error: error instanceof Error ? error.message : 'Logout failed' 
+    });
+  }
+};

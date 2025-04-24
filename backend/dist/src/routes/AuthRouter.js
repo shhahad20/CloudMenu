@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { signup, signin } from '../controllers/AuthController.js';
+import { signup, signin, signout } from '../controllers/AuthController.js';
+import { verifyAuth } from '../middleware/verifyAuth.js';
 const router = Router();
-// POST /auth/signup
 router.post('/signup', signup);
-// POST /auth/signin
 router.post('/signin', signin);
+router.get('/logout', verifyAuth, signout);
 export default router;

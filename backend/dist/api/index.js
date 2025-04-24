@@ -29,7 +29,7 @@ app.use(rateLimit({
 // app.use("/", (req, res) => {
 //   res.send("Hello World!");
 // });
-app.use('/auth', AuthRouter);
+app.use('/auth', express.json(), AuthRouter);
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {
     // req is typed as Request, so cast to AuthRequest to get .user

@@ -23,7 +23,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/" element={<App />} />
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/sign-up" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/faqs" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />

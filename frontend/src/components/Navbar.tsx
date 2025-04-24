@@ -1,11 +1,52 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.scss";
+import { API_URL } from "../api/api";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  // On mount, check if we have a token
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      // fallback if somehow no token
+      setIsLoggedIn(false);
+      return navigate("/", { replace: true });
+    }
+
+    try {
+      // 1) call the backend
+      const res = await fetch(`${API_URL}/auth/logout`, {
+        method: "GET",                       // or POST if you wired it that way
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        // Optional: inspect the error body
+        const err = await res.json();
+        console.error("Logout failed:", err);
+        // you can choose to still clear local state
+      }
+    } catch (e) {
+      console.error("Network error during logout", e);
+    } finally {
+      // 2) clear client‐side session
+      localStorage.removeItem("access_token");
+      setIsLoggedIn(false);
+      navigate("/", { replace: true });
+    }
+  };
 
   const toggleMenu = () => setIsOpen(!isOpen);
   // const toggleAccountMenu = () => setAccountMenuOpen(!accountMenuOpen);
@@ -14,7 +55,10 @@ const Navbar: React.FC = () => {
     <nav className="navbar">
       <div className="container">
         {/* Logo */}
-        <div className="logo">CloudMenu</div>
+        {/* <div className="logo">CloudMenu</div> */}
+        <Link to="/" className="logo">
+          CloudMenu
+        </Link>
 
         {/* Center Links */}
         <div className="center-links">
@@ -22,7 +66,22 @@ const Navbar: React.FC = () => {
           <Link to="/menus">Menus</Link>
           <Link to="/pricing">Pricing</Link>
           <Link to="/faqs">FAQs</Link>
-          <Link to="/signup">Sign up</Link>
+          {isLoggedIn ? (
+            <>
+              <Link to="/dashboard" className="btn">
+                Dashboard
+              </Link>
+              <button onClick={handleLogout} className="btn logout">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/sign-in" className="btn">
+                Sign In
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Account Menu */}
@@ -44,7 +103,6 @@ const Navbar: React.FC = () => {
             </motion.div>
           )}
         </div> */}
-
 
         <div className="contact-btn-wrapper">
           <button
