@@ -1,0 +1,22 @@
+/* src/styles/confirmEmail.scss */
+@import './signup';  /* if you want to reuse the same mixins/fonts */
+
+.confirm-email {
+  font-weight: 600;
+  margin: 0.5rem 0 1.5rem;
+  color: #6d5bba;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #6d5bba;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.select-btn {
+  margin-top: 2rem;
+}

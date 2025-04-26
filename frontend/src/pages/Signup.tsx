@@ -45,6 +45,7 @@ const Signup: React.FC = () => {
 
       // success → navigate to sign-in
       navigate("/sign-in", { replace: true });
+      navigate(`/confirm-email?email=${encodeURIComponent(formData.email)}`, { replace: true });
     } catch (err: unknown) {
       let errorMessage = "An unknown error occurred";
       if (err instanceof Error) {

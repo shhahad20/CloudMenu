@@ -10,7 +10,8 @@ export const signup = async (req, res) => {
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username } }
+        options: { data: { username },
+            emailRedirectTo: `${process.env.BACKEND_URL}/confirm-email` }
     });
     if (signUpError) {
         return res.status(400).json({ error: signUpError.message });
@@ -112,4 +113,25 @@ export const resetPassword = async (req, res) => {
         return res.status(400).json({ error: error.message });
     }
     return res.json({ message: 'Password successfully updated.' });
+};
+export const confirmEmail = async (req, res) => {
+    return res.send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Email Confirmed</title>
+        <style>
+          body { font-family: sans-serif; text-align: center; padding: 4rem; }
+          h1 { color: #6d5bba; }
+          a { color: #6d5bba; text-decoration: none; }
+        </style>
+      </head>
+      <body>
+        <h1>✅ Your email is confirmed!</h1>
+        <p>Thanks for verifying your address.</p>
+        <p><a href="/">Return to home page</a></p>
+      </body>
+    </html>
+  `);
 };
