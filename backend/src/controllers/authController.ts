@@ -1,5 +1,8 @@
 import { Request, Response } from 'express';
 import { supabase, adminSupabase } from '../config/supabaseClient.js';
+import 'dotenv/config'
+import jwt from 'jsonwebtoken';
+
 
 export const signup = async (req: Request, res: Response) => {
   const { email, password, username } = req.body;
@@ -80,4 +83,61 @@ export const signout = async (req: Request, res: Response) => {
       error: error instanceof Error ? error.message : 'Logout failed' 
     });
   }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required.' });
+  }
+
+  // Step 1: send reset email via Supabase
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.FRONTEND_URL}/reset-password`
+  });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+  return res.json({ message: 'Password reset email sent.' });
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const header = req.headers.authorization;
+  const { newPassword } = req.body;
+
+  // 1) Basic validation
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid token.' });
+  }
+  if (!newPassword || newPassword.length < 8) {
+    return res
+      .status(400)
+      .json({ error: 'New password must be at least 8 characters.' });
+  }
+
+  const token = header.split(' ')[1];
+
+  // 2) Decode the recovery JWT (no signature verification needed here)
+  const decoded = jwt.decode(token);
+  if (
+    !decoded ||
+    typeof decoded !== 'object' ||
+    typeof decoded.sub !== 'string'
+  ) {
+    return res.status(400).json({ error: 'Invalid token payload.' });
+  }
+  const userId = decoded.sub;
+
+  // 3) Use service-role client to update the user’s password by ID
+  const { error } = await adminSupabase.auth.admin.updateUserById(userId, {
+    password: newPassword,
+  });
+
+  if (error) {
+    console.error('Error updating password via admin:', error);
+    return res.status(400).json({ error: error.message });
+  }
+
+  return res.json({ message: 'Password successfully updated.' });
 };

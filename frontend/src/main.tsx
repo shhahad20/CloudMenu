@@ -11,6 +11,8 @@ import Signup from "./pages/Signup.tsx";
 import SignIn from "./pages/SignIn.tsx";
 import FAQ from "./pages/FAQ.tsx";
 import Pricing from "./pages/Pricing.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -25,6 +27,9 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/menus" element={<MenuTemplates />} />
             <Route path="/sign-up" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
             <Route path="/faqs" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />
 

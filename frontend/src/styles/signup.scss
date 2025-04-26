@@ -60,6 +60,12 @@
         font-weight: 400;
         margin-bottom: 2rem;
     }
+
+    .back-sigin-btn {
+      margin-top: 1rem;
+      width: 20%;
+      background: #1E1E1E;
+    }
   }
 
   
@@ -99,12 +105,14 @@
     color: #fff;
     font-size: 1rem;
     cursor: pointer;
+
   }
   
   .form-section button:hover {
     opacity: 0.9;
     background: #1E1E1E;
   }
+
   .sign-in-note{
     font-size: 0.8rem;
     color: #888;
@@ -115,6 +123,12 @@
         font-weight: 500;
     }
   }
+  .forgot-password{
+    font-size: 0.8rem;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
   /* Optional: collapse into single column on narrow screens */
   @media (max-width: 768px) {
     .signup-container {

@@ -89,7 +89,9 @@ const SignIn: React.FC = () => {
               required
             />
           </div>
-
+          <p className="forgot-password">
+          <a href="/forgot-password">Forgot your password?</a>
+        </p>
           <button type="submit" disabled={loading}> {loading ? "Signing in…" : "Sign In"}</button>
         </form>
 
