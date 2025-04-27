@@ -34,7 +34,7 @@ const ConfirmEmailSent: React.FC = () => {
             onClick={() => navigate(`/sign-up?resend=true&email=${email}`)}
           >
             resend it
-          </button>.
+          </button>
         </p>
         <button 
           className="back-sigin-btn" 

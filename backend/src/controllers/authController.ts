@@ -164,3 +164,37 @@ export const confirmEmail = async (req: Request, res: Response) => {
     </html>
   `);
 };
+
+export const changeUserRole = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  const { role } = req.body;
+  if (!role) {
+    return res.status(400).json({ error: 'Role is required.' });
+  }
+
+  const { data, error } = await adminSupabase
+    .from('profiles')
+    .update({ role })
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+  return res.json({ message: `User role updated to ${role}.`, profile: data });
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+
+  // 1) remove from Auth
+  const { error: authError } = await adminSupabase.auth.admin.deleteUser(userId);
+  if (authError) {
+    return res.status(400).json({ error: authError.message });
+  }
+
+  // 2) profile row is removed via ON DELETE CASCADE, but if not:
+  // await adminSupabase.from('profiles').delete().eq('id', userId);
+
+  return res.json({ message: 'User account deleted.' });
+};
