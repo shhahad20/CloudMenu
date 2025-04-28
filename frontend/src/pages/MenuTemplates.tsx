@@ -1,50 +1,69 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/menuTemplates.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/UI/SearchBar";
+import { fetchTemplates, Template } from "../api/templates";
+// import { useNavigate } from "react-router-dom";
 
-interface Template {
-  id: number;
-  title: string;
-  imageUrl: string;
-  description: string;
-  price: string; // ← new
-}
+// interface Template {
+//   id: number;
+//   title: string;
+//   imageUrl: string;
+//   description: string;
+//   price: string; // ← new
+// }
 
-const templates: Template[] = [
-  {
-    id: 1,
-    title: "Classic Café",
-    imageUrl: "/templates/classic-cafe.jpg",
-    description: "A clean, elegant layout with serif headings.",
-    price: "Free",
-  },
-  {
-    id: 2,
-    title: "Modern Bistro",
-    imageUrl: "/templates/modern-bistro.jpg",
-    description: "Bold colors and strong imagery for a trendy vibe.",
-    price: "$24.99",
-  },
-  {
-    id: 3,
-    title: "Rustic Diner",
-    imageUrl: "/templates/rustic-diner.jpg",
-    description: "Warm tones and handcrafted feel.",
-    price: "Free",
-  },
-  {
-    id: 4,
-    title: "Minimalist",
-    imageUrl: "/templates/minimalist.jpg",
-    description: "White space‑heavy design with simple typography.",
-    price: "$22.00",
-  },
-  // …add as many as you like
-];
+// const templates: Template[] = [
+//   {
+//     id: 1,
+//     title: "Classic Café",
+//     imageUrl: "/templates/classic-cafe.jpg",
+//     description: "A clean, elegant layout with serif headings.",
+//     price: "Free",
+//   },
+//   {
+//     id: 2,
+//     title: "Modern Bistro",
+//     imageUrl: "/templates/modern-bistro.jpg",
+//     description: "Bold colors and strong imagery for a trendy vibe.",
+//     price: "$24.99",
+//   },
+//   {
+//     id: 3,
+//     title: "Rustic Diner",
+//     imageUrl: "/templates/rustic-diner.jpg",
+//     description: "Warm tones and handcrafted feel.",
+//     price: "Free",
+//   },
+//   {
+//     id: 4,
+//     title: "Minimalist",
+//     imageUrl: "/templates/minimalist.jpg",
+//     description: "White space‑heavy design with simple typography.",
+//     price: "$22.00",
+//   },
+//   // …add as many as you like
+// ];
 
 const MenuTemplates: React.FC = () => {
+
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string|null>(null);
+  // const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchTemplates()
+      .then(setTemplates)
+      .catch(err => {
+        console.error(err);
+        setError("Failed to load your templates.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+
   return (
     <>
       <Navbar />
@@ -56,7 +75,9 @@ const MenuTemplates: React.FC = () => {
               onSearch={(query) => console.log("Searching for:", query)}
             />
           </div>
-
+          {loading && <p>Loading templates…</p>}
+          {error   && <p className="error">{error}</p>}
+          {!loading && !error && (
           <div className="templates-grid">
             <div className="template-card custom-card">
               <div className="price-tag custom-tag-price">Custom</div>
@@ -85,12 +106,12 @@ const MenuTemplates: React.FC = () => {
                 {/* Image + content */}
                 <img
                   className="template-image"
-                  src={tpl.imageUrl}
-                  alt={tpl.title}
+                  src={tpl.preview_url}
+                  alt="Preview Image"
                 />
                 <div className="template-content">
-                  <h3>{tpl.title}</h3>
-                  <p>{tpl.description}</p>
+                  <h3>{tpl.id}</h3>
+                  {/* <p>{tpl.description}</p> */}
                   <a href={`/templates/${tpl.id}`} className="btn-view">
                     View Template ↗
                   </a>
@@ -98,6 +119,7 @@ const MenuTemplates: React.FC = () => {
               </div>
             ))}
           </div>
+          )}
         </div>
       </section>
       <Footer />

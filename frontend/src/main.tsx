@@ -14,6 +14,7 @@ import Pricing from "./pages/Pricing.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ConfirmEmailSent from "./pages/ConfirmEmail.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -34,7 +35,7 @@ createRoot(document.getElementById("root")!).render(
 
             <Route path="/faqs" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />
-
+            <Route path="/dashboard" element={<Dashboard />} />
 
           </Routes>
         </BrowserRouter>

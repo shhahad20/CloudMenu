@@ -8,6 +8,7 @@ import { supabase } from "../src/config/supabaseClient.js";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { verifyAuth } from '../src/middleware/verifyAuth.js';
+import TemplateRouter from '../src/routes/TemplateRouter.js';
 config();
 const app = express();
 const PORT = 4000;
@@ -30,6 +31,7 @@ app.use(rateLimit({
 //   res.send("Hello World!");
 // });
 app.use('/auth', express.json(), AuthRouter);
+app.use('/templates', TemplateRouter);
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {
     // req is typed as Request, so cast to AuthRequest to get .user

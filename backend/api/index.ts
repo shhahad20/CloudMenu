@@ -11,6 +11,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import { verifyAuth, AuthRequest } from '../src/middleware/verifyAuth.js';
+import TemplateRouter from '../src/routes/TemplateRouter.js';
 
 config();
 const app = express();
@@ -43,6 +44,8 @@ app.use(rateLimit({
 // });
 
 app.use('/auth',express.json(), AuthRouter);
+app.use('/templates', TemplateRouter);
+
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {
   // req is typed as Request, so cast to AuthRequest to get .user

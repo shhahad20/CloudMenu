@@ -1,7 +1,7 @@
-import { RequestHandler } from 'express';
+import { RequestHandler,Request  } from 'express';
 import { supabase } from '../config/supabaseClient.js';
 
-export interface AuthRequest extends Request {
+export interface AuthRequest<Body = any> extends Request<any, any, Body> {
   user?: { id: string; email: string };
 }
 
