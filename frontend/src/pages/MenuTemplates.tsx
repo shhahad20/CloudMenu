@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/UI/SearchBar";
 import { cloneTemplate, fetchLibraryTemplates, Template } from "../api/templates";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // import { useNavigate } from "react-router-dom";
 
@@ -53,16 +53,40 @@ const MenuTemplates: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // const navigate = useNavigate();
+// per-template error & loading states:
+const [cloneErrors, setCloneErrors]       = useState<Record<string,string>>({});
+const [cloneLoading, setCloneLoading]     = useState<Record<string,boolean>>({});
 
-  useEffect(() => {
-    fetchLibraryTemplates()
-      .then((list) => setTemplates(list))
-      .catch((err) => {
-        console.error(err);
-        setError("Failed to load templates.");
-      })
-      .finally(() => setLoading(false));
-  }, []);
+const navigate = useNavigate();
+
+useEffect(() => {
+  fetchLibraryTemplates()
+    .then((list) => setTemplates(list))
+    .catch((err) => {
+      console.error(err);
+      setError("Failed to load templates.");
+    })
+    .finally(() => setLoading(false));
+}, []);
+
+const handleClone = async (tplId: string) => {
+  // clear any previous error for this template
+  setCloneErrors(errs => ({ ...errs, [tplId]: "" }));
+  setCloneLoading(ls => ({ ...ls, [tplId]: true }));
+  try {
+    const newTpl = await cloneTemplate(tplId);
+    navigate(`/builder/${newTpl.id}`);
+  } catch (err: unknown) {
+    console.error(err);
+    setCloneErrors(errs => ({
+      ...errs,
+      [tplId]: err instanceof Error ? err.message : "Could not create your copy."
+    }));
+  } finally {
+    setCloneLoading(ls => ({ ...ls, [tplId]: false }));
+  }
+};
+
   
 
 
@@ -96,7 +120,7 @@ const MenuTemplates: React.FC = () => {
                     the rest!
                   </p>
                   <a href="/" className="btn-view">
-                    View Template ↗
+                    Order a Template ↗
                   </a>
                 </div>
               </div>
@@ -117,10 +141,22 @@ const MenuTemplates: React.FC = () => {
                     {/* <a href={`/templates/${tpl.id}`} className="btn-view">
                     View Template ↗
                   </a> */}
-                    <Link to={`/menus/${tpl.id}`} className="btn-view">
+                    <Link to={`/menus/${tpl.id}`} className="btn-view" target="_blank" rel="noopener noreferrer">
                       View Template ↗
                     </Link>
-                    <button className="btn-view clone-btn" onClick={() => cloneTemplate(tpl.id)}>Use this Template ↗</button>
+                    <button
+                      className="btn-view clone-btn"
+                      onClick={() => handleClone(tpl.id)}
+                      disabled={!!cloneLoading[tpl.id]}
+                    >
+                      {cloneLoading[tpl.id] ? "Cloning…" : "Use this Template ↗"}
+                    </button>
+
+                    {cloneErrors[tpl.id] && (
+                        <p className="clone-error" style={{ color: "red", fontWeight: "500" }}>
+                        {cloneErrors[tpl.id]}
+                        </p>
+                    )}
                   </div>
                 </div>
               ))}

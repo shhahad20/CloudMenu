@@ -90,23 +90,20 @@ export const updateTemplate = (
     return res.json();
   });
 
-export const cloneTemplate = async (id: string) => {
-  try {
-    // const navigate = (url: string) => {
-    //   window.location.href = url; // Replace with your navigation logic if using react-router
-    // };
-    const res = await fetch(`${API}/templates/clone/${id}`, {
-      method: "POST",
-      headers: getHeaders(),
-    });
-    const userTpl = await res.json();
-    if (!res.ok) throw new Error(userTpl.error || "Clone failed");
-    // navigate(`/builder/${userTpl.id}`);
-  } catch (err) {
-    console.error(err);
-    alert("Could not create your copy. Try again.");
+export const cloneTemplate = async (id: string): Promise<{ id: string }> => {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    throw new Error("You need to be logged in to clone a template.");
   }
+  const res = await fetch(`${API}/templates/clone/${id}`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+  const payload = await res.json();
+  if (!res.ok) throw new Error(payload.error || "Clone failed");
+  return payload;  
 };
+
 // A reasonable default config for “new” templates:
 // export const defaultConfig: TemplateConfig = {
 //   layoutVariant: 'classic',
