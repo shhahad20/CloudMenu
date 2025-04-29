@@ -18,6 +18,7 @@ $break-lg: 900px;
   color: $text-color;
   padding: $padding;
   margin-top: 10rem;
+  min-height: 70vh;
 
   .templates-container {
     max-width: $max-width;

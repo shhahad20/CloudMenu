@@ -1,17 +1,27 @@
 import { Router } from 'express';
 import {
-  listTemplates, createTemplate,
-  getTemplate, updateTemplate, deleteTemplate
+  createTemplate,
+  getTemplate, updateTemplate, deleteTemplate,
+  cloneTemplate,
+  listLibraryTemplates,
+  listUserTemplates,
+  getLibraryTemplate
 } from '../controllers/TemplateController.js';
 import { verifyAuth } from '../middleware/verifyAuth.js';
 
 const router = Router();
+router.get('/lib', listLibraryTemplates);
+router.get('/lib/:id', getLibraryTemplate);
+// Protect all routes below this middleware
 router.use(verifyAuth);
 
-router.get   ('/',        listTemplates);
+router.get   ('/',        listUserTemplates);
+
 router.post  ('/',        createTemplate);
 router.get   ('/:id',     getTemplate);
 router.patch ('/:id',     updateTemplate);
 router.delete('/:id',     deleteTemplate);
+
+router.post('/clone/:libraryId', verifyAuth, cloneTemplate);
 
 export default router;

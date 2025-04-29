@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "../../styles/menus/template1.scss";
-import { getTemplate, Template } from "../../api/templates";
+import { fetchLibraryTemplate, Template } from "../../api/templates";
 
 
 const Template1 = () => {
@@ -9,7 +9,7 @@ const Template1 = () => {
   const [template, setTemplate] = useState<Template | null>(null);
   // Fetch data on component mount
   useEffect(() => {
-    getTemplate("6b9e22c5-d597-4e52-bafb-e8321e7b9ac5")
+    fetchLibraryTemplate("15e74dd9-c765-477a-afc2-3b5b3b2e66c6")
     .then((data: Template) => setTemplate(data))
   }, []);
 

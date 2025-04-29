@@ -3,7 +3,9 @@ import "../styles/menuTemplates.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/UI/SearchBar";
-import { fetchTemplates, Template } from "../api/templates";
+import { cloneTemplate, fetchLibraryTemplates, Template } from "../api/templates";
+import { Link } from "react-router-dom";
+
 // import { useNavigate } from "react-router-dom";
 
 // interface Template {
@@ -47,21 +49,21 @@ import { fetchTemplates, Template } from "../api/templates";
 // ];
 
 const MenuTemplates: React.FC = () => {
-
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string|null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   // const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTemplates()
-      .then(setTemplates)
-      .catch(err => {
+    fetchLibraryTemplates()
+      .then((list) => setTemplates(list))
+      .catch((err) => {
         console.error(err);
-        setError("Failed to load your templates.");
+        setError("Failed to load templates.");
       })
       .finally(() => setLoading(false));
   }, []);
+  
 
 
   return (
@@ -76,49 +78,53 @@ const MenuTemplates: React.FC = () => {
             />
           </div>
           {loading && <p>Loading templates…</p>}
-          {error   && <p className="error">{error}</p>}
+          {error && <p className="error">{error}</p>}
           {!loading && !error && (
-          <div className="templates-grid">
-            <div className="template-card custom-card">
-              <div className="price-tag custom-tag-price">Custom</div>
-              <div className="template-content">
-              <img
-                className="template-image"
-                src="/"
-                alt="Request a Custom Menu"
-              />
-                <h3>Request a Custom Menu</h3>
-                <p>
-                  Request a design that matches your unique taste. ersonalize
-                  your ideal menu—tell us your preferences, and we’ll handle the
-                  rest!
-                </p>
-                <a href="/" className="btn-view">
-                  View Template ↗
-                </a>
-              </div>
-            </div>
-            {templates.map((tpl) => (
-              <div key={tpl.id} className="template-card">
-                {/* Price badge */}
-                <div className="price-tag">{tpl.price}</div>
-
-                {/* Image + content */}
-                <img
-                  className="template-image"
-                  src={tpl.preview_url}
-                  alt="Preview Image"
-                />
+            <div className="templates-grid">
+              <div className="template-card custom-card">
+                <div className="price-tag custom-tag-price">Custom</div>
                 <div className="template-content">
-                  <h3>{tpl.id}</h3>
-                  {/* <p>{tpl.description}</p> */}
-                  <a href={`/templates/${tpl.id}`} className="btn-view">
+                  <img
+                    className="template-image"
+                    src="/"
+                    alt="Request a Custom Menu"
+                  />
+                  <h3>Request a Custom Menu</h3>
+                  <p>
+                    Request a design that matches your unique taste. ersonalize
+                    your ideal menu—tell us your preferences, and we’ll handle
+                    the rest!
+                  </p>
+                  <a href="/" className="btn-view">
                     View Template ↗
                   </a>
                 </div>
               </div>
-            ))}
-          </div>
+              {templates.map((tpl) => (
+                <div key={tpl.id} className="template-card">
+                  {/* Price badge */}
+                  <div className="price-tag">{tpl.price}</div>
+
+                  {/* Image + content */}
+                  <img
+                    className="template-image"
+                    src={tpl.preview_url}
+                    alt="Preview Image"
+                  />
+                  <div className="template-content">
+                    <h3>{tpl.name}</h3>
+                    {/* <p>{tpl.description}</p> */}
+                    {/* <a href={`/templates/${tpl.id}`} className="btn-view">
+                    View Template ↗
+                  </a> */}
+                    <Link to={`/menus/${tpl.id}`} className="btn-view">
+                      View Template ↗
+                    </Link>
+                    <button className="btn-view clone-btn" onClick={() => cloneTemplate(tpl.id)}>Use this Template ↗</button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </section>

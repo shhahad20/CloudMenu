@@ -3,7 +3,7 @@ import { supabase } from '../config/supabaseClient.js';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 
 // GET /templates
-export const listTemplates = async (req: AuthRequest, res: Response) => {
+export const listUserTemplates = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const { data, error } = await supabase
     .from('menu_templates')
@@ -13,6 +13,26 @@ export const listTemplates = async (req: AuthRequest, res: Response) => {
   res.json(data);
 };
 
+export const listLibraryTemplates = async (_req: Request, res: Response) => {
+  const { data, error } = await supabase
+    .from('library_templates')
+    .select('*');
+
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+};
+
+export const getLibraryTemplate = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { data, error } = await supabase
+    .from('library_templates')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return res.status(404).json({ error: error.message });
+  res.json(data);
+};
 // POST /templates
 export const createTemplate = async (
     req: AuthRequest, 
@@ -66,4 +86,33 @@ export const deleteTemplate = async (req: Request, res: Response) => {
     .delete().eq('id', id);
   if (error) return res.status(400).json({ error:error.message });
   res.json({ message: 'Template deleted.' });
+};
+
+// POST /templates/clone/:libraryId
+export const cloneTemplate = async (req: AuthRequest, res: Response) => {
+  const userId    = req.user!.id;
+  const libraryId = req.params.libraryId;
+
+  // 1) fetch the library config
+  const { data: lib, error: libErr } = await supabase
+    .from('library_templates')
+    .select('config, name,preview_url')
+    .eq('id', libraryId)
+    .single();
+  if (libErr) return res.status(404).json({ error: libErr.message });
+
+  // 2) insert into user templates
+  const { data, error } = await supabase
+    .from('menu_templates')
+    .insert([{
+      user_id:     userId,
+      library_id:  libraryId,
+      name:        lib.name,
+      preview_url: lib.preview_url,
+      config:      lib.config
+    }])
+    .single();
+  if (error) return res.status(400).json({ error: error.message });
+
+  return res.json(data);
 };
