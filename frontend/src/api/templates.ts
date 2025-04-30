@@ -61,11 +61,17 @@ export const fetchLibraryTemplate = (id: string): Promise<Template> =>
     return res.json();
   });
 
-export const getTemplate = (id: string): Promise<Template> =>
-  fetch(`${API}/templates/${id}`, { headers: getHeaders() }).then((res) => {
-    if (!res.ok) throw new Error("Failed to load template");
-    return res.json();
-  });
+  export function getTemplate(id: string): Promise<Template> {
+    return fetch(`${API}/templates/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`
+      },
+    }).then(res => {
+      if (!res.ok) throw new Error("Not found");
+      return res.json();
+    });
+  }
 
 export const createTemplate = (config: TemplateConfig): Promise<Template> =>
   fetch(`${API}/templates`, {
@@ -79,12 +85,14 @@ export const createTemplate = (config: TemplateConfig): Promise<Template> =>
 
 export const updateTemplate = (
   id: string,
-  config: TemplateConfig
+  url: TemplateConfig
 ): Promise<Template> =>
   fetch(`${API}/templates/${id}`, {
     method: "PATCH",
     headers: getHeaders(),
-    body: JSON.stringify({ config }),
+    body: JSON.stringify({ 
+      config: { headerImageUrl: url }  // Updates the header image URL only
+    })
   }).then((res) => {
     if (!res.ok) throw new Error("Failed to update template");
     return res.json();

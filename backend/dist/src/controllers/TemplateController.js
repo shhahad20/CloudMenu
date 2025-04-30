@@ -1,4 +1,5 @@
-import { supabase } from '../config/supabaseClient.js';
+import { adminSupabase, supabase } from '../config/supabaseClient.js';
+import { handleUpload } from '../helper/helper.js';
 // GET /templates
 export const listUserTemplates = async (req, res) => {
     const userId = req.user.id;
@@ -31,41 +32,92 @@ export const getLibraryTemplate = async (req, res) => {
 };
 // POST /templates
 export const createTemplate = async (req, res) => {
-    // cast body to the right type
-    const { config } = req.body;
-    const userId = req.user.id;
-    // strip out any incoming id
-    const templateConfig = { ...config, id: undefined };
-    const { data, error } = await supabase
-        .from('menu_templates')
-        .insert([{ user_id: userId, config: templateConfig }])
-        .single();
-    if (error) {
-        return res.status(400).json({ error: error.message });
+    try {
+        const userId = req.user.id;
+        const { config } = req.body;
+        // 1) optionally upload and inject into config
+        const imageUrl = await handleUpload(req.file);
+        const finalConfig = {
+            ...config,
+            ...(imageUrl ? { headerImageUrl: imageUrl } : {})
+        };
+        // 2) insert into DB
+        const { data, error } = await supabase
+            .from('menu_templates')
+            .insert([{ user_id: userId, config: finalConfig }])
+            .single();
+        if (error)
+            return res.status(400).json({ error: error.message });
+        res.json(data);
     }
-    res.json(data);
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 // GET /templates/:id
 export const getTemplate = async (req, res) => {
-    const { id } = req.params;
-    const { data, error } = await supabase
-        .from('menu_templates').select('*').eq('id', id).single();
-    if (error)
-        return res.status(404).json({ error: error.message });
-    res.json(data);
+    const userId = req.user.id;
+    const templateId = req.params.id;
+    // Fetch only this user’s copy
+    const { data, error } = await adminSupabase
+        .from("menu_templates")
+        .select("*")
+        .eq("id", templateId)
+        .eq("user_id", userId)
+        .single();
+    if (error || !data) {
+        return res.status(404).json({ error: "Template not found." });
+    }
+    // Respond with the full template row
+    return res.json(data);
 };
 // PATCH /templates/:id
 export const updateTemplate = async (req, res) => {
-    const { id } = req.params;
-    const { config } = req.body;
-    const { data, error } = await supabase
-        .from('menu_templates')
-        .update({ config, updated_at: 'now()' })
-        .eq('id', id)
-        .single();
-    if (error)
-        return res.status(400).json({ error: error.message });
-    res.json(data);
+    try {
+        const templateId = req.params.id;
+        const userId = req.user.id;
+        // 1) Fetch existing config
+        const { data: existing, error: fetchErr } = await adminSupabase
+            .from('menu_templates')
+            .select('config')
+            .eq('id', templateId)
+            .eq('user_id', userId)
+            .single();
+        if (fetchErr || !existing) {
+            console.error('Fetch template error:', fetchErr);
+            return res.status(404).json({ error: 'Template not found.' });
+        }
+        // 2) Upload new image if present
+        let newConfig = { ...existing.config };
+        if (req.file) {
+            try {
+                const imageUrl = await handleUpload(req.file, templateId);
+                newConfig.header_image = imageUrl;
+            }
+            catch (uploadErr) {
+                console.error('handleUpload error:', uploadErr);
+                return res.status(500).json({ error: 'Image upload failed: ' + uploadErr.message });
+            }
+        }
+        else {
+            console.log('No file in request; skipping upload.');
+        }
+        // 3) Persist the merged JSON
+        const { data, error: updateErr } = await adminSupabase
+            .from('menu_templates')
+            .update({ config: newConfig, updated_at: 'now()' })
+            .eq('id', templateId)
+            .single();
+        if (updateErr) {
+            console.error('Supabase update error:', updateErr);
+            return res.status(500).json({ error: 'DB update failed: ' + updateErr.message });
+        }
+        return res.json(data);
+    }
+    catch (err) {
+        console.error('Unexpected controller error:', err);
+        return res.status(500).json({ error: err.message });
+    }
 };
 // DELETE /templates/:id
 export const deleteTemplate = async (req, res) => {

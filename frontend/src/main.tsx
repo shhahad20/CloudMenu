@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword.tsx";
 import ConfirmEmailSent from "./pages/ConfirmEmail.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Template1 from "./components/Templates/Classic.tsx";
+import HeaderImageBuilder from "./components/TemplateBuilder.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
             <Route path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6" element={<Template1 />} />
+            <Route path="/builder/:id/header" element={<HeaderImageBuilder />} />
 
             <Route path="/sign-up" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />
