@@ -17,6 +17,8 @@ import ConfirmEmailSent from "./pages/ConfirmEmail.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Template1 from "./components/Templates/Classic.tsx";
 import HeaderImageBuilder from "./components/TemplateBuilder.tsx";
+import Template1Renderer from "./components/Templates/ClassicRenderer.tsx";
+import DashboardMenus from "./pages/DashboardMenus.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -30,7 +32,8 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
             <Route path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6" element={<Template1 />} />
-            <Route path="/builder/:id/header" element={<HeaderImageBuilder />} />
+            <Route path="/menus/:id" element={<Template1Renderer />} />
+            <Route path="/builder/:id" element={<HeaderImageBuilder />} />
 
             <Route path="/sign-up" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />
@@ -41,6 +44,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/faqs" element={<FAQ />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/menus" element={<DashboardMenus />} />
 
           </Routes>
         </BrowserRouter>
