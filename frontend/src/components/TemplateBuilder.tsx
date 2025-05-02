@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getTemplate } from "../api/templates";
 import { API_URL } from "../api/api";
 import { TemplateConfig, Section } from "../api/templates";
@@ -14,6 +14,7 @@ const HeaderImageBuilder: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // tpl => setCurrentUrl(tpl.config.header_image)
   useEffect(() => {
@@ -148,6 +149,7 @@ const HeaderImageBuilder: React.FC = () => {
       if (!res.ok) throw new Error(await res.text());
       // you could re-fetch if you like, or trust it worked
       alert("Saved successfully!");
+      navigate(`/menus/${id}`, { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError("Save failed: " + err.message);
@@ -177,7 +179,7 @@ const HeaderImageBuilder: React.FC = () => {
         </div>
       </fieldset>
       {/* Colors */}
-      <fieldset style={{ marginTop: 16 }}>
+      <fieldset style={{ marginTop: 14 }}>
         <legend>Colors</legend>
         {(["primary", "secondary", "background"] as const).map((colKey) => (
           <div key={colKey} className="color-picker">
@@ -199,8 +201,53 @@ const HeaderImageBuilder: React.FC = () => {
         ))}
       </fieldset>
 
+      {/* Text */}
+
+      <fieldset style={{ marginBottom: 14 }}>
+        <legend>Text Blocks</legend>
+
+        {config?.text?.map((tb, ti) => (
+          <div className="text-conatiner" key={tb.id} style={{ marginBottom: 12 }}>
+            <label style={{ display: "block", fontWeight: 500 }}>
+              {tb.label}
+            </label>
+            <textarea
+              rows={2}
+              style={{ width: "100%", padding: 8 }}
+              value={tb.value}
+              onChange={(e) => {
+                const newText = [...(config?.text || [])];
+                newText[ti] = { ...tb, value: e.target.value };
+                updateField("text", newText);
+              }}
+            />
+            {/* <button
+              style={{ marginTop: 4 }}
+              onClick={() => {
+                const filtered = config?.text?.filter((_, i) => i !== ti) || [];
+                updateField("text", filtered);
+              }}
+            >
+              Delete
+            </button> */}
+          </div>
+        ))}
+
+        {/* <button
+          onClick={() => {
+            const id = crypto.randomUUID();
+            updateField("text", [
+              ...(config?.text || []),
+              { id, label: "New Text", value: "" },
+            ]);
+          }}
+        >
+          + Add Text Block
+        </button> */}
+      </fieldset>
+
       {/* Sections & Items */}
-      <fieldset style={{ marginTop: 16 }}>
+      <fieldset style={{ marginTop: 14 }}>
         <legend>Sections</legend>
         {config?.sections?.map((sec, si) => (
           <div className="t-section-container" key={si}>

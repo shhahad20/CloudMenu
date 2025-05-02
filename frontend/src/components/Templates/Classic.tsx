@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "../../styles/menus/template1.scss";
 import { fetchLibraryTemplate, Template } from "../../api/templates";
 
+export const cureentYear = new Date().getFullYear();
 
 const Template1 = () => {
 
@@ -26,9 +27,14 @@ const Template1 = () => {
       prevIndex < templateSections.length - 1 ? prevIndex + 1 : 0
     );
   };
+  const { primary, secondary, background } = template?.config.colors || { primary: "#121212", secondary: "#2b3642", background: "#f9f4ed" };
 
   return (
-    <div className="menu-container">
+    <div className="menu-container" style={{
+      "--color-primary": primary,
+      "--color-secondary": secondary,
+      "--color-background": background,
+    } as React.CSSProperties}>
       <div className="menu-navbar">
         <ul className="ul-container">
           <li>Menu</li>
@@ -95,7 +101,7 @@ const Template1 = () => {
         </div>
       </div>
       <footer className="t1-footer">
-        <p>Powered by CloudMenu</p>
+        <p>© {cureentYear} All rights reserved. Powered by CloudMenu</p>
       </footer>
     </div>
   );

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "../../styles/menus/template1.scss";
-import {  getTemplate, Template } from "../../api/templates";
+import {  getTemplate, Template,TextBlock } from "../../api/templates";
 import { useParams } from "react-router-dom";
+import { cureentYear } from "./Classic";
 
 
 const Template1Renderer = () => {
@@ -17,6 +18,19 @@ const Template1Renderer = () => {
 
   const templateSections = template?.config.sections || [];
 
+  // ② grab text blocks
+  const textBlocks: TextBlock[] = template?.config.text || [];
+
+  // ③ find colors
+  const { primary, secondary, background } = template?.config.colors || { primary: "#121212", secondary: "#2b3642", background: "#f9f4ed" };
+
+  const findText = (id: string) =>
+    textBlocks.find(tb => tb.id === id)?.value || "";
+
+  const introText     = findText("intro");
+  const highlightText = findText("highlight");
+  const footerText = findText("footer");
+
   const handlePrevious = () => {
     setCurrentSectionIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : templateSections.length - 1
@@ -30,9 +44,14 @@ const Template1Renderer = () => {
   };
 
   return (
-    <div className="menu-container">
+    <div className="menu-container" style={{
+      "--color-primary": primary,
+      "--color-secondary": secondary,
+      "--color-background": background,
+    } as React.CSSProperties}>
       <div className="menu-navbar">
         <ul className="ul-container">
+
           <li>Menu</li>
           <li>Offers</li>
           <li>Contact</li>
@@ -41,8 +60,10 @@ const Template1Renderer = () => {
       <div className="menu-top-container">
         <div className="top-item">
           <div className="news-container">
-            <h1>TODAY’S MOOD IS SPONSORED BY COFFEE</h1>
-            <p>Try our NEW Coffee Latte</p>
+            {/* <h1>TODAY’S MOOD IS SPONSORED BY COFFEE</h1> */}
+            <h1>{introText}</h1>
+            {/* <p>Try our NEW Coffee Latte</p> */}
+            <p>{highlightText}</p>
           </div>
         </div>
         <div className="top-item top-img">
@@ -97,7 +118,8 @@ const Template1Renderer = () => {
         </div>
       </div>
       <footer className="t1-footer">
-        <p>Powered by CloudMenu</p>
+        <p>{footerText}</p>
+        <p>© {cureentYear} All rights reserved. Powered by CloudMenu</p>
       </footer>
     </div>
   );

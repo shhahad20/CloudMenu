@@ -10,7 +10,11 @@ export interface Section {
     imageUrl?: string;
   }>;
 }
-
+export type TextBlock = {
+  id: string;
+  label: string;  // human-friendly name
+  value: string;
+};
 export interface TemplateConfig {
   id?: string;
   logo: string;
@@ -19,12 +23,12 @@ export interface TemplateConfig {
     primary: string;
     secondary: string;
     background: string;
-    text: string;
   };
   sections: Section[];
+  text: TextBlock[];
   updated_at?: string;
   created_at?: string;
-}
+} 
 
 export interface Template {
   id: string;

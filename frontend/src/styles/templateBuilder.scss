@@ -43,6 +43,27 @@
       }
     }
 
+    .text-conatiner{
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+
+      h2 {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+      textarea {
+        padding: 0.2rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    }
     /* SECTIONS */
     .t-section-container {
       display: flex;
