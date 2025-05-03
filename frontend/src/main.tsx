@@ -19,6 +19,7 @@ import Template1 from "./components/Templates/Classic.tsx";
 import HeaderImageBuilder from "./components/TemplateBuilder.tsx";
 import Template1Renderer from "./components/Templates/ClassicRenderer.tsx";
 import DashboardMenus from "./pages/DashboardMenus.tsx";
+import Upgrade from "./pages/Upgarde.tsx";
 
 
 // import Logout from './pages/Logout.tsx';
@@ -45,6 +46,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/menus" element={<DashboardMenus />} />
+            <Route path="/dashboard/upgrade" element={<Upgrade />} />
 
           </Routes>
         </BrowserRouter>

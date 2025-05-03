@@ -1,0 +1,42 @@
+.upgrade-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    justify-content: center;
+  }
+  
+  .plan-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  
+    &--Free  { border-top: 4px solid orange; }
+    &--Pro   { border-top: 4px solid blue; }
+    &--Enterprise { border-top: 4px solid purple; }
+  
+    h2 {
+      margin-bottom: 0.5rem;
+    }
+  
+    .price {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+  
+    .subscribe-btn {
+      padding: 0.5rem 1.25rem;
+      border: none;
+      border-radius: 4px;
+      background: #1e1e1e;
+      color: #fff;
+      cursor: pointer;
+  
+      &:disabled {
+        background: #ccc;
+        cursor: default;
+      }
+    }
+  }
+  

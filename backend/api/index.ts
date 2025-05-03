@@ -12,7 +12,7 @@ import cookieParser from "cookie-parser";
 
 import { verifyAuth, AuthRequest } from '../src/middleware/verifyAuth.js';
 import TemplateRouter from '../src/routes/TemplateRouter.js';
-
+import plansRouter from '../src/routes/plansRouter.js';
 config();
 const app = express();
 const PORT = 4000;
@@ -45,6 +45,7 @@ app.use(rateLimit({
 
 app.use('/auth',express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
+app.use('/plans', plansRouter);
 
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {

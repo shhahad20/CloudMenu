@@ -9,6 +9,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { verifyAuth } from '../src/middleware/verifyAuth.js';
 import TemplateRouter from '../src/routes/TemplateRouter.js';
+import plansRouter from '../src/routes/plansRouter.js';
 config();
 const app = express();
 const PORT = 4000;
@@ -32,6 +33,7 @@ app.use(rateLimit({
 // });
 app.use('/auth', express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
+app.use('/plans', plansRouter);
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {
     // req is typed as Request, so cast to AuthRequest to get .user
