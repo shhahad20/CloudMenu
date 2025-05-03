@@ -1,65 +1,106 @@
 .dashboard-container {
-    display: flex;
-    min-height: 100vh;
-  }
-  
-  .dashboard-sidebar {
-    width: 220px;
-    background: #1e1e1e;
-    color: #fff;
-    padding: 2rem 1rem;
-  
-    .sidebar-logo {
-      margin-bottom: 2rem;
-      font-size: 1.5rem;
-      text-align: center;
-    }
-  
-    nav ul {
-      list-style: none;
-      padding: 0;
-      li {
-        margin-bottom: 1rem;
-        a {
-          color: #ccc;
-          text-decoration: none;
-          &:hover, &.active {
-            color: #6d5bba;
-          }
-        }
-      }
-    }
-  }
-  
-  .dashboard-main {
-    flex: 1;
-    background: #f7f7f7;
-    padding: 2rem;
-  
-    header {
-      margin-bottom: 2rem;
-      h1 {
-        margin: 0 0 0.5rem;
-      }
-      p {
-        margin: 0;
-        color: #666;
-      }
-    }
-  
-    .dashboard-content {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-  }
-  
-  .dashboard-loading {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f7f7f7;
+}
+// 1) Header layout
+.dashboard-header {
+  // text-align: center;
+  padding: 2rem 1rem;
+  width: 1200px;
+  .dashboard-title {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
-    justify-content: center;
-    height: 100vh;
-    font-size: 1.25rem;
+
+    .plan-badge {
+      padding: 0 0.7rem;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+    .plan-badge--Free {
+      background: rgba(248, 171, 0, 0.3);
+      color: #f8ab00;
+      border: 1.5px solid #f8ab00;
+    }
+    .plan-badge--Pro {
+      background: rgba(86, 182, 250, 0.3);
+      color: #56b6fa;
+      border: 1.5px solid #56b6fa;
+    }
+    .plan-badge--Enterprise {
+      background: rgba(128, 234, 107, 0.3);
+      color: #80ea6b;
+      border: 1.5px solid #80ea6b;
+    }
   }
-  
+
+  .dashboard-role {
+    color: #666;
+    margin-bottom: 1.5rem;
+  }
+}
+// 2) Tabs container
+.dashboard-tabs {
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fafafa;
+
+  .tab {
+    padding: 0.3rem 1.5rem;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: background 0.2s;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    // &:hover {
+    //   background: #f0f0f0;
+    // }
+  }
+
+  // active tab
+  .tab--active {
+    font-weight: 700;
+    background: white;
+    // border-bottom: 2px solid #1e1e1e;
+    /* tweak the color to match your brand */
+  }
+}
+
+.dashboard-main {
+  flex: 1;
+  background: #f7f7f7;
+  padding: 2rem;
+
+  header {
+    margin-bottom: 2rem;
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+
+  .dashboard-content {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  font-size: 1.25rem;
+}
