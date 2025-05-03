@@ -1,58 +1,80 @@
 .dashboard-container {
-    display: flex;
-    margin-top: 5rem;
+  display: flex;
+  margin-top: 5rem;
+}
+
+.user-menus {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 1rem;
+}
+.menus-grid {
+  display: grid;
+  gap: 1rem;
+  // default: mobile (1 column)
+  grid-template-columns: 1fr;
+
+  // ≥ 600px: 2 columns
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .dashboard-sidebar { /* your existing sidebar styles */ }
-  .dashboard-main {
-    flex: 1;
-    padding: 2rem;
-    header {
-      margin-bottom: 1.5rem;
-      h1 { margin: 0; }
-      p  { color: #666; }
-    }
+
+  // ≥ 900px: 3 columns
+  @media (min-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
   }
-  .menus-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.5rem;
+
+  // ≥ 1200px: 4 columns
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
   }
-  .menu-card {
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
+}
+
+.menu-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 1rem;
+  // width: 260px;
+  .menu-preview-img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+  }
+  h3 {
+    margin: 0.75rem 0 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  .created-at {
+    font-size: 0.8rem;
+    color: #888;
     text-align: center;
-    padding-bottom: 1rem;
-    .menu-preview-img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-    }
-    h3 {
-      margin: 0.75rem 0 0.5rem;
-      font-size: 1.1rem;
-    }
-    .created-at {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 0.75rem;
-    }
-    .card-actions {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      .btn {
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        text-decoration: none;
-        color: #fff;
-        background: #1E1E1E;
-        font-size: 0.9rem;
-        &.secondary {
-          background: #666;
-        }
+    // border: 1px solid red;
+    // padding-left: 1rem;
+    // margin-bottom: 0.75rem;
+  }
+  .card-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    .btn {
+      // padding: 0.5rem 1rem;
+      padding: 0.1rem 1.5rem;
+      color: white;
+      border-radius: 150px;
+      font-weight: 500;
+      text-decoration: none;
+      background: #1e1e1e;
+      font-size: 0.9rem;
+      &.secondary {
+        background: white;
+        color: #1e1e1e;
+        border: 1px solid #1e1e1e;
       }
     }
   }
-  
+}

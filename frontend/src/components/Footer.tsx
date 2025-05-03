@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
           {/* Footer bottom content */}
           <div className="footer-bottom">
             <div className="">
-              © {cureentYear} SHAHADALTHARWA. All rights reserved.
+              © {cureentYear} SHAHAD ALTHARWA. All rights reserved.
             </div>
           </div>
         </div>

@@ -1,45 +1,41 @@
-// src/pages/DashboardMenus.tsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import '../styles/dashboard.scss';
-import '../styles/dashboardMenus.scss';
-import { API_URL } from '../api/api';
+import React, { useEffect, useState } from "react";
+import { useNavigate, NavLink, Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import "../styles/dashboard.scss";
+import "../styles/dashboardMenus.scss";
+import { API_URL } from "../api/api";
 
 interface UserTemplate {
   id: string;
   name: string;
   preview_url: string;
   created_at: string;
+  updated_at: string;
 }
 
 const DashboardMenus: React.FC = () => {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<UserTemplate[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string|null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) {
-      navigate('/sign-in', { replace: true });
+      navigate("/sign-in", { replace: true });
       return;
     }
 
     fetch(`${API_URL}/templates`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(async res => {
-        if (!res.ok) throw new Error('Failed to fetch your menus');
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch your menus");
         return res.json();
       })
-      .then((data: UserTemplate[]) => {
-        setTemplates(data);
-      })
-      .catch(err => {
+      .then((data: UserTemplate[]) => setTemplates(data))
+      .catch((err) => {
         console.error(err);
         setError(err.message);
       })
@@ -56,29 +52,59 @@ const DashboardMenus: React.FC = () => {
   return (
     <>
       <Navbar />
-      <div className="dashboard-container">
-        <aside className="dashboard-sidebar">
-          <h2 className="sidebar-logo">MyApp</h2>
-          <nav>
-            <ul>
-              <li><Link to="/dashboard">Home</Link></li>
-              <li className="active"><Link to="/dashboard/menus">My Menus</Link></li>
-              <li><Link to="/dashboard/settings">Settings</Link></li>
-            </ul>
+
+      <main className="dashboard-container">
+        {/* header + tabs */}
+        <header className="dashboard-header">
+          <h1 className="dashboard-title">My Menus</h1>
+          <p className="dashboard-role">
+            Here are the templates you’ve cloned:
+          </p>
+
+          <nav className="dashboard-tabs">
+            <NavLink
+              to="/dashboard"
+              end
+              className={({ isActive }) =>
+                isActive ? "tab" : "tab tab--inactive"
+              }
+            >
+              Overview
+            </NavLink>
+            <NavLink
+              to="/dashboard/menus"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Menus
+            </NavLink>
+            <NavLink
+              to="/dashboard/settings"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Settings
+            </NavLink>
+            <NavLink
+              to="/dashboard/upgrade"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Upgrade
+            </NavLink>
           </nav>
-        </aside>
+        </header>
 
-        <main className="dashboard-main">
-          <header>
-            <h1>My Menus</h1>
-            <p>Here are the templates you’ve cloned:</p>
-          </header>
-
-          {templates.length === 0 ? (
-            <p>You haven’t cloned any menu templates yet.</p>
-          ) : (
-            <div className="menus-grid">
-              {templates.map(tpl => (
+        {/* content */}
+        <div className="user-menus">
+          <section className="dashboard-content menus-grid">
+            {templates.length === 0 ? (
+              <p>You haven’t cloned any menu templates yet.</p>
+            ) : (
+              templates.map((tpl) => (
                 <div key={tpl.id} className="menu-card">
                   <img
                     src={tpl.preview_url}
@@ -87,22 +113,37 @@ const DashboardMenus: React.FC = () => {
                   />
                   <h3>{tpl.name}</h3>
                   <p className="created-at">
-                    Created {new Date(tpl.created_at).toLocaleDateString()}
+                    Updated{" "}
+                    {new Date(tpl.updated_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
                   </p>
+                  <p className="created-at">
+                    Created{" "}
+                    {new Date(tpl.created_at).toLocaleDateString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+
                   <div className="card-actions">
                     <Link to={`/builder/${tpl.id}`} className="btn">
                       Edit
                     </Link>
                     <Link to={`/menus/${tpl.id}`} className="btn secondary">
-                      View
+                    View ↗
                     </Link>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </main>
-      </div>
+              ))
+            )}
+          </section>
+        </div>
+      </main>
+
       <Footer />
     </>
   );
