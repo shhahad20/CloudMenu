@@ -119,6 +119,19 @@ $break-lg: 900px;
             //   font-weight: 600;
             // }
           }
+
+          .btn-add-cart {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #1e1e1e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        
+            &:hover { background: #333; }
+          }
         }
       }
 

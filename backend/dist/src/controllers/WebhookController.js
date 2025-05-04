@@ -1,4 +1,4 @@
-import { stripe } from '../config/stripe';
+import { stripe } from '../config/stripe.js';
 export const stripeWebhook = (req, res) => {
     const sig = req.headers['stripe-signature'];
     let event;

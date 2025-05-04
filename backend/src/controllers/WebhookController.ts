@@ -1,7 +1,7 @@
 // src/controllers/webhookController.ts
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { stripe } from '../config/stripe';
+import { stripe } from '../config/stripe.js';
 
 export const stripeWebhook = (req: Request, res: Response) => {
   const sig = req.headers['stripe-signature']!;

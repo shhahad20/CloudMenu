@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import SearchBar from "../components/UI/SearchBar";
 import { cloneTemplate, fetchLibraryTemplates, Template } from "../api/templates";
 import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 // import { useNavigate } from "react-router-dom";
 
@@ -59,6 +60,9 @@ const [cloneLoading, setCloneLoading]     = useState<Record<string,boolean>>({})
 
 const navigate = useNavigate();
 
+  // CART CONTEXT
+  const { addItem } = useCart();
+
 useEffect(() => {
   fetchLibraryTemplates()
     .then((list) => setTemplates(list))
@@ -87,7 +91,13 @@ const handleClone = async (tplId: string) => {
   }
 };
 
-  
+    // helper to get numeric price
+    const parsePrice = (priceStr: string): number => {
+      if (!priceStr || priceStr.toLowerCase() === "free") return 0;
+      // strip any non-digits/dot
+      const num = parseFloat(priceStr.replace(/[^0-9.]/g, ""));
+      return isNaN(num) ? 0 : num;
+    };
 
 
   return (
@@ -151,6 +161,17 @@ const handleClone = async (tplId: string) => {
                     >
                       {cloneLoading[tpl.id] ? "Cloning…" : "Use this Template ↗"}
                     </button>
+                      {/* Add to Cart button */}
+                      {parsePrice(tpl.price) > 0 && (
+                        <button
+                          className="btn-add-cart"
+                          onClick={() =>
+                            addItem({ id: tpl.id, name: tpl.name, price: parsePrice(tpl.price), quantity: 1 })
+                          }
+                        >
+                          Add to Cart
+                        </button>
+                      )}
 
                     {cloneErrors[tpl.id] && (
                         <p className="clone-error" style={{ color: "red", fontWeight: "500" }}>
