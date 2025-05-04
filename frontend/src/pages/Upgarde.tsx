@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import '../styles/dashboard.scss';
 import '../styles/upgrade.scss';
 import { API_URL } from "../api/api";
+import Pricing from '../components/Pricing';
 
 interface Plan {
   name: 'Free' | 'Pro' | 'Enterprise';
@@ -61,7 +62,7 @@ console.log(plans);
         </header>
 
         <section className="dashboard-content upgrade-grid">
-          {plans.map((plan) => (
+          {/* {plans.map((plan) => (
             <div key={plan.name} className={`plan-card plan-card--${plan.name}`}>
               <h2>{plan.name}</h2>
               <p className="price">${plan.price}/month</p>
@@ -72,7 +73,8 @@ console.log(plans);
                 {plan.name === 'Free' ? 'Current Plan' : 'Subscribe'}
               </button>
             </div>
-          ))}
+          ))} */}
+          <Pricing/>
         </section>
       </main>
 

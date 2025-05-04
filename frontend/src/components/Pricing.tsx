@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import "../styles/pricing.scss";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
+
 
 interface Plan {
   name: string;
@@ -93,8 +92,6 @@ const Pricing: React.FC = () => {
   const [yearly, setYearly] = useState(false);
 
   return (
-    <>
-      <Navbar />
       <div className="pricing-container">
         <h1 className="pricing-header">Choose the Perfect Plan for You</h1>
 
@@ -127,8 +124,6 @@ const Pricing: React.FC = () => {
           ))}
         </div>
       </div>
-      <Footer />
-    </>
   );
 };
 

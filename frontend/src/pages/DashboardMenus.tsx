@@ -88,7 +88,7 @@ const DashboardMenus: React.FC = () => {
               Settings
             </NavLink>
             <NavLink
-              to="/dashboard/upgrade"
+              to="/dashboard/upgrade/pricing"
               className={({ isActive }) =>
                 isActive ? "tab tab--active" : "tab"
               }

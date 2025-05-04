@@ -3,12 +3,14 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/navbar.scss";
 import { API_URL } from "../api/api";
+import { useCart } from "../context/CartContext";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
-
+  const { items } = useCart();
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   // On mount, check if we have a token
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -125,7 +127,15 @@ const Navbar: React.FC = () => {
             </span>
           </button>
         </div>
-
+        <div className="nav-links">
+        {/* …other links… */}
+        {itemCount > 0 && (
+          <Link to="/cart" className="cart-icon">
+            🛒
+            <span className="cart-count">{itemCount}</span>
+          </Link>
+        )}
+      </div>
         {/* Mobile Menu Button */}
         <button className="mobile-menu-button" onClick={toggleMenu}>
           <motion.div
