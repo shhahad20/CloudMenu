@@ -5,3 +5,6 @@ dist/src/config/index.js
 src/config/supabaseClient.ts
 dist/src/config/supabaseClient.js
 myNotes.txt
+
+src/config/stripe.ts
+dist/src/config/stripe.js

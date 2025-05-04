@@ -1,6 +1,7 @@
 import express from 'express';
-import { getPlans, updatePlan } from '../controllers/plansController.js';
+
 import { requireAdmin } from '../middleware/requireAdmin.js';
+import { getPlans, updatePlan } from '../controllers/plansController.js';
 
 const router = express.Router();
 

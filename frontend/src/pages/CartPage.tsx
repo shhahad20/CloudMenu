@@ -13,7 +13,7 @@ const CartPage: React.FC = () => {
     return (
       <div className="cart-page">
         <h1>Your Cart is Empty</h1>
-        <button onClick={() => navigate('/dashboard')}>Go Shopping</button>
+        <button onClick={() => navigate('/menus')}>Go Shopping</button>
       </div>
     );
   }
