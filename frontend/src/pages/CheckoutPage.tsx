@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/cart.scss';                // reuse cart styles
 import { useCart } from '../context/CartContext';
+import { cloneTemplate } from '../api/templates'; 
 
 const CheckoutPage: React.FC = () => {
   const { items, clearCart } = useCart();
@@ -17,8 +18,17 @@ const CheckoutPage: React.FC = () => {
     try {
       // TODO: call your backend checkout endpoint
       // await fetch('/api/checkout', { ... })
-      clearCart();
+      
       alert('Payment successful!');
+      await Promise.all(
+        items.map(i =>
+          // if your cloneTemplate expects a string ID:
+          cloneTemplate(i.id.toString())
+        )
+      );
+      clearCart();
+      navigate('/success',{replace:true});
+
       navigate('/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {

@@ -1,5 +1,4 @@
-// src/contexts/CartContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export interface CartItem {
   id: string;
@@ -11,7 +10,7 @@ export interface CartItem {
 interface CartContextValue {
   items: CartItem[];
   addItem: (item: CartItem) => void;
-  removeOne: (id: string) => void;    // ← new
+  removeOne: (id: string) => void;    
   removeItem: (id: string) => void;
   clearCart: () => void;
 }
@@ -25,8 +24,16 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  // const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    const json = localStorage.getItem('cartItems');
+    return json ? JSON.parse(json) as CartItem[] : [];
+  });
 
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(items));
+  }, [items]);
+  
   // Add or increase
   const addItem = (item: CartItem) => {
     setItems((prev) => {

@@ -3,7 +3,11 @@ import "../styles/menuTemplates.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/UI/SearchBar";
-import { cloneTemplate, fetchLibraryTemplates, Template } from "../api/templates";
+import {
+  cloneTemplate,
+  fetchLibraryTemplates,
+  Template,
+} from "../api/templates";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
@@ -54,51 +58,51 @@ const MenuTemplates: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // const navigate = useNavigate();
-// per-template error & loading states:
-const [cloneErrors, setCloneErrors]       = useState<Record<string,string>>({});
-const [cloneLoading, setCloneLoading]     = useState<Record<string,boolean>>({});
+  // per-template error & loading states:
+  const [cloneErrors, setCloneErrors] = useState<Record<string, string>>({});
+  const [cloneLoading, setCloneLoading] = useState<Record<string, boolean>>({});
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // CART CONTEXT
   const { addItem } = useCart();
 
-useEffect(() => {
-  fetchLibraryTemplates()
-    .then((list) => setTemplates(list))
-    .catch((err) => {
+  useEffect(() => {
+    fetchLibraryTemplates()
+      .then((list) => setTemplates(list))
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load templates.");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleClone = async (tplId: string) => {
+    // clear any previous error for this template
+    setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
+    setCloneLoading((ls) => ({ ...ls, [tplId]: true }));
+    try {
+      const newTpl = await cloneTemplate(tplId);
+      navigate(`/builder/${newTpl.id}`);
+    } catch (err: unknown) {
       console.error(err);
-      setError("Failed to load templates.");
-    })
-    .finally(() => setLoading(false));
-}, []);
+      setCloneErrors((errs) => ({
+        ...errs,
+        [tplId]:
+          err instanceof Error ? err.message : "Could not create your copy.",
+      }));
+    } finally {
+      setCloneLoading((ls) => ({ ...ls, [tplId]: false }));
+    }
+  };
 
-const handleClone = async (tplId: string) => {
-  // clear any previous error for this template
-  setCloneErrors(errs => ({ ...errs, [tplId]: "" }));
-  setCloneLoading(ls => ({ ...ls, [tplId]: true }));
-  try {
-    const newTpl = await cloneTemplate(tplId);
-    navigate(`/builder/${newTpl.id}`);
-  } catch (err: unknown) {
-    console.error(err);
-    setCloneErrors(errs => ({
-      ...errs,
-      [tplId]: err instanceof Error ? err.message : "Could not create your copy."
-    }));
-  } finally {
-    setCloneLoading(ls => ({ ...ls, [tplId]: false }));
-  }
-};
-
-    // helper to get numeric price
-    const parsePrice = (priceStr: string): number => {
-      if (!priceStr || priceStr.toLowerCase() === "free") return 0;
-      // strip any non-digits/dot
-      const num = parseFloat(priceStr.replace(/[^0-9.]/g, ""));
-      return isNaN(num) ? 0 : num;
-    };
-
+  // helper to get numeric price
+  const parsePrice = (priceStr: string): number => {
+    if (!priceStr || priceStr.toLowerCase() === "free") return 0;
+    // strip any non-digits/dot
+    const num = parseFloat(priceStr.replace(/[^0-9.]/g, ""));
+    return isNaN(num) ? 0 : num;
+  };
 
   return (
     <>
@@ -135,6 +139,7 @@ const handleClone = async (tplId: string) => {
                 </div>
               </div>
               {templates.map((tpl) => (
+                
                 <div key={tpl.id} className="template-card">
                   {/* Price badge */}
                   <div className="price-tag">{tpl.price}</div>
@@ -151,32 +156,54 @@ const handleClone = async (tplId: string) => {
                     {/* <a href={`/templates/${tpl.id}`} className="btn-view">
                     View Template ↗
                   </a> */}
-                    <Link to={`/menus/${tpl.id}`} className="btn-view" target="_blank" rel="noopener noreferrer">
+                    <Link
+                      to={`/menus/${tpl.id}`}
+                      className="btn-view"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       View Template ↗
                     </Link>
-                    <button
-                      className="btn-view clone-btn"
-                      onClick={() => handleClone(tpl.id)}
-                      disabled={!!cloneLoading[tpl.id]}
-                    >
-                      {cloneLoading[tpl.id] ? "Cloning…" : "Use this Template ↗"}
-                    </button>
-                      {/* Add to Cart button */}
-                      {parsePrice(tpl.price) > 0 && (
+                    {parsePrice(tpl.price) === 0 ? (
+                      // FREE: show “Use this Template” (clone)
+                      <>
                         <button
-                          className="btn-add-cart"
-                          onClick={() =>
-                            addItem({ id: tpl.id, name: tpl.name, price: parsePrice(tpl.price), quantity: 1 })
-                          }
+                          className="clone-btn"
+                          onClick={() => handleClone(tpl.id)}
+                          disabled={!!cloneLoading[tpl.id]}
                         >
-                          Add to Cart
+                          {cloneLoading[tpl.id]
+                            ? "Cloning…"
+                            : "Use this Template ↗"}
                         </button>
-                      )}
+                        {cloneErrors[tpl.id] && (
+                          <p className="clone-error">{cloneErrors[tpl.id]}</p>
+                        )}
+                      </>
+                    ) : (
+                      // PAID: show “Add to Cart”
+                      <button
+                        className="btn-add-cart"
+                        onClick={() =>
+                          addItem({
+                            id: tpl.id,
+                            name: tpl.name,
+                            price: parsePrice(tpl.price),
+                            quantity: 1,
+                          })
+                        }
+                      >
+                        Add to Cart
+                      </button>
+                    )}
 
                     {cloneErrors[tpl.id] && (
-                        <p className="clone-error" style={{ color: "red", fontWeight: "500" }}>
+                      <p
+                        className="clone-error"
+                        style={{ color: "red", fontWeight: "500" }}
+                      >
                         {cloneErrors[tpl.id]}
-                        </p>
+                      </p>
                     )}
                   </div>
                 </div>
