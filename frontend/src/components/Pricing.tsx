@@ -1,63 +1,63 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 import "../styles/pricing.scss";
+import { API_URL } from "../api/api";
 
 
 interface Plan {
   name: string;
-  priceMonthly: string;
-  priceYearly: string;
+  price_cents: number;
   features: string[];
-  tag?: string;          // <-- new!
+  tag?: string;         
 }
 
-const plans: Plan[] = [
-  {
-    name: "Basic",
-    priceMonthly: "19",
-    priceYearly: "190",
-    tag: "",
-    features: [
-      "10 Projects",
-      "5 GB Storage",
-      "Basic Support",
-      "Community Access",
-      "Email Notifications",
-    ],
-  },
-  {
-    name: "Pro",
-    priceMonthly: "49",
-    priceYearly: "490",
-    tag: "Most Popular",
-    features: [
-      "100 Projects",
-      "50 GB Storage",
-      "Priority Support",
-      "Advanced Analytics",
-      "Customizable Templates",
-      "Team Collaboration",
-    ],
-  },
-  {
-    name: "Enterprise",
-    priceMonthly: "99",
-    priceYearly: "990",
-    tag: "",
-    features: [
-      "Unlimited Projects",
-      "200 GB Storage",
-      "Dedicated Support",
-      "24/7 Customer Service",
-      "Custom Integrations",
-      "Unlimited Team Members",
-      "Advanced Security Features",
-    ],
-  },
-];
+// const plans: Plan[] = [
+//   {
+//     name: "Basic",
+//     priceMonthly: "19",
+//     priceYearly: "190",
+//     tag: "",
+//     features: [
+//       "10 Projects",
+//       "5 GB Storage",
+//       "Basic Support",
+//       "Community Access",
+//       "Email Notifications",
+//     ],
+//   },
+//   {
+//     name: "Pro",
+//     priceMonthly: "49",
+//     priceYearly: "490",
+//     tag: "Most Popular",
+//     features: [
+//       "100 Projects",
+//       "50 GB Storage",
+//       "Priority Support",
+//       "Advanced Analytics",
+//       "Customizable Templates",
+//       "Team Collaboration",
+//     ],
+//   },
+//   {
+//     name: "Enterprise",
+//     priceMonthly: "99",
+//     priceYearly: "990",
+//     tag: "",
+//     features: [
+//       "Unlimited Projects",
+//       "200 GB Storage",
+//       "Dedicated Support",
+//       "24/7 Customer Service",
+//       "Custom Integrations",
+//       "Unlimited Team Members",
+//       "Advanced Security Features",
+//     ],
+//   },
+// ];
 
 const PricingCard: React.FC<{
   plan: Plan;
@@ -65,7 +65,7 @@ const PricingCard: React.FC<{
 }> = ({ plan, yearly }) => {
   const { addItem } = useCart();
   const navigate = useNavigate();
-  const price = yearly ? plan.priceYearly : plan.priceMonthly;
+  const price = yearly ? plan.price_cents*10 : plan.price_cents;
   const suffix = yearly ? '/year' : '/month';
 
   const handleSelect = () => {
@@ -73,7 +73,7 @@ const PricingCard: React.FC<{
     addItem({
       id: `plan-${plan.name}`, 
       name: `${plan.name} Plan`, 
-      price: Number(price), 
+      price: price, 
       quantity: 1,
     });
     navigate('/checkout');
@@ -106,6 +106,44 @@ const PricingCard: React.FC<{
 
 const Pricing: React.FC = () => {
   const [yearly, setYearly] = useState(false);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${API_URL}/plans`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Failed to fetch plans");
+        return res.json() as Promise<Plan[]>;
+      })
+      .then((data) => {
+        console.log(data)
+        // derive full Plan objects
+        const enriched: Plan[] = data.map((p) => ({
+          name: p.name,
+          price_cents: p.price_cents,
+          // priceYearly: p.price * 10, // e.g. 10 months for the price of 10
+          tag: p.tag || "", // use tag from the database
+          features: p.features || [], // use features from the database
+        }));
+        setPlans(enriched);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="pricing-container">Loading plans…</div>;
+  }
+  if (error) {
+    return <div className="pricing-container error">Error: {error}</div>;
+  }
 
   return (
       <div className="pricing-container">
@@ -119,13 +157,6 @@ const Pricing: React.FC = () => {
           >
             Monthly
           </span>
-          {/* <div className="switch" onClick={() => setYearly((y) => !y)}>
-            <motion.div
-              className="thumb"
-              layout
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-            />
-          </div> */}
           <span
             className={yearly ? "active" : ""}
             onClick={() => setYearly(true)}

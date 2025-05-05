@@ -6,7 +6,7 @@ import { supabase } from '../config/supabaseClient.js';
 export async function getPlans(req: Request, res: Response) {
   const { data, error } = await supabase
     .from('plans')
-    .select('name, price_cents')
+    .select('*')
     .order('price_cents', { ascending: true });
 
   if (error) {
