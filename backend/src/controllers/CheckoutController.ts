@@ -1,4 +1,3 @@
-// src/controllers/checkoutController.ts
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 import { stripe } from '../config/stripe.js';

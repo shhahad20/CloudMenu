@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+
 import "../styles/pricing.scss";
 
 
@@ -60,8 +63,21 @@ const PricingCard: React.FC<{
   plan: Plan;
   yearly: boolean;
 }> = ({ plan, yearly }) => {
+  const { addItem } = useCart();
+  const navigate = useNavigate();
   const price = yearly ? plan.priceYearly : plan.priceMonthly;
-  const suffix = yearly ? "/year" : "/month";
+  const suffix = yearly ? '/year' : '/month';
+
+  const handleSelect = () => {
+    // push a “subscription” item with a special ID
+    addItem({
+      id: `plan-${plan.name}`, 
+      name: `${plan.name} Plan`, 
+      price: Number(price), 
+      quantity: 1,
+    });
+    navigate('/checkout');
+  };
 
   return (
     <motion.div
@@ -83,10 +99,10 @@ const PricingCard: React.FC<{
           </li>
         ))}
       </ul>
-      <button className="select-btn">Choose {plan.name}</button>
+      <button className="select-btn" onClick={handleSelect}>Choose {plan.name}</button>
     </motion.div>
   );
-};
+}; 
 
 const Pricing: React.FC = () => {
   const [yearly, setYearly] = useState(false);

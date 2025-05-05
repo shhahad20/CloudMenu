@@ -9,7 +9,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { verifyAuth } from '../src/middleware/verifyAuth.js';
 import TemplateRouter from '../src/routes/TemplateRouter.js';
-import PlansRouter from '../src/routes/plansRouter.js';
+import PlansRouter from '../src/routes/PlansRouter.js';
 import CheckoutRouter from '../src/routes/ChecoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
 config();

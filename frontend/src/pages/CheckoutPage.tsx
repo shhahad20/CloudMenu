@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/cart.scss';                // reuse cart styles
 import { useCart } from '../context/CartContext';
 import { cloneTemplate } from '../api/templates'; 
+import { API_URL } from '../api/api';
 
 const CheckoutPage: React.FC = () => {
   const { items, clearCart } = useCart();
@@ -15,28 +16,43 @@ const CheckoutPage: React.FC = () => {
   const handlePay = async () => {
     setProcessing(true);
     setError('');
+  
     try {
-      // TODO: call your backend checkout endpoint
-      // await fetch('/api/checkout', { ... })
-      
-      alert('Payment successful!');
+      // 1) (Optional) call your backend /api/checkout if using Stripe
+      // await fetch('/api/checkout', ...);
+  
+      // 2) For each item, do the right thing
       await Promise.all(
-        items.map(i =>
-          // if your cloneTemplate expects a string ID:
-          cloneTemplate(i.id.toString())
-        )
+        items.map(async (i) => {
+          if (i.id.startsWith('plan-')) {
+            // subscription flow
+            const planName = i.id.replace('plan-', '') as 'Free'|'Pro'|'Enterprise';
+            const resp = await fetch(`${API_URL}/plans/me/plan`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`
+              },
+              body: JSON.stringify({ plan: planName })
+            });
+            if (!resp.ok) throw new Error('Failed to update plan');
+          } else {
+            // menu clone flow
+            await cloneTemplate(i.id);
+          }
+        })
       );
+  
+      // 3) clear & redirect
       clearCart();
-      navigate('/success',{replace:true});
-
-      navigate('/dashboard');
+      alert('Success! Redirecting to dashboard…');
+      navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('Payment failed.');
-      }
-    } finally {
+      } }finally {
       setProcessing(false);
     }
   };
