@@ -15,6 +15,9 @@ import TemplateRouter from '../src/routes/TemplateRouter.js';
 import PlansRouter from '../src/routes/PlansRouter.js';
 import CheckoutRouter from '../src/routes/ChecoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
+import ContactRouter from '../src/routes/ContactRouter.js';
+
+
 config();
 const app = express();
 const PORT = 4000;
@@ -50,6 +53,7 @@ app.use('/templates', TemplateRouter);
 app.use('/plans', PlansRouter);
 app.use('/checkout', CheckoutRouter);
 app.use('/webhook', WebhookRouter);
+app.use('/contact', ContactRouter);
 
 
 // example of a protected route

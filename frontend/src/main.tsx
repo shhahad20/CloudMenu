@@ -24,6 +24,7 @@ import PricingPage from "./pages/PricingPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
 import CheckoutPage from "./pages/CheckoutPage.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
+import LetsTalk from "./pages/LetsTalk.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
@@ -48,8 +49,12 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/confirm-email" element={<ConfirmEmailSent />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+
           <Route path="/faqs" element={<FAQ />} />
           <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/contact" element={<LetsTalk />} />
+
+
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/menus" element={<DashboardMenus />} />
           <Route path="/dashboard/upgrade/pricing" element={<PricingPage />} />
