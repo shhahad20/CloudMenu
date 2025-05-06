@@ -81,7 +81,7 @@ const CheckoutPage: React.FC = () => {
       {/* Main Content: Items + Payment Form & Summary */}
       <div className="checkout-content">
         {/* Left: review items */}
-        <table className="cart-table">
+        <table className="cart-table-checkout">
           <thead>
             <tr>
               <th>PRODUCT</th>
