@@ -258,33 +258,42 @@ export async function recordTemplateView(
   res: Response
 ) {
   const templateId = req.params.id;
+  const userId = req.user!.id;
 
-  // 1) Read current count
-  const { data: tmpl, error: fetchError } = await adminSupabase
+  // 1) Optional: verify that template belongs to this user
+  const { data: tpl, error: fetchTplErr } = await adminSupabase
     .from('menu_templates')
-    .select('view_count')
+    .select('id, view_count')
     .eq('id', templateId)
+    .eq('user_id', userId)
     .single();
-
-  if (fetchError || !tmpl) {
-    console.error('View tracking: template not found', fetchError);
+  if (fetchTplErr || !tpl) {
     return res.status(404).json({ error: 'Template not found.' });
   }
 
-  // 2) Write back incremented value
-  const newCount = (tmpl.view_count || 0) + 1;
-  const { error: updateError } = await adminSupabase
-    .from('menu_templates')
-    .update({ view_count: newCount })
-    .eq('id', templateId);
+  // 2) Insert a view event
+  const { error: insertErr } = await adminSupabase
+    .from('menu_template_views')
+    .insert([{ template_id: templateId }]);
 
-  if (updateError) {
-    console.error('View tracking: failed to increment', updateError);
-    // proceed anyway
+  if (insertErr) {
+    console.error('Failed to insert into template_views:', insertErr);
+    // continue anyway
   }
 
-  // 3) Return success (optionally include newCount)
-  res.json({ ok: true, view_count: newCount });
+  // 3) Increment the aggregate counter
+  const newCount = (tpl.view_count || 0) + 1;
+  const { error: updateErr } = await adminSupabase
+    .from('menu_templates')
+    .update({ view_count: newCount})
+    .eq('id', templateId);
+
+  if (updateErr) {
+    console.error('Failed to bump view_count:', updateErr);
+    // continue anyway
+  }
+
+  res.json({ ok: true });
 }
 
 // POST /lib/:id/view

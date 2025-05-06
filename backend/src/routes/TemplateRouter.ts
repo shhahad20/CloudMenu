@@ -13,6 +13,7 @@ import {
 } from "../controllers/TemplateController.js";
 import { verifyAuth } from "../middleware/verifyAuth.js";
 import { uploadMiddleware } from "../middleware/upload.js";
+import { getViewsByDay } from "../controllers/analyticsController.js";
 
 const router = Router();
 router.get("/lib", listLibraryTemplates);
@@ -32,6 +33,7 @@ router.post("/clone/:libraryId", verifyAuth, cloneTemplate);
 
 
 router.post('/:id/view', verifyAuth, recordTemplateView)
+router.get('/:id/views-by-day', verifyAuth, getViewsByDay);
 
 
 export default router;

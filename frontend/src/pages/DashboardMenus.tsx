@@ -147,7 +147,6 @@ const DashboardMenus: React.FC = () => {
                       year: "numeric",
                     })}
                   </p>
-
                   <div className="card-actions">
                     <Link to={`/builder/${tpl.id}`} className="btn">
                       Edit
@@ -156,7 +155,9 @@ const DashboardMenus: React.FC = () => {
                     View ↗
                     </button>
                   </div>
+
                 </div>
+                
               ))
             )}
           </section>

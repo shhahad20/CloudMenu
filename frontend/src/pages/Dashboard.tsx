@@ -15,6 +15,7 @@ interface Profile {
 import { API_URL } from "../api/api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { TemplateViewsChart } from "../components/DashboardAnalytics";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -97,6 +98,7 @@ const Dashboard: React.FC = () => {
         <section className="dashboard-content">
           <p>Here’s where you’d see your metrics, recent activity, etc.</p>
           {/* ... */}
+          <TemplateViewsChart templateId={"7790e1e5-e859-450c-a212-f4fe8a321f57"} />
         </section>
       </main>
 
