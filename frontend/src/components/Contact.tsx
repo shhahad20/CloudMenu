@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../styles/contact.scss";
 import { API_URL } from "../api/api";
+import { Link } from "react-router-dom";
 
 const tags = [
   { value: "problem", label: "Report a Problem" },
@@ -121,10 +122,7 @@ const Contact: React.FC = () => {
         <div className="helpful-links">
         <h2 className="helpful-h">Helpful Links</h2>
           <div className="contact-btn-wrapper">
-            <button
-              className="circle-arrow-btn"
-              onClick={() => alert("Button Clicked!")}
-            >
+            <Link to="/faqs" className="circle-arrow-btn">
               <span className="btn-text">FAQs</span>
               <span className="icon-container">
                 <span className="arrow">
@@ -139,10 +137,11 @@ const Contact: React.FC = () => {
                   </svg>
                 </span>
               </span>
-            </button>
+            </Link>
           </div>
           <div className="contact-btn-wrapper">
-            <button
+            <Link
+              to="/how-to-start"
               className="circle-arrow-btn"
               onClick={() => alert("Button Clicked!")}
             >
@@ -160,10 +159,11 @@ const Contact: React.FC = () => {
                   </svg>
                 </span>
               </span>
-            </button>
+            </Link>
           </div>
           <div className="contact-btn-wrapper">
-            <button
+            <Link
+              to="/docs"
               className="circle-arrow-btn"
               onClick={() => alert("Button Clicked!")}
             >
@@ -181,7 +181,7 @@ const Contact: React.FC = () => {
                   </svg>
                 </span>
               </span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
