@@ -8,8 +8,9 @@ import {
   fetchLibraryTemplates,
   Template,
 } from "../api/templates";
-import { Link, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { API_URL } from "../api/api";
 
 // import { useNavigate } from "react-router-dom";
 
@@ -96,6 +97,7 @@ const MenuTemplates: React.FC = () => {
     }
   };
 
+
   // helper to get numeric price
   const parsePrice = (priceStr: string): number => {
     if (!priceStr || priceStr.toLowerCase() === "free") return 0;
@@ -104,6 +106,24 @@ const MenuTemplates: React.FC = () => {
     return isNaN(num) ? 0 : num;
   };
 
+    const handleView = async (id: string) => {
+      try {
+        const token = localStorage.getItem("access_token");
+        await fetch(`${API_URL}/templates/lib/${id}/view`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (err) {
+        console.error("Failed to record view:", err);
+        // not critical—still navigate
+      } finally {
+        // go to the public menu page
+        window.open(`/menus/${id}`, "_blank");
+      }
+    };
   return (
     <>
       <Navbar />
@@ -156,14 +176,12 @@ const MenuTemplates: React.FC = () => {
                     {/* <a href={`/templates/${tpl.id}`} className="btn-view">
                     View Template ↗
                   </a> */}
-                    <Link
-                      to={`/menus/${tpl.id}`}
+                    <button
+                      onClick={() => handleView(tpl.id)}
                       className="btn-view"
-                      target="_blank"
-                      rel="noopener noreferrer"
                     >
                       View Template ↗
-                    </Link>
+                    </button>
                     {parsePrice(tpl.price) === 0 ? (
                       // FREE: show “Use this Template” (clone)
                       <>

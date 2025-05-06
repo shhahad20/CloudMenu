@@ -42,6 +42,25 @@ const DashboardMenus: React.FC = () => {
       .finally(() => setLoading(false));
   }, [navigate]);
 
+  const handleView = async (id: string) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      await fetch(`${API_URL}/templates/${id}/view`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to record view:", err);
+      // not critical—still navigate
+    } finally {
+      // go to the public menu page
+      window.open(`/menus/${id}`, "_blank");
+    }
+  };
+
   if (loading) {
     return <div className="dashboard-loading">Loading your menus…</div>;
   }
@@ -133,9 +152,9 @@ const DashboardMenus: React.FC = () => {
                     <Link to={`/builder/${tpl.id}`} className="btn">
                       Edit
                     </Link>
-                    <Link to={`/menus/${tpl.id}`} className="btn secondary">
+                    <button onClick={() => handleView(tpl.id)} className="btn secondary">
                     View ↗
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))

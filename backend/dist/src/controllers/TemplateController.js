@@ -19,14 +19,25 @@ export const listLibraryTemplates = async (_req, res) => {
 };
 export const getLibraryTemplate = async (req, res) => {
     const { id } = req.params;
-    const { data, error } = await supabase
+    const { data: template, error: fetchError } = await supabase
         .from("library_templates")
         .select("*")
         .eq("id", id)
         .single();
-    if (error)
-        return res.status(404).json({ error: error.message });
-    res.json(data);
+    if (fetchError || !template) {
+        return res.status(404).json({ error: "Template not found." });
+    }
+    // 2) Bump view_count by reading + writing
+    const newCount = (template.view_count || 0) + 1;
+    const { error: updateError } = await adminSupabase
+        .from("library_templates")
+        .update({ view_count: newCount })
+        .eq("id", id);
+    if (updateError) {
+        console.error("Failed to update view_count:", updateError);
+        // proceed anyway
+    }
+    res.json(template);
 };
 // POST /templates
 export const createTemplate = async (req, res) => {
@@ -57,17 +68,27 @@ export const getTemplate = async (req, res) => {
     const userId = req.user.id;
     const templateId = req.params.id;
     // Fetch only this user’s copy
-    const { data, error } = await adminSupabase
+    const { data: template, error: fetchError } = await adminSupabase
         .from("menu_templates")
         .select("*")
         .eq("id", templateId)
         .eq("user_id", userId)
         .single();
-    if (error || !data) {
+    if (fetchError || !template) {
         return res.status(404).json({ error: "Template not found." });
     }
+    // 2) Bump view_count by reading + writing
+    // const newCount = (template.view_count || 0) + 1;
+    // const { error: updateError } = await adminSupabase
+    //   .from("menu_templates")
+    //   .update({ view_count: newCount })
+    //   .eq("id", templateId);
+    // if (updateError) {
+    //   console.error("Failed to update view_count:", updateError);
+    //   // proceed anyway
+    // }
     // Respond with the full template row
-    return res.json(data);
+    return res.json(template);
 };
 // PATCH /templates/:id
 export const updateTemplate = async (req, res) => {
@@ -179,3 +200,55 @@ export const cloneTemplate = async (req, res) => {
         return res.status(400).json({ error: error.message });
     return res.json(data);
 };
+// POST /:id/view
+export async function recordTemplateView(req, res) {
+    const templateId = req.params.id;
+    // 1) Read current count
+    const { data: tmpl, error: fetchError } = await adminSupabase
+        .from('menu_templates')
+        .select('view_count')
+        .eq('id', templateId)
+        .single();
+    if (fetchError || !tmpl) {
+        console.error('View tracking: template not found', fetchError);
+        return res.status(404).json({ error: 'Template not found.' });
+    }
+    // 2) Write back incremented value
+    const newCount = (tmpl.view_count || 0) + 1;
+    const { error: updateError } = await adminSupabase
+        .from('menu_templates')
+        .update({ view_count: newCount })
+        .eq('id', templateId);
+    if (updateError) {
+        console.error('View tracking: failed to increment', updateError);
+        // proceed anyway
+    }
+    // 3) Return success (optionally include newCount)
+    res.json({ ok: true, view_count: newCount });
+}
+// POST /lib/:id/view
+export async function recordLibraryView(req, res) {
+    const templateId = req.params.id;
+    // 1) Read current count
+    const { data: tmpl, error: fetchError } = await adminSupabase
+        .from('library_templates')
+        .select('view_count')
+        .eq('id', templateId)
+        .single();
+    if (fetchError || !tmpl) {
+        console.error('View tracking: template not found', fetchError);
+        return res.status(404).json({ error: 'Template not found.' });
+    }
+    // 2) Write back incremented value
+    const newCount = (tmpl.view_count || 0) + 1;
+    const { error: updateError } = await adminSupabase
+        .from('library_templates')
+        .update({ view_count: newCount })
+        .eq('id', templateId);
+    if (updateError) {
+        console.error('View tracking: failed to increment', updateError);
+        // proceed anyway
+    }
+    // 3) Return success (optionally include newCount)
+    res.json({ ok: true, view_count: newCount });
+}
