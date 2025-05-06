@@ -1,0 +1,173 @@
+/* Signup.css */
+.signup-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-height: 100vh;
+  /* make it full viewport height */
+}
+
+.gradient-section {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  position: relative;
+  background-image: url("/mesh-gradient.svg");
+  background-size: cover;
+  overflow: hidden;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.gradient-section .inner-signup-header {
+  margin-top: 10rem;
+}
+
+.gradient-section .inner-signup-header h1 {
+  font-size: 2rem;
+  color: white;
+  text-align: center;
+  font-weight: 500;
+}
+
+.gradient-section .inner-signup-header p {
+  font-size: 1rem;
+  color: white;
+  text-align: center;
+  font-weight: 400;
+}
+
+.gradient-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/noise.png") repeat;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.form-section {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 2rem;
+  background-color: #fff;
+}
+
+.form-section .signup-header {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.form-section .signup-subheader {
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.form-section .back-sigin-btn {
+  margin-top: 1rem;
+  width: 20%;
+  background: #1E1E1E;
+}
+
+.form-section form {
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-section div {
+  margin-bottom: 1rem;
+}
+
+.form-section label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-section input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.password-note {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.5rem;
+}
+
+.form-section button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #D9D9D9;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.form-section button:hover {
+  opacity: 0.9;
+  background: #1E1E1E;
+}
+
+.sign-in-note {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 1rem;
+}
+
+.sign-in-note a {
+  color: #1E1E1E;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.forgot-password {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+/* Optional: collapse into single column on narrow screens */
+@media (max-width: 768px) {
+  .signup-container {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+  }
+  .gradient-section {
+    display: none;
+  }
+}
+/*# sourceMappingURL=signup.css.map */

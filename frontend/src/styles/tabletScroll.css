@@ -1,0 +1,53 @@
+.tablet-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  position: relative;
+  overflow: visible;
+  padding: 4rem 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  border: 2px solid blue;
+}
+
+.tablet-container .img-wrapper {
+  position: relative;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 50vh;
+  left: 0;
+  -webkit-transform-origin: center;
+          transform-origin: center;
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tablet-container .img-wrapper img {
+  width: 100%;
+  height: auto;
+  -webkit-transform-origin: center bottom;
+          transform-origin: center bottom;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  -webkit-filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.15));
+          filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.15));
+}
+
+.tablet-container .img-wrapper .inner-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 90%;
+}
+/*# sourceMappingURL=tabletScroll.css.map */

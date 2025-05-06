@@ -1,0 +1,269 @@
+.builder-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.builder-container h1 {
+  font-size: 1rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.builder-container label,
+.builder-container legend {
+  font-weight: 500;
+}
+
+.builder-container .logo-container input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.builder-container fieldset {
+  width: 20%;
+  /* COLORS */
+  /* SECTIONS */
+}
+
+.builder-container fieldset .color-picker {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.builder-container fieldset .color-picker .color-input-text {
+  max-width: 30%;
+  padding: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.builder-container fieldset .text-conatiner {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.builder-container fieldset .text-conatiner h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.builder-container fieldset .text-conatiner textarea {
+  padding: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.builder-container fieldset .t-section-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.builder-container fieldset .t-section-container .t-section-header {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.builder-container fieldset .t-section-container .t-section-header input {
+  padding: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.builder-container fieldset .t-section-container .t-section-items {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  gap: 1rem;
+}
+
+.builder-container fieldset .t-section-container .t-section-items h4 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item input {
+  padding: 0.2rem 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item .t-section-item-price {
+  width: 30%;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item .t-section-item-delete {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: #d90707;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item-add {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.builder-container fieldset .t-section-container .t-section-items .t-section-item-add:hover {
+  opacity: 0.9;
+  background: #1e1e1e;
+}
+
+.builder-container fieldset .add-new-section {
+  width: 40%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.builder-container fieldset .add-new-section:hover {
+  opacity: 0.9;
+  background: #1e1e1e;
+}
+
+.builder-container .headerImageSection {
+  margin-top: 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  -webkit-box-align: left;
+      -ms-flex-align: left;
+          align-items: left;
+  border: 1px solid #333;
+  border-radius: 4px;
+  width: 20%;
+  padding: 1rem;
+}
+
+.builder-container .headerImageSection h2 {
+  margin: 0 0 8px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.builder-container .headerImageSection img {
+  display: block;
+  width: 100%;
+  height: 200px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+.builder-container .headerImageSection input[type="file"] {
+  display: block;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.builder-container .headerImageSection p {
+  margin: 0 0 8px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.builder-container .save-button {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.builder-container .save-button:hover {
+  opacity: 0.9;
+  background: #1e1e1e;
+}
+/*# sourceMappingURL=templateBuilder.css.map */

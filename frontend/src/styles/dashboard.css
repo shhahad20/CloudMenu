@@ -1,0 +1,127 @@
+.dashboard-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  min-height: 100vh;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  background-color: #f7f7f7;
+}
+
+.dashboard-header {
+  padding: 2rem 1rem;
+  width: 1200px;
+}
+
+.dashboard-header .dashboard-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.dashboard-header .dashboard-title .plan-badge {
+  padding: 0 0.7rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+}
+
+.dashboard-header .dashboard-title .plan-badge--Free {
+  background: rgba(248, 171, 0, 0.3);
+  color: #f8ab00;
+  border: 1.5px solid #f8ab00;
+}
+
+.dashboard-header .dashboard-title .plan-badge--Pro {
+  background: rgba(86, 182, 250, 0.3);
+  color: #56b6fa;
+  border: 1.5px solid #56b6fa;
+}
+
+.dashboard-header .dashboard-title .plan-badge--Enterprise {
+  background: rgba(128, 234, 107, 0.3);
+  color: #80ea6b;
+  border: 1.5px solid #80ea6b;
+}
+
+.dashboard-header .dashboard-role {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-tabs {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.dashboard-tabs .tab {
+  padding: 0.3rem 1.5rem;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  -webkit-transition: background 0.2s;
+  transition: background 0.2s;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.dashboard-tabs .tab--active {
+  font-weight: 700;
+  background: white;
+  /* tweak the color to match your brand */
+}
+
+.dashboard-main {
+  -webkit-box-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+  background: #f7f7f7;
+  padding: 2rem;
+}
+
+.dashboard-main header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-main header p {
+  margin: 0;
+  color: #666;
+}
+
+.dashboard-main .dashboard-content {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  -webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-loading {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  height: 100vh;
+  font-size: 1.25rem;
+}
+/*# sourceMappingURL=dashboard.css.map */

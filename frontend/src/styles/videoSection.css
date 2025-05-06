@@ -1,0 +1,154 @@
+.video-section {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: start;
+      -ms-flex-pack: start;
+          justify-content: flex-start;
+  height: 100%;
+  overflow: hidden;
+  text-align: center;
+  margin-top: 10rem;
+}
+
+.video-section .video-header {
+  text-align: center;
+  font-size: 4rem;
+  font-weight: 600;
+  padding: 0 15px;
+  background: linear-gradient(95deg, #000000, #666666);
+  background-clip: text;
+  color: transparent;
+  display: block;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+  line-height: 5rem;
+  margin-bottom: 1.5rem;
+}
+
+.video-section .video-container {
+  display: block;
+  margin: 0 auto;
+  height: auto;
+}
+
+.video-section .video-text-btn {
+  position: relative;
+  z-index: 1;
+  color: white;
+  padding-top: 20px;
+}
+
+.video-section .video-text-btn .video-text {
+  color: #262626;
+  font-weight: 500;
+}
+
+.video-section .video-text-btn .video-btn-wrapper {
+  display: inline-block;
+  overflow: hidden;
+  border-radius: 50px;
+  margin-top: 1rem;
+}
+
+.video-section .video-text-btn .circle-arrow-btn {
+  position: relative;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 0.3rem 3rem;
+  background: transparent;
+  background-color: #1e1e1e;
+  color: white;
+  border-radius: 50px;
+  font-weight: 500;
+  -webkit-transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.video-section .video-text-btn .circle-arrow-btn .btn-text {
+  position: relative;
+  z-index: 2;
+  -webkit-transition: -webkit-transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: -webkit-transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), -webkit-transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.video-section .video-text-btn .circle-arrow-btn .icon-container {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.video-section .video-text-btn .circle-arrow-btn .icon-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+          transform: translate(-50%, -50%) scale(1);
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: 50%;
+  -webkit-transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.video-section .video-text-btn .circle-arrow-btn .icon-container .arrow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  opacity: 0;
+  -webkit-transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.video-section .video-text-btn .circle-arrow-btn .icon-container .arrow svg {
+  width: 15px;
+  height: 15px;
+  stroke: #1e1e1e;
+}
+
+.video-section .video-text-btn .circle-arrow-btn:hover .btn-text {
+  -webkit-transform: translateX(-12px);
+          transform: translateX(-12px);
+}
+
+.video-section .video-text-btn .circle-arrow-btn:hover .icon-container::before {
+  -webkit-transform: translate(-50%, -50%) scale(3);
+          transform: translate(-50%, -50%) scale(3);
+  background: white;
+}
+
+.video-section .video-text-btn .circle-arrow-btn:hover .icon-container .arrow {
+  opacity: 1;
+}
+
+@media (max-width: 480px) {
+  .video-section .video-header {
+    font-size: 2.1rem;
+    line-height: 3rem;
+  }
+}
+/*# sourceMappingURL=videoSection.css.map */

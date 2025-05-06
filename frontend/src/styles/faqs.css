@@ -1,0 +1,109 @@
+@charset "UTF-8";
+.faqs-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  margin-top: 10rem;
+  min-height: 60vh;
+  /* Tabs */
+}
+
+.faqs-container .faqs-header {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  padding: 0 15px;
+  background: linear-gradient(95deg, #000000, #666666);
+  background-clip: text;
+  color: transparent;
+  display: block;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+  line-height: 5rem;
+}
+
+.faqs-container .faq-tabs {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+  margin: 1rem 0;
+  gap: 1rem;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  /* measure & place the indicator under the active tab */
+}
+
+.faqs-container .faq-tabs .tab-button {
+  background: none;
+  border: 1px solid #B3B3B3;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  position: relative;
+  color: #555;
+}
+
+.faqs-container .faq-tabs .tab-button.active {
+  color: #000;
+  font-weight: 600;
+}
+
+.faqs-container .faq-tabs .tab-indicator {
+  position: absolute;
+  bottom: -2px;
+  height: 2px;
+  background-color: #6d5bba;
+  width: 0;
+}
+
+.faqs-container .faq-tabs .tab-button.active ~ .tab-indicator {
+  /* this rule won’t do it alone—we rely on Framer Motion’s layoutId magic */
+}
+
+.faqs-container .faq-item {
+  border-bottom: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.faqs-container .faq-question {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  cursor: pointer;
+  padding: 1rem 0;
+  font-weight: 500;
+}
+
+.faqs-container .faq-question .arrow {
+  display: inline-block;
+}
+
+.faqs-container .faq-answer {
+  overflow: hidden;
+}
+
+.faqs-container .faq-answer p {
+  padding: 0 0 1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media screen and (max-width: 480px) {
+  .faqs-container .faqs-header {
+    font-size: 1.7rem;
+    line-height: 2.2rem;
+  }
+  .faqs-container .faq-tabs .tab-button {
+    padding: 0.2rem 0.5rem;
+  }
+}
+/*# sourceMappingURL=faqs.css.map */
