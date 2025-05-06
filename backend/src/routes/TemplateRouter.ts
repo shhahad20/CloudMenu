@@ -26,7 +26,7 @@ router.get("/", listUserTemplates);
 router.post("/", uploadMiddleware, createTemplate);
 router.get("/:id", getTemplate);
 router.patch("/:id", uploadMiddleware, updateTemplate);
-router.delete("/:id", deleteTemplate);
+router.delete("/:id", verifyAuth,deleteTemplate);
 
 router.post("/clone/:libraryId", verifyAuth, cloneTemplate);
 

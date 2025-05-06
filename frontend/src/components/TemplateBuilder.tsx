@@ -73,37 +73,29 @@ const HeaderImageBuilder: React.FC = () => {
     );
   };
 
-  // const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
-  //   setUploading(true);
-  //   setError(null);
-
-  //   const form = new FormData();
-  //   form.append("image_url", file);     // must match uploadMiddleware key
-
-  //   try {
-  //     const res = await fetch(
-  //       `${API_URL}/templates/${id}`,
-  //       {
-  //         method: "PATCH",
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem("access_token")}`
-  //           // note: NO Content-Type header here
-  //         },
-  //         body: form
-  //       }
-  //     );
-  //     if (!res.ok) throw res;
-  //     const { config } = await res.json();
-  //     setCurrentUrl(config.header_image);
-  //   } catch {
-  //     setError("Upload failed. Try again.");
-  //   } finally {
-  //     setUploading(false);
-  //   }
-  // };
-  // 2) on Save: send updated config
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this template?"))
+      return;
+    try {
+      const res = await fetch(`${API_URL}/templates/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!res.ok) throw new Error(await res.text());
+      alert("Template deleted.");
+      navigate("/dashboard/menus", { replace: true });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error("Delete failed:", err);
+        alert("Delete failed: " + err.message);
+      } else {
+        console.error("Delete failed: Unknown error.");
+        alert("Delete failed: Unknown error.");
+      }
+    }
+  };
 
   // header image upload handler
   const handleHeaderUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -207,7 +199,11 @@ const HeaderImageBuilder: React.FC = () => {
         <legend>Text Blocks</legend>
 
         {config?.text?.map((tb, ti) => (
-          <div className="text-conatiner" key={tb.id} style={{ marginBottom: 12 }}>
+          <div
+            className="text-conatiner"
+            key={tb.id}
+            style={{ marginBottom: 12 }}
+          >
             <label style={{ display: "block", fontWeight: 500 }}>
               {tb.label}
             </label>
@@ -361,6 +357,21 @@ const HeaderImageBuilder: React.FC = () => {
         </button>
         {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
+
+      <button
+        onClick={handleDelete}
+        className="delete-button"
+        style={{
+          background: "#e74c3c",
+          color: "#fff",
+          border: "none",
+          padding: "0.75rem 1.5rem",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Delete Template
+      </button>
     </div>
   );
 };

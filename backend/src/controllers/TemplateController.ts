@@ -196,12 +196,30 @@ export const updateTemplate = async (
 };
 
 // DELETE /templates/:id
-export const deleteTemplate = async (req: Request, res: Response) => {
+export const deleteTemplate = async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.id;
   const { id } = req.params;
-  const { error } = await supabase.from("menu_templates").delete().eq("id", id);
+
+  // ensure this template belongs to the user
+  const { count } = await adminSupabase
+    .from("menu_templates")
+    .select("id", { count: "exact" })
+    .eq("id", id)
+    .eq("user_id", userId as string);
+
+  if (!count) {
+    return res.status(403).json({ error: "Not authorized to delete this template." });
+  }
+
+  const { error } = await adminSupabase
+    .from("menu_templates")
+    .delete()
+    .eq("id", id);
+
   if (error) return res.status(400).json({ error: error.message });
   res.json({ message: "Template deleted." });
 };
+
 
 // POST /templates/clone/:libraryId
 export const cloneTemplate = async (req: AuthRequest, res: Response) => {
