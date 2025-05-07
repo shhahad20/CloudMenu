@@ -1,20 +1,26 @@
 .plan-usage {
-  border: 1.2px solid #ccc;
-  border-radius: 12px;
-    padding: 1rem;
+  // border: 1.2px solid #ccc;
+  // border-radius: 12px;
+    // padding: 0.5rem 1rem;
     background: #fff;
-    width: 50%;
+    width: 60%;
     height: 100%;
     &__title {
     //   margin: 0 0 0.75rem;
       font-size: 1.25rem;
       font-weight: 600;
+      margin-bottom: 1rem;
+
     }
   
     &__body {
       display: flex;
       align-items: center;
       gap: 1rem;
+      border: 1.2px solid #ccc;
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+
     }
   
     &__percent {

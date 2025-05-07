@@ -25,6 +25,8 @@ import CartPage from "./pages/CartPage.tsx";
 import CheckoutPage from "./pages/CheckoutPage.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
 import LetsTalk from "./pages/LetsTalk.tsx";
+import InvoicesPage from "./pages/InvoicesPage.tsx";
+import InvoiceDetails from "./pages/InvoiceDetails.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
@@ -61,6 +63,9 @@ createRoot(document.getElementById("root")!).render(
 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
+
+          <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/invoices/:id" element={<InvoiceDetails />} />
 
         </Routes>
       </BrowserRouter>
