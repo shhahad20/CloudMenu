@@ -1,0 +1,59 @@
+.plan-usage {
+  border: 1.2px solid #ccc;
+  border-radius: 12px;
+    padding: 1rem;
+    background: #fff;
+    width: 50%;
+    height: 100%;
+    &__title {
+    //   margin: 0 0 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+  
+    &__body {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+  
+    &__percent {
+      font-size: 2rem;
+      font-weight: 700;
+      width: 3.5rem;    // enough to fit "100%"
+      text-align: center;
+    }
+  
+    &__bar-container {
+      flex: 1;
+      background: #eee;
+      border-radius: 999px;
+      height: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+  
+    &__bar {
+      background: #1e1e1e;
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+  
+    &__details {
+      text-align: left;
+  
+      &-primary {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #000;
+      }
+  
+      &-secondary {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+  

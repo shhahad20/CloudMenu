@@ -1,0 +1,121 @@
+.analytics-page {
+  padding: 0 2rem;
+  .analytics-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .period-selector {
+      padding: 0.2rem 0 0.2rem 0.5rem;
+      border: 1.5px solid #1e1e1e;
+      border-radius: 9999px;
+      background: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+  }
+
+  .analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+
+    .analytics-card {
+      background: #fff;
+      border: 1.2px solid #ccc;
+      border-radius: 1rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+
+        .card-title {
+          font-size: 1rem;
+          color: #6b7280;
+          font-weight: 500;
+
+        }
+        .card-icon {
+          font-size: 1.25rem;
+        }
+      }
+
+      .card-main {
+        margin-bottom: 1rem;
+
+        .big-number {
+          font-size: 2.5rem;
+          font-weight: 700;
+          line-height: 1;
+        }
+        .subtitle {
+          font-size: 0.95rem;
+          color: #6b7280;
+          font-weight: 500;
+          margin-top: 0.25rem;
+        }
+      }
+
+      .card-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 4px;
+        height: 60px;  // chart height
+
+        .bar-wrapper {
+          flex: 1;
+          display: flex;
+          align-items: flex-end;
+
+          .bar {
+            width: 100%;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease;
+          }
+        }
+      }
+
+      // color variants
+      & .chart-bars-blue .bar {
+        background: #2563eb;
+      }
+      & .chart-bars-blue {
+        background: linear-gradient(to top, rgba(37,99,235,0.1), transparent);
+        padding: 0.5rem 0;
+        border-radius: 0.5rem;
+      }
+
+      & .chart-bars-gold .bar {
+        // background: #d97706;
+        background: #1e1e1e;
+      }
+      & .chart-bars-gold {
+        // background: linear-gradient(to top, rgba(217,119,6,0.1), transparent);
+        background: linear-gradient(to top, rgba(50, 50, 50, 0.1), transparent);
+
+        // padding: 0.5rem 0;
+        padding: 0.1rem 0.2rem;
+        border-radius: 0.5rem;
+      }
+    }
+  }
+}
+
+.sparkline {
+  // display: block;
+  // overflow: visible;
+  height: 60px;
+  width: 100%;
+
+}

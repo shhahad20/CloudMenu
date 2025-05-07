@@ -1,30 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { Line } from 'react-chartjs-2';
-import { API_URL } from '../api/api';
+import '../styles/analytics.scss';
 
-type Point = { day: string; count: number };
+export const TemplateViewsChart: React.FC = () => {
+  const views = [
+    { date: '2025-05-01', count: 50 },
+    { date: '2025-05-02', count: 120 },
+    { date: '2025-05-03', count: 80 },
+    // ...
+  ];
+  
 
-export const TemplateViewsChart: React.FC<{ templateId: string }> = ({ templateId }) => {
-  const [data, setData] = useState<Point[]>([]);
 
-  useEffect(() => {
-    fetch(`${API_URL}/templates/${templateId}/views-by-day`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-    })
-    .then(res => res.json())
-    .then(setData)
-    .catch(console.error);
-  }, [templateId]);
-
-  const chartData = {
-    labels: data.map(d => d.day),
-    datasets: [{
-      label: 'Views',
-      data: data.map(d => d.count),
-      fill: false,
-      borderColor: '#007bff'
-    }]
-  };
-
-  return <Line data={chartData} />;
+  return <div className="chart-container">
+  {views.map((view, index) => (
+    <div key={index} className="bar-wrapper">
+      <div
+        className="bar"
+        style={{ height: `${view.count}px` }}
+        title={`${view.date}: ${view.count}`}
+      />
+      <span className="label">{view.date.slice(5)}</span>
+    </div>
+  ))}
+</div>
+;
 };

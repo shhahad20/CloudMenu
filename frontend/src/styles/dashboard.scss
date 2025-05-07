@@ -3,7 +3,8 @@
   min-height: 100vh;
   flex-direction: column;
   align-items: center;
-  background-color: #f7f7f7;
+
+  // background-color: #f7f7f7;
 }
 // 1) Header layout
 .dashboard-header {
@@ -75,26 +76,19 @@
   }
 }
 
-.dashboard-main {
-  flex: 1;
-  background: #f7f7f7;
-  padding: 2rem;
-  header {
-    margin-bottom: 2rem;
-
-    p {
-      margin: 0;
-      color: #666;
-    }
-  }
 
   .dashboard-content {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    // border: 1px solid goldenrod;
+    width: 1200px;
+    display: flex;
+    justify-content: flex-start;
+    // align-items: flex-start;
+    padding: 0 1rem;
+    gap: 5rem;
+    // border-radius: 8px;
+    // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
-}
+// }
 
 .dashboard-loading {
   display: flex;
