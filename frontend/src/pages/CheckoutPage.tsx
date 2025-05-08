@@ -1,67 +1,130 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../styles/cart.scss';                // reuse cart styles
-import { useCart } from '../context/CartContext';
-import { cloneTemplate } from '../api/templates'; 
-import { API_URL } from '../api/api';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/cart.scss"; // reuse cart styles
+import { useCart } from "../context/CartContext";
+// import { cloneTemplate } from '../api/templates';
+import { API_URL } from "../api/api";
+import { cloneTemplate } from "../api/templates";
 
 const CheckoutPage: React.FC = () => {
   const { items, clearCart } = useCart();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   const handlePay = async () => {
     setProcessing(true);
-    setError('');
-  
+    setError("");
+
     try {
       // 1) (Optional) call your backend /api/checkout if using Stripe
       // await fetch('/api/checkout', ...);
-  
+      // const { url } = await fetch(`${API_URL}/checkout`).then((r) => r.json());
+      // window.location = url;
       // 2) For each item, do the right thing
       await Promise.all(
         items.map(async (i) => {
-          if (i.id.startsWith('plan-')) {
+          if (i.id.startsWith("plan-")) {
             // subscription flow
-            const planName = i.id.replace('plan-', '') as 'Free'|'Pro'|'Enterprise';
+            const planName = i.id.replace("plan-", "") as
+              | "Free"
+              | "Pro"
+              | "Enterprise";
             const resp = await fetch(`${API_URL}/plans/me/plan`, {
-              method: 'PATCH',
+              method: "PATCH",
               headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
               },
-              body: JSON.stringify({ plan: planName })
+              body: JSON.stringify({ plan: planName }),
             });
-            if (!resp.ok) throw new Error('Failed to update plan');
+            if (!resp.ok) throw new Error("Failed to update plan");
           } else {
             // menu clone flow
             await cloneTemplate(i.id);
           }
         })
       );
-  
+
+      // assume items: LineItem[], subtotal in SAR
+      const invoiceResp = await fetch(`${API_URL}/invoices`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: JSON.stringify({
+          items,
+          currency: "SAR",
+        }),
+      });
+
+      if (!invoiceResp.ok) {
+        throw new Error("Failed to save invoice.");
+      }
+      const { invoiceId } = await invoiceResp.json();
+
+      // (optional) redirect straight to your GET-invoice-PDF endpoint:
+      // window.open(`${API_URL}/invoices/${invoiceId}/pdf`, '_blank');
+
       // 3) clear & redirect
       clearCart();
-      alert('Success! Redirecting to dashboard…');
-      navigate('/dashboard', { replace: true });
+      alert("Success! Redirecting to dashboard…");
+      navigate("/dashboard", { replace: true });
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Payment failed.');
-      } }finally {
+        setError("Payment failed.");
+      }
+    } finally {
       setProcessing(false);
     }
   };
+
+  // const handlePay = async () => {
+  //   setProcessing(true);
+  //   setError('');
+
+  //   try {
+  //     // 1) Send cart to your backend
+  //     const res = await fetch(`${API_URL}/checkout`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //       },
+  //       body: JSON.stringify({
+  //         items,
+  //         currency: 'SAR',  // or whatever your UI lets the user pick
+  //       }),
+  //     });
+  //     if (!res.ok) throw new Error('Failed to create checkout session');
+
+  //     const { url } = await res.json();
+
+  //     // 2) Redirect to Stripe Checkout
+  //     window.location.href = url;
+  //     // nothing below this line will run, so move fulfillment logic to your webhook
+  //   } catch (err: unknown) {
+  //     if (err instanceof Error) {
+  //       console.error(err);
+  //       setError(err.message || 'Payment failed.');
+  //     } else {
+  //       console.error('An unknown error occurred:', err);
+  //       setError('Payment failed.');
+  //     }
+  //     setProcessing(false);
+  //   }
+  // };
 
   if (items.length === 0) {
     return (
       <div className="cart-page empty">
         <h1>No items to checkout</h1>
-        <button className="btn primary" onClick={() => navigate('/menus')}>
+        <button className="btn primary" onClick={() => navigate("/menus")}>
           Continue Shopping
         </button>
       </div>
@@ -73,7 +136,7 @@ const CheckoutPage: React.FC = () => {
       {/* Header */}
       <div className="cart-header">
         <h1>Checkout</h1>
-        <button className="btn secondary" onClick={() => navigate('/cart')}>
+        <button className="btn secondary" onClick={() => navigate("/cart")}>
           ← Back to Cart
         </button>
       </div>
@@ -147,7 +210,7 @@ const CheckoutPage: React.FC = () => {
             onClick={handlePay}
             disabled={processing}
           >
-            {processing ? 'Processing…' : 'Pay Now '}
+            {processing ? "Processing…" : "Pay Now "}
             <span className="btn-price">{subtotal.toFixed(2)} SAR</span>
           </button>
         </div>

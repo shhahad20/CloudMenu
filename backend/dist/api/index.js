@@ -25,6 +25,7 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
 }));
+app.use('/webhook', WebhookRouter);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(rateLimit({
@@ -39,7 +40,6 @@ app.use('/auth', express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
 app.use('/plans', PlansRouter);
 app.use('/checkout', CheckoutRouter);
-app.use('/webhook', WebhookRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
 // example of a protected route

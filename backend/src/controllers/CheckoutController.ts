@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 import { stripe } from '../config/stripe.js';
 
@@ -42,6 +42,19 @@ export async function createCheckoutSession(
     res.json({ url: session.url });
   } catch (err: any) {
     console.error('Error creating Stripe session:', err);
+    res.status(500).json({ error: err.message });
+  }
+}
+
+
+
+export async function getSession(req: Request, res: Response) {
+  const { id } = req.params;
+  try {
+    const session = await stripe.checkout.sessions.retrieve(id);
+    res.json({ customer_email: session.customer_details?.email });
+  } catch (err: any) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 }

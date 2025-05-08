@@ -34,6 +34,9 @@ app.use(
   })
 );
 
+app.use('/webhook', WebhookRouter);
+
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -52,7 +55,6 @@ app.use('/auth',express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
 app.use('/plans', PlansRouter);
 app.use('/checkout', CheckoutRouter);
-app.use('/webhook', WebhookRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
 

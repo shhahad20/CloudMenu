@@ -1,21 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { API_URL } from '../api/api';
 import '../styles/invoices.scss';
 
 interface Invoice {
   id: string;
-  amount_cents: number;
-  currency: string;
+  subtotal: number;
+  total: number;
+  tax: number;
   status: string;
-  created_at: string;
+  invoice_date: string;
 }
 
 const InvoicesPage: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
-  const navigate = useNavigate();
+//   const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`${API_URL}/invoices`, {
@@ -43,6 +44,7 @@ const InvoicesPage: React.FC = () => {
           <thead>
             <tr>
               <th>Date</th>
+              <th>Time</th>
               <th>Amount</th>
               <th>Status</th>
               <th></th>
@@ -51,9 +53,24 @@ const InvoicesPage: React.FC = () => {
           <tbody>
             {invoices.map(inv => (
               <tr key={inv.id}>
-                <td>{new Date(inv.created_at).toLocaleDateString()}</td>
                 <td>
-                  {(inv.amount_cents / 100).toFixed(2)} {inv.currency}
+                {new Date(inv.invoice_date).toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+
+                </td>
+                <td>
+                {new Date(inv.invoice_date).toLocaleString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+
+                </td>
+                <td>
+                  {inv.total} SAR
                 </td>
                 <td>{inv.status}</td>
                 <td>

@@ -1,6 +1,6 @@
 // src/routes/checkout.ts
 import express from 'express';
-import { createCheckoutSession } from '../controllers/CheckoutController.js';
+import { createCheckoutSession, getSession } from '../controllers/CheckoutController.js';
 import { AuthRequest, verifyAuth } from '../middleware/verifyAuth.js';
 
 const router = express.Router();
@@ -23,4 +23,7 @@ router.post(
       return createCheckoutSession(req, res);
     }
   );
+
+  router.get('/session/:id', getSession);
+
 export default router;

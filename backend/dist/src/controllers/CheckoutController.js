@@ -29,3 +29,14 @@ export async function createCheckoutSession(req, res) {
         res.status(500).json({ error: err.message });
     }
 }
+export async function getSession(req, res) {
+    const { id } = req.params;
+    try {
+        const session = await stripe.checkout.sessions.retrieve(id);
+        res.json({ customer_email: session.customer_details?.email });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+}
