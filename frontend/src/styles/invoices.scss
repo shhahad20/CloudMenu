@@ -1,8 +1,8 @@
 .invoices-page {
   padding: 2rem;
   color: #333;
-  min-height: 70vh;
-  margin-top: 10rem;
+  min-height: 80vh;
+  margin-top: 7rem;
 
   display: flex;
   flex-direction: column;
@@ -374,7 +374,6 @@
 
     td {
       background: white;
-      // border: 1px solid rgb(255, 153, 0);
       padding: 0.2rem;
       text-align: left;
     }

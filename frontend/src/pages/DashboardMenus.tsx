@@ -85,7 +85,7 @@ const DashboardMenus: React.FC = () => {
               to="/dashboard"
               end
               className={({ isActive }) =>
-                isActive ? "tab" : "tab tab--inactive"
+                isActive ? "tab tab--active" : "tab"
               }
             >
               Overview
@@ -99,12 +99,12 @@ const DashboardMenus: React.FC = () => {
               Menus
             </NavLink>
             <NavLink
-              to="/dashboard/settings"
+              to="/dashboard/invoices"
               className={({ isActive }) =>
                 isActive ? "tab tab--active" : "tab"
               }
             >
-              Settings
+              Invoices
             </NavLink>
             <NavLink
               to="/dashboard/upgrade/pricing"
@@ -113,6 +113,22 @@ const DashboardMenus: React.FC = () => {
               }
             >
               Upgrade
+            </NavLink>
+            <NavLink
+              to="/dashboard/settings"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Settings
+            </NavLink>
+            <NavLink
+              to="/contact"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Support
             </NavLink>
           </nav>
         </header>

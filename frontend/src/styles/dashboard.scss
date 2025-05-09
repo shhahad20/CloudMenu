@@ -1,10 +1,158 @@
 .dashboard-container {
   display: flex;
-  min-height: 100vh;
+  min-height: 110vh;
   flex-direction: column;
   align-items: center;
-
+  margin-bottom: 3rem;
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
   // background-color: #f7f7f7;
+
+  @media (max-width: 1200px) {
+    margin-bottom: 0;
+    min-height: 90vh;
+    .dashboard-header,
+    .dashboard-content,
+    .dashboard-section {
+      width: 100%;
+      max-width: 100%;
+      padding: 0 1rem;
+    }
+  }
+
+  // 992px and below: stack header & tabs
+  @media (max-width: 992px) {
+    min-height: 110vh;
+    height: 100%;
+    .dashboard-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem 1rem;
+
+      .dashboard-title {
+        flex-wrap: wrap;
+        font-size: 1.2rem;
+      }
+
+      .dashboard-role {
+        margin-bottom: 0.5rem;
+      }
+    }
+
+    .dashboard-tabs {
+      width: 100%;
+      overflow-x: auto;
+      .tab {
+        flex: 0 0 auto;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  // 768px and below: adapt content & analytics
+  @media (max-width: 768px) {
+    .dashboard-content {
+      display: flex;
+      flex-direction: column;
+      // gap: 2rem;
+    }
+
+    .dashboard-section {
+      margin-top: 1.5rem;
+
+      .dashboard-table {
+        font-size: 0.85rem;
+        th,
+        td {
+          padding: 0.5rem;
+        }
+        // hide less important columns if needed
+        th:nth-child(5),
+        td:nth-child(5),
+        th:nth-child(6),
+        td:nth-child(6) {
+          display: none;
+        }
+      }
+    }
+
+    // Analytics cards become a horizontal scroll
+    .analytics-cards {
+      overflow-x: auto;
+      gap: 1rem;
+      .analytics-card {
+        flex: 0 0 80%;
+        max-width: 300px;
+      }
+    }
+  }
+
+  // 576px and below: mobile tweaks
+  @media (max-width: 576px) {
+    margin-bottom: 3rem;
+    .dashboard-header {
+      padding: 1rem;
+      .dashboard-title {
+        font-size: 1.1rem;
+      }
+    }
+
+    .dashboard-tabs {
+      .tab {
+        padding: 0.5rem;
+      }
+    }
+    .dashboard-content {
+      padding: 0;
+          .dashboard-section {
+      padding: 0;
+      .section-title {
+        font-size: 1.1rem;
+        flex-wrap: wrap;
+        padding-left: 1rem;
+      }
+      .badge--warning {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+      }
+      .table-container {
+        padding: 0.5rem;
+        overflow: visible;
+        width: 100%; 
+        margin: 0 auto; 
+      }
+      .dashboard-table{
+        td{
+          font-size: 0.7rem;
+        }
+      }
+    }
+    }
+
+
+    // .analytics-header {
+    //   flex-direction: column;
+    //   align-items: flex-start;
+    //   gap: 0.5rem;
+    // }
+
+    // .analytics-cards {
+    //   .analytics-card {
+    //     flex: 1 1 100%;
+    //     max-width: none;
+    //     height: auto;
+    //   }
+    //   .card-chart {
+    //     height: 50px;
+    //   }
+    //   .analytics-page .period-selector {
+    //     width: 100%;
+    //   }
+    // }
+  }
 }
 // 1) Header layout
 .dashboard-header {
@@ -76,18 +224,153 @@
   }
 }
 
+.dashboard-content {
+  // border: 1px solid goldenrod;
+  width: 1200px;
+  display: flex;
+  flex-direction: column;
+  // align-items: flex-start;
+  padding: 0 1rem;
+  // gap: 5rem;
 
-  .dashboard-content {
-    // border: 1px solid goldenrod;
-    width: 1200px;
-    display: flex;
-    justify-content: flex-start;
-    // align-items: flex-start;
-    padding: 0 1rem;
-    gap: 2rem;
-    // border-radius: 8px;
-    // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  //---------------------------------
+  // Dashboard Sections & Tables
+  //---------------------------------
+  .dashboard-section {
+    width: 100%;
+    max-width: 1200px;
+    margin: 2rem auto 0;
+    // padding: 0 1rem;
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      &--warning {
+        background: #ffe58a;
+        color: #856404;
+      }
+    }
+
+    .table-container {
+      overflow-x: auto;
+      // background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 1rem;
+    }
+
+    .dashboard-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 0.5rem;
+
+      th,
+      td {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      thead {
+        tr {
+          th {
+            background: #f2f2f2;
+            font-weight: 600;
+            color: #555;
+            &:first-child {
+              border-top-left-radius: 8px;
+            }
+            &:last-child {
+              border-top-right-radius: 8px;
+            }
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          background: white;
+          transition: background 0.2s;
+
+          &:hover {
+            td {
+              background: #f8f8f8;
+            }
+            td:first-child {
+              border-top-left-radius: 8px;
+              border-bottom-left-radius: 8px;
+            }
+            td:last-child {
+              border-top-right-radius: 8px;
+              border-bottom-right-radius: 8px;
+            }
+          }
+
+          td {
+            background: transparent;
+          }
+        }
+      }
+
+      .view-cell {
+        text-align: center;
+        font-size: 1.25rem;
+        cursor: pointer;
+      }
+
+      .status-dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+
+        &.status-paid {
+          background-color: #a3ed95;
+        }
+        &.status-draft {
+          background-color: #ccc;
+        }
+        &.status-canceled {
+          background-color: #a12a2a;
+        }
+      }
+    }
   }
+
+  //---------------------------------
+  // Responsive tweaks (optional)
+  //---------------------------------
+  @media (max-width: 768px) {
+    .dashboard-section {
+      .dashboard-table {
+        font-size: 0.85rem;
+        th,
+        td {
+          padding: 0.5rem;
+        }
+        th:nth-child(5),
+        td:nth-child(5) {
+          display: none; // hide the 5th column on small screens if needed
+        }
+      }
+    }
+  }
+}
 // }
 
 .dashboard-loading {

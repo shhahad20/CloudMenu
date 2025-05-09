@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import "../../styles/analytics.scss";
+import "../../styles/UI/planUsage.scss";
 import Sparkline from "./Sparkline";
+// import PlanUsage from "./PlanUsage";
 
 const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState("This Month");
+
+  // Define constants for plan usage details
+  const usedMenus = 1; // Example value
+  const limitMenus = 5; // Example value
+  const usedStorageMB = 10; // Example value
+  const limitStorageMB = 50; // Example value
 
   // Dummy data for sparklines
   const totalViewsTrend = [20, 35, 25, 40, 30, 50, 45];
@@ -15,7 +23,10 @@ const AnalyticsPage: React.FC = () => {
     name: "Classic",
     views: topTemplateTrend.reduce((a, b) => a + b, 0),
   };
-
+  const percent = Math.min(
+    100,
+    Math.round((usedStorageMB / limitStorageMB) * 100)
+  );
   <Sparkline
     data={totalViewsTrend}
     strokeColor="#2563EB"
@@ -39,7 +50,6 @@ const AnalyticsPage: React.FC = () => {
       </div>
 
       <div className="analytics-cards">
-        {/* Total Visits Card */}
         <div className="analytics-card">
           <div className="card-top">
             <div className="card-title">Total Menu visits</div>
@@ -75,8 +85,8 @@ const AnalyticsPage: React.FC = () => {
             ))} */}
             <Sparkline
               data={totalViewsTrend}
-              strokeColor="#2563EB"
-              fillColor="#2563EB"
+              strokeColor="#1e1e1e"
+              fillColor="#1e1e1e"
             />
           </div>
         </div>
@@ -109,12 +119,57 @@ const AnalyticsPage: React.FC = () => {
               {topTemplate.views.toLocaleString()} Total visits
             </div>
           </div>
-          <div className="card-chart chart-bars-gold">
+          {/* <div className="card-chart chart-bars-gold">
             {topTemplateTrend.map((v, i) => (
               <div key={i} className="bar-wrapper">
                 <div className="bar" style={{ height: `${v}px` }} />
               </div>
             ))}
+          </div> */}
+            <div className="arrow-up">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <path
+              d="M12 19V5M12 5L5 12M12 5L19 12"
+              stroke="#6b7280"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              />
+            </svg>
+            <div className="arrow-up__text">{totalDeltaPct}% vs last month</div>
+            </div>
+        </div>
+        {/* Plan Card */}
+        <div className="analytics-card">
+          <div className="card-top">
+            <div className="card-title">Plan Usage</div>
+          </div>
+          <div className="card-main">
+            <div className="plan-usage__percent">{percent}%</div>
+
+            <div className="plan-usage__bar-container">
+              <div
+                className="plan-usage__bar"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          </div>
+          <div className="plan-usage__details">
+            <div className="plan-usage__details-primary">
+              10 MB used – 1 Menu
+              {usedMenus !== 1 ? "s" : ""}
+            </div>
+            <div className="plan-usage__details-secondary">
+              {limitStorageMB - usedStorageMB} MB – {limitMenus - usedMenus}{" "}
+              Menu
+              {limitMenus - usedMenus !== 1 ? "s" : ""} Available
+            </div>
           </div>
         </div>
       </div>

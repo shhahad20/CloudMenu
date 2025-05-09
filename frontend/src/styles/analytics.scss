@@ -1,41 +1,61 @@
 .analytics-page {
-  padding: 0 2rem;
+  // padding: 0 2rem;
   // border: 1.2px solid #ccc;
   // border-radius: 12px;
-    // padding: 1rem;
+  // padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
   .analytics-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: left;
     align-items: center;
+    flex-wrap: wrap;
     margin-bottom: 1rem;
-
+    gap: 1rem;
     h1 {
       font-size: 1.25rem;
       font-weight: 600;
+      flex: 1 1 200px;
     }
     .period-selector {
       padding: 0.2rem 0 0.2rem 0.5rem;
       border: 1.5px solid #1e1e1e;
       border-radius: 9999px;
       background: #fff;
-      font-size: 0.9rem;
+      font-size: clamp(0.8rem, 1vw, 1rem); // responsive font size
       cursor: pointer;
+      flex: 0 1 50px;
     }
   }
 
   .analytics-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-
+    display: flex;
+    justify-content: space-between;
+    // gap: 1.5rem;
+    overflow-x: auto;
+padding-bottom: 0.5rem; // give room for scrollbar
     .analytics-card {
+      flex: 0 0 auto;
+      width: 356px;
+      height: 200px; 
       background: #fff;
+    
       border: 1.2px solid #ccc;
       border-radius: 1rem;
       padding: 1rem;
       display: flex;
       flex-direction: column;
-      height: 100%;
+
+      .arrow-up {
+        display: flex;
+        color: #6b7280;
+        align-items: center;
+        font-size: 0.78rem;
+        svg {
+          width: 0.78rem;
+          height: 0.78rem;
+        }
+      }
 
       .card-top {
         display: flex;
@@ -47,7 +67,6 @@
           font-size: 1rem;
           color: #6b7280;
           font-weight: 500;
-
         }
         .card-icon {
           font-size: 1.25rem;
@@ -74,7 +93,7 @@
         display: flex;
         align-items: flex-end;
         gap: 4px;
-        height: 60px;  // chart height
+        height: 60px; // chart height
 
         .bar-wrapper {
           flex: 1;
@@ -94,20 +113,16 @@
         background: #2563eb;
       }
       & .chart-bars-blue {
-        background: linear-gradient(to top, rgba(37,99,235,0.1), transparent);
+        background: linear-gradient(to top, rgba(30, 30, 30, 0.1), transparent);
         padding: 0.5rem 0;
         border-radius: 0.5rem;
       }
 
       & .chart-bars-gold .bar {
-        // background: #d97706;
         background: #1e1e1e;
       }
       & .chart-bars-gold {
-        // background: linear-gradient(to top, rgba(217,119,6,0.1), transparent);
         background: linear-gradient(to top, rgba(50, 50, 50, 0.1), transparent);
-
-        // padding: 0.5rem 0;
         padding: 0.1rem 0.2rem;
         border-radius: 0.5rem;
       }
@@ -120,5 +135,90 @@
   // overflow: visible;
   height: 60px;
   width: 100%;
+}
 
+@media (max-width: 1024px) {
+  .analytics-page {
+    margin-top: 2rem;
+    padding: 0 1rem;
+    .analytics-header {
+      justify-content: left;
+    }
+
+    .analytics-cards {
+      .analytics-card {
+        height: 200px;
+        width: 300px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-page {
+    margin-top: 0;
+    .analytics-header {
+      justify-content: space-between;
+    }
+
+    .analytics-cards {
+      .analytics-card {
+        flex: 0 0 45%;   // two cards per row in the horizontal scroll
+        height: 200px;
+      }
+    }
+  }
+}
+
+// phones (≤576px)
+@media (max-width: 576px) {
+  .analytics-page {
+    padding: 0 1rem;
+
+    .analytics-header {
+      flex-direction: row;
+      align-items: flex-start;
+      flex-wrap: nowrap;
+      margin: 1rem 0;
+      h1 {
+        font-size: 1.1rem;
+      }
+      // .period-selector {
+      //   width: 100%;
+      // }
+    }
+
+    .analytics-cards {
+      flex-direction: column;
+      gap: 1rem;
+      overflow: visible; 
+      // justify-content: center;
+      align-items: center;
+      .analytics-card {
+        width: 100%;
+        flex: none;
+        height: auto;     // let content dictate height
+        padding: 0.75rem;
+
+        .card-main .big-number {
+          font-size: 1.5rem;
+        }
+
+        .card-subtitle {
+          font-size: 0.85rem;
+        }
+
+        .card-chart {
+          height: 40px;
+          gap: 2px;
+
+          .bar-wrapper {
+            .bar {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
 }
