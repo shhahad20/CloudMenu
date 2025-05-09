@@ -17,12 +17,18 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 // import PlanUsage from "../components/UI/PlanUsage";
 import AnalyticsPage from "../components/UI/Analytics";
+import { InvoiceType, Template } from "../api/templates";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [invoiceCount, setInvoiceCount] = useState<number | null>(null);
+  const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(true);
+  const [errorInvoices, setErrorInvoices] = useState<string | null>(null);
+
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -40,7 +46,29 @@ const Dashboard: React.FC = () => {
       .then((data: Profile) => {
         setProfile(data);
 
-        // 2) now load invoices to get count
+        // 2) load templates
+        setLoadingTemplates(true);
+        fetch(`${API_URL}/templates`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+          .then((r) => {
+            if (!r.ok) throw new Error("Failed to load templates");
+            return r.json();
+          })
+          .then((list: Template[]) => {
+            // sort by most recent update
+            const sorted = list.sort(
+              (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime()
+            );
+            setTemplates(sorted);
+          })
+          .catch(console.error)
+          .finally(() => setLoadingTemplates(false));
+
+        // 3) load last 5 invoices
+        setLoadingInvoices(true);
         fetch(`${API_URL}/invoices`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -48,10 +76,19 @@ const Dashboard: React.FC = () => {
             if (!r.ok) throw new Error("Failed to load invoices");
             return r.json();
           })
-          .then((inv: { id: string; amount: number; date: string }[]) =>
-            setInvoiceCount(inv.length)
-          )
-          .catch(() => setInvoiceCount(0));
+          .then((list: InvoiceType[]) => {
+            // sort newest first, take 5
+            const recent = list
+              .sort(
+                (a, b) =>
+                  new Date(b.invoice_date).getTime() -
+                  new Date(a.invoice_date).getTime()
+              )
+              .slice(0, 5);
+            setInvoices(recent);
+          })
+          .catch((err) => setErrorInvoices(err.message))
+          .finally(() => setLoadingInvoices(false));
       })
       .catch(() => navigate("/sign-in", { replace: true }))
       .finally(() => setLoading(false));
@@ -170,41 +207,42 @@ const Dashboard: React.FC = () => {
                     <th>Last Update</th>
                     <th>Time</th>
                     <th>#NUM</th>
-                    <th>Total views</th>
+                    {/* <th>Total views</th> */}
                     <th>View</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {/* map your real menu data here */}
-                  {[
-                    {
-                      status: "Classic",
-                      date: "23.05.2025",
-                      time: "11:10 AM",
-                      num: "#1234566",
-                    },
-                    {
-                      status: "Modern",
-                      date: "22.05.2025",
-                      time: "10:45 AM",
-                      num: "#1234567",
-                    },
-                    {
-                      status: "Vintage",
-                      date: "21.05.2025",
-                      time: "09:30 AM",
-                      num: "#1234568",
-                    },
-                  ].map((m, i) => (
-                    <tr key={i}>
-                      <td>{m.status}</td>
-                      <td>{m.date}</td>
-                      <td>{m.time}</td>
-                      <td>{m.num}</td>
-                      <td>Upgrade Plan</td>
-                      <td className="view-cell">⋮</td>
+                  {loadingTemplates ? (
+                    <tr>
+                      <td colSpan={6}>Loading…</td>
                     </tr>
-                  ))}
+                  ) : templates.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>No templates found.</td>
+                    </tr>
+                  ) : (
+                    templates.slice(0, 3).map((t) => {
+                      const dt = new Date(t.updated_at || "");
+                      const date = dt
+                        .toLocaleDateString("en-GB")
+                        .replace(/\//g, ".");
+                      const time = dt.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      });
+                      return (
+                        <tr key={t.id}>
+                          <td>{t.name}</td>
+                          <td>{date}</td>
+                          <td>{time}</td>
+                          <td>#{t.id}</td>
+                          {/* <td>{t.view_count}</td> */}
+                          <td className="view-cell">⋮</td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -214,7 +252,13 @@ const Dashboard: React.FC = () => {
           <section className="dashboard-section">
             <h2 className="section-title">
               Last Invoices{" "}
-              <span className="badge badge--warning">3 – Overdue</span>
+                {invoices.some((inv) => inv.status === "Overdue") ? (
+                <span className="badge badge--warning">
+                  {invoices.filter((inv) => inv.status === "Overdue").length} – Overdue
+                </span>
+                ) : (
+                <span className="badge badge--warning">0 – Overdue</span>
+                )}
             </h2>
             <div className="table-container">
               <table className="dashboard-table">
@@ -229,39 +273,48 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* map your real invoice data here */}
-                  {[
-                    {
-                      status: "Paid",
-                      date: "23.05.2025",
-                      time: "11:10 AM",
-                      num: "#1234566",
-                      total: "230 SAR",
-                    },
-                    {
-                      status: "Draft",
-                      date: "22.05.2025",
-                      time: "10:45 AM",
-                      num: "#1234567",
-                      total: "0 SAR",
-                    },
-                  ].map((inv, i) => (
-                    <tr key={i}>
-                      <td>
-                        <span
-                          className={`status-dot status-${inv.status.toLowerCase()}`}
-                        >
-                          {/* &bull; */}
-                        </span>{" "}
-                        {inv.status}
-                      </td>
-                      <td>{inv.date}</td>
-                      <td>{inv.time}</td>
-                      <td>{inv.num}</td>
-                      <td>{inv.total}</td>
-                      <td className="view-cell">⋮</td>
+                  {loadingInvoices ? (
+                    <tr>
+                      <td colSpan={6}>Loading…</td>
                     </tr>
-                  ))}
+                  ) : errorInvoices ? (
+                    +(
+                      <tr>
+                        <td colSpan={6}>Error: {errorInvoices}</td>
+                      </tr>
+                    )
+                  ) : invoices.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>No invoices found.</td>
+                    </tr>
+                  ) : (
+                    invoices.map((inv) => {
+                      const dt = new Date(inv.invoice_date);
+                      const date = dt
+                        .toLocaleDateString("en-GB")
+                        .replace(/\//g, ".");
+                      const time = dt.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: true,
+                      });
+                      return (
+                        <tr key={inv.id}>
+                          <td>
+                            <span
+                              className={`status-dot status-${inv.status.toLowerCase()}`}
+                            />
+                            {inv.status}
+                          </td>
+                          <td>{date}</td>
+                          <td>{time}</td>
+                          <td>#{inv.id}</td>
+                          <td>{inv.total.toFixed(2)} SAR</td>
+                          <td className="view-cell">⋮</td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

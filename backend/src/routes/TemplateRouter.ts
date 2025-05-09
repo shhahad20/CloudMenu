@@ -13,7 +13,7 @@ import {
 } from "../controllers/TemplateController.js";
 import { verifyAuth } from "../middleware/verifyAuth.js";
 import { uploadMiddleware } from "../middleware/upload.js";
-import { getViewsByDay } from "../controllers/analyticsController.js";
+import { getViewsByDay } from "../controllers/AnalyticsController.js";
 
 const router = Router();
 router.get("/lib", listLibraryTemplates);

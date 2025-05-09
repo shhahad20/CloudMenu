@@ -2,7 +2,7 @@ import { Router } from "express";
 import { createTemplate, getTemplate, updateTemplate, deleteTemplate, cloneTemplate, listLibraryTemplates, listUserTemplates, getLibraryTemplate, recordTemplateView, recordLibraryView, } from "../controllers/TemplateController.js";
 import { verifyAuth } from "../middleware/verifyAuth.js";
 import { uploadMiddleware } from "../middleware/upload.js";
-import { getViewsByDay } from "../controllers/analyticsController.js";
+import { getViewsByDay } from "../controllers/AnalyticsController.js";
 const router = Router();
 router.get("/lib", listLibraryTemplates);
 router.get("/lib/:id", getLibraryTemplate);

@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../styles/analytics.scss";
 import "../../styles/UI/planUsage.scss";
 import Sparkline from "./Sparkline";
+import { Template } from "../../api/templates";
+import { API_URL } from "../../api/api";
 // import PlanUsage from "./PlanUsage";
 
 const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState("This Month");
+ const [templates, setTemplates] = useState<Template[]>([]);
+ const [loadingViews, setLoadingViews] = useState(true);
+ const [errorViews, setErrorViews] = useState<string | null>(null);
+
 
   // Define constants for plan usage details
   const usedMenus = 1; // Example value
@@ -15,14 +21,41 @@ const AnalyticsPage: React.FC = () => {
 
   // Dummy data for sparklines
   const totalViewsTrend = [20, 35, 25, 40, 30, 50, 45];
-  const topTemplateTrend = [5, 15, 10, 18, 14, 20, 17];
+  // const topTemplateTrend = [5, 15, 10, 18, 14, 20, 17];
 
-  const totalViews = totalViewsTrend.reduce((a, b) => a + b, 0);
+
+
+// fetch user’s templates once on mount
+  useEffect(() => {
+   setLoadingViews(true);
+    fetch(`${API_URL}/templates`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load templates");
+        return res.json();
+      })
+      .then((data: Template[]) => setTemplates(data))
+      .catch((err) => setErrorViews(err.message))
+      .finally(() => setLoadingViews(false));
+  }, []);
+// Sum up all the view_count values
+  const totalViews = templates.reduce((sum, t) => sum + t.view_count, 0);
+
+  // pick highest-viewed template
+  const topTemplate =
+    templates.length > 0
+      ? templates.reduce((top, t) =>
+          t.view_count > top.view_count ? t : top
+        , templates[0])
+      : null;
+
+  // const totalViews = totalViewsTrend.reduce((a, b) => a + b, 0);
   const totalDeltaPct = Math.round((totalViewsTrend[6] / 50) * 100); // sample
-  const topTemplate = {
-    name: "Classic",
-    views: topTemplateTrend.reduce((a, b) => a + b, 0),
-  };
+  // const topTemplate = {
+  //   name: "Classic",
+  //   views: topTemplateTrend.reduce((a, b) => a + b, 0),
+  // };
   const percent = Math.min(
     100,
     Math.round((usedStorageMB / limitStorageMB) * 100)
@@ -52,7 +85,7 @@ const AnalyticsPage: React.FC = () => {
       <div className="analytics-cards">
         <div className="analytics-card">
           <div className="card-top">
-            <div className="card-title">Total Menu visits</div>
+            <div className="card-title">Menu visits</div>
             <div className="card-icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -72,10 +105,20 @@ const AnalyticsPage: React.FC = () => {
             </div>
           </div>
           <div className="card-main">
-            <div className="big-number">{totalDeltaPct}%</div>
+            {/* <div className="big-number">{totalDeltaPct}%</div>
             <div className="subtitle">
               {totalViews.toLocaleString()} Total visits
-            </div>
+            </div> */}
+            {loadingViews ? (
+            <div>Loading…</div>
+           ) : errorViews ? (
+             <div className="error">Error: {errorViews}</div>
+           ) : (
+             <>
+               <div className="big-number">{totalViews.toLocaleString()}</div>
+               <div className="subtitle">Total visits</div>
+             </>
+           )}
           </div>
           <div className="card-chart chart-bars-blue">
             {/* {totalViewsTrend.map((v, i) => (
@@ -114,10 +157,24 @@ const AnalyticsPage: React.FC = () => {
             </div>
           </div>
           <div className="card-main">
-            <div className="big-number">{topTemplate.name}</div>
+            {/* <div className="big-number">{topTemplate.name}</div>
             <div className="subtitle">
               {topTemplate.views.toLocaleString()} Total visits
-            </div>
+            </div> */}
+            {loadingViews ? (
+              <div>Loading…</div>
+            ) : errorViews ? (
+              <div className="error">Error: {errorViews}</div>
+            ) : topTemplate ? (
+              <>
+                <div className="big-number">{topTemplate.name}</div>
+                <div className="subtitle">
+                  {topTemplate.view_count.toLocaleString()} Total visits
+                </div>
+              </>
+            ) : (
+              <div>No templates yet</div>
+            )}
           </div>
           {/* <div className="card-chart chart-bars-gold">
             {topTemplateTrend.map((v, i) => (

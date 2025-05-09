@@ -12,7 +12,7 @@ export interface Section {
 }
 export type TextBlock = {
   id: string;
-  label: string;  // human-friendly name
+  label: string; // human-friendly name
   value: string;
 };
 export interface TemplateConfig {
@@ -28,7 +28,7 @@ export interface TemplateConfig {
   text: TextBlock[];
   updated_at?: string;
   created_at?: string;
-} 
+}
 
 export interface Template {
   id: string;
@@ -38,6 +38,17 @@ export interface Template {
   preview_url: string;
   price: string;
   library_id: string;
+  view_count: number;
+  updated_at: string;
+  created_at: string;
+}
+export interface InvoiceType {
+  id: string;
+  status: string;
+  invoice_date: string;
+  subtotal: number;
+  tax: number;
+  total: number;
 }
 
 const API = "http://localhost:4000";
@@ -65,17 +76,17 @@ export const fetchLibraryTemplate = (id: string): Promise<Template> =>
     return res.json();
   });
 
-  export function getTemplate(id: string): Promise<Template> {
-    return fetch(`${API}/templates/${id}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`
-      },
-    }).then(res => {
-      if (!res.ok) throw new Error("Not found");
-      return res.json();
-    });
-  }
+export function getTemplate(id: string): Promise<Template> {
+  return fetch(`${API}/templates/${id}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Not found");
+    return res.json();
+  });
+}
 
 export const createTemplate = (config: TemplateConfig): Promise<Template> =>
   fetch(`${API}/templates`, {
@@ -94,9 +105,9 @@ export const updateTemplate = (
   fetch(`${API}/templates/${id}`, {
     method: "PATCH",
     headers: getHeaders(),
-    body: JSON.stringify({ 
-      config: { headerImageUrl: url }  // Updates the header image URL only
-    })
+    body: JSON.stringify({
+      config: { headerImageUrl: url }, // Updates the header image URL only
+    }),
   }).then((res) => {
     if (!res.ok) throw new Error("Failed to update template");
     return res.json();
@@ -113,7 +124,7 @@ export const cloneTemplate = async (id: string): Promise<{ id: string }> => {
   });
   const payload = await res.json();
   if (!res.ok) throw new Error(payload.error || "Clone failed");
-  return payload;  
+  return payload;
 };
 
 // A reasonable default config for “new” templates:
