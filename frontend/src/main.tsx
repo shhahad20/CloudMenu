@@ -61,6 +61,7 @@ createRoot(document.getElementById("root")!).render(
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/menus" element={<DashboardMenus />} />
           <Route path="/dashboard/upgrade/pricing" element={<PricingPage />} />
+          <Route path="/dashboard/invoices" element={<InvoicesPage />} />
 
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />

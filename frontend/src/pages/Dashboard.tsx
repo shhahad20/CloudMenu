@@ -86,6 +86,14 @@ const Dashboard: React.FC = () => {
               Settings
             </NavLink>
             <NavLink
+              to="/dashboard/invoices"
+              className={({ isActive }) =>
+                isActive ? "tab tab--active" : "tab"
+              }
+            >
+              Invoices
+            </NavLink>
+            <NavLink
               to="/dashboard/upgrade/pricing"
               className={({ isActive }) =>
                 isActive ? "tab tab--active" : "tab"
