@@ -5,9 +5,10 @@ import { API_URL } from '../api/api';
 import '../styles/invoices.scss';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { Link } from 'react-router-dom';
 // import { Link } from 'react-router-dom';
 
-interface Invoice {
+export interface Invoice {
   id: string;
   subtotal: number;
   total: number;
@@ -118,7 +119,9 @@ const InvoicesPage: React.FC = () => {
                 <td>#{inv.id}</td>
                 <td>{inv.total.toFixed(2)} SAR</td>
                 <td className="view-cell">
-                  ⋮
+                    <Link to={`/invoices/${inv.id}`} className="view-link" target="_blank" rel="noopener noreferrer">
+                    ⋮
+                    </Link>
                 </td>
                 
                 </tr>
