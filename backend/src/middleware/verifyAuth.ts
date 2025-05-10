@@ -40,6 +40,18 @@ export const verifyAuth: RequestHandler = async (req, res, next) => {
       }
     }
   );
+  // **New**: fetch the plan from your profiles table
+  const { data: profile, error: profErr } = await authReq.supabase
+    .from('profiles')
+    .select('plan')
+    .eq('id', authReq.user.id)
+    .single();
+
+  if (profErr || !profile) {
+    return res.status(500).json({ error: 'Could not load user profile.' });
+  }
+  // Attach the plan
+  authReq.user.plan = profile.plan;
 
   next();
 };

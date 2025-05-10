@@ -4,6 +4,14 @@ import { handleUpload } from "../helper/helper.js";
 function byteSize(obj) {
     return Buffer.byteLength(JSON.stringify(obj), "utf8");
 }
+const planLimits = {
+    Free: { maxProjects: 2, maxStorageMB: 50 },
+    Pro: { maxProjects: 10, maxStorageMB: 50 * 1024 },
+    Enterprise: { maxProjects: Infinity, maxStorageMB: 100 * 1024 }, // 100 GB
+};
+function bytesToMB(bytes) {
+    return bytes / 1024 / 1024;
+}
 // GET /templates
 export const listUserTemplates = async (req, res) => {
     const userId = req.user.id;
@@ -98,149 +106,168 @@ export const getTemplate = async (req, res) => {
 };
 // PATCH /templates/:id
 export const updateTemplate = async (req, res) => {
+    const userId = req.user.id;
+    const plan = req.user.plan;
+    if (!plan || !planLimits[plan]) {
+        return res.status(400).json({ error: "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed." });
+    }
+    const { maxProjects, maxStorageMB } = planLimits[plan];
     try {
+        // 1) Fetch existing template
         const templateId = req.params.id;
-        const userId = req.user.id;
-        // 1) Fetch existing config
         const { data: existing, error: fetchErr } = await adminSupabase
             .from("menu_templates")
-            .select("config")
+            .select("config,size_bytes")
             .eq("id", templateId)
             .eq("user_id", userId)
             .single();
         if (fetchErr || !existing) {
-            console.error("Fetch template error:", fetchErr);
             return res.status(404).json({ error: "Template not found." });
         }
-        // 2) Start newConfig as a clone of the old
-        let newConfig = { ...existing.config };
-        // 3) If there’s a JSON body with edits, merge them in
-        if (req.body.config) {
-            // shallow merge top-level keys; for deep merging you could use lodash.merge
-            newConfig = { ...newConfig, ...req.body.config };
-        }
-        // 4) If there’s a file, upload & replace header_image
+        // 2) Build newConfig
+        let newConfig = { ...existing.config, ...(req.body.config || {}) };
         if (req.file) {
             const imageUrl = await handleUpload(req.file, templateId);
-            newConfig.header_image = imageUrl;
+            newConfig.headerImageUrl = imageUrl;
         }
-        // compute new size
-        const size_bytes = byteSize(newConfig);
-        // 5) Persist back to Supabase
+        // 3) Enforce plan quotas
+        // a) Check project count
+        if (plan !== "Enterprise") {
+            const { count: cnt, error: cntErr } = await adminSupabase
+                .from("menu_templates")
+                .select("id", { head: true, count: "exact" })
+                .eq("user_id", userId);
+            if (cntErr)
+                throw cntErr;
+            if ((cnt || 0) > maxProjects) {
+                return res
+                    .status(403)
+                    .json({ error: `${plan} plan allows up to ${maxProjects} projects.` });
+            }
+        }
+        // b) Check storage usage
+        //  • sum existing DB bytes minus this template’s old size_bytes
+        const { data: allRows, error: dbErr } = await adminSupabase
+            .from("menu_templates")
+            .select("size_bytes")
+            .eq("user_id", userId);
+        if (dbErr)
+            throw dbErr;
+        const dbBytes = (allRows || [])
+            .reduce((sum, r) => sum + (r.size_bytes || 0), 0)
+            - (existing.size_bytes || 0);
+        //  • sum file-storage bytes
+        const { data: files, error: filesErr } = await adminSupabase
+            .storage.from("user-menu-images").list(userId, { limit: 1000 });
+        if (filesErr)
+            throw filesErr;
+        const fileBytes = (files || []).reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
+        //  • new template size
+        const newBytes = byteSize(newConfig);
+        const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
+        if (projectedMB > maxStorageMB) {
+            return res
+                .status(403)
+                .json({
+                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`
+            });
+        }
+        // 4) Persist update
         const { data, error: updateErr } = await adminSupabase
             .from("menu_templates")
-            .update({ config: newConfig, updated_at: "now()", size_bytes })
+            .update({
+            config: newConfig,
+            size_bytes: newBytes,
+            updated_at: "now()"
+        })
             .eq("id", templateId)
             .single();
-        if (updateErr) {
-            return res
-                .status(500)
-                .json({ error: "DB update failed: " + updateErr.message });
-        }
-        return res.json(data);
+        if (updateErr)
+            throw updateErr;
+        res.json(data);
     }
     catch (err) {
-        return res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err.message });
     }
 };
 // DELETE /templates/:id
 export const deleteTemplate = async (req, res) => {
-    const userId = req.user?.id;
-    const { id } = req.params;
-    // ensure this template belongs to the user
-    const { count } = await adminSupabase
-        .from("menu_templates")
-        .select("id", { count: "exact" })
-        .eq("id", id)
-        .eq("user_id", userId);
-    if (!count) {
-        return res
-            .status(403)
-            .json({ error: "Not authorized to delete this template." });
-    }
-    const { error } = await adminSupabase
-        .from("menu_templates")
-        .delete()
-        .eq("id", id);
-    if (error)
-        return res.status(400).json({ error: error.message });
-    res.json({ message: "Template deleted." });
 };
-// POST /templates/clone/:libraryId
+// POST /templates/:id/clone
 export const cloneTemplate = async (req, res) => {
     const userId = req.user.id;
     const plan = req.user.plan;
+    if (!plan || !planLimits[plan]) {
+        return res.status(400).json({ error: `Invalid or missing plan.` });
+    }
     const libraryId = req.params.libraryId;
-    //0) If free plan
-    if (plan === "free") {
-        const { count: templateCount, error: countErr } = await adminSupabase
-            .from("menu_templates")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", userId);
-        if (countErr)
-            return res.status(500).json({ error: countErr.message });
-        if ((templateCount || 0) >= 2) {
-            return res.status(403).json({ error: "Free plan users can only have 2 templates." });
+    const { maxProjects, maxStorageMB } = planLimits[plan];
+    try {
+        // 1) Fetch library template
+        const { data: lib, error: libErr } = await supabase
+            .from("library_templates")
+            .select("config,name,preview_url")
+            .eq("id", libraryId)
+            .single();
+        if (libErr || !lib) {
+            return res.status(404).json({ error: "Library template not found." });
         }
-        // b) compute existing usage
-        // — get DB bytes
+        // 2) Enforce plan quotas
+        // a) project count
+        if (plan !== "Enterprise") {
+            const { count: cnt, error: cntErr } = await adminSupabase
+                .from("menu_templates")
+                .select("id", { head: true, count: "exact" })
+                .eq("user_id", userId);
+            if (cntErr)
+                throw cntErr;
+            if ((cnt || 0) >= maxProjects) {
+                return res
+                    .status(403)
+                    .json({ error: `${plan} plan allows up to ${maxProjects} projects.` });
+            }
+        }
+        // b) storage usage
         const { data: dbRows, error: dbErr } = await adminSupabase
             .from("menu_templates")
             .select("size_bytes")
             .eq("user_id", userId);
         if (dbErr)
-            return res.status(500).json({ error: dbErr.message });
-        const dbBytes = (dbRows || []).reduce((s, r) => s + (r.size_bytes || 0), 0);
-        // — get file-storage bytes (page through if you have >1k files)
+            throw dbErr;
+        const dbBytes = dbRows.reduce((sum, r) => sum + (r.size_bytes || 0), 0);
         const { data: files, error: filesErr } = await adminSupabase
-            .storage
-            .from("user-menu-images")
-            .list(userId, { limit: 1000 });
+            .storage.from("user-menu-images").list(userId, { limit: 1000 });
         if (filesErr)
-            return res.status(500).json({ error: filesErr.message });
-        const fileBytes = (files || []).reduce((s, f) => s + (f.metadata?.size || 0), 0);
-        const usedMB = (dbBytes + fileBytes) / 1024 / 1024;
-        // c) fetch the library config to compute its size
-        const { data: lib, error: libErr } = await supabase
-            .from("library_templates")
-            .select("config, name, preview_url")
-            .eq("id", libraryId)
-            .single();
-        if (libErr)
-            return res.status(404).json({ error: libErr.message });
+            throw filesErr;
+        const fileBytes = files.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
         const newBytes = byteSize(lib.config);
-        if (usedMB + newBytes / 1024 / 1024 > 50) {
+        const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
+        if (projectedMB > maxStorageMB) {
             return res
                 .status(403)
-                .json({ error: "Free plan storage limit (50MB) exceeded." });
+                .json({
+                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`
+            });
         }
+        // 3) Insert clone
+        const { data, error } = await supabase
+            .from("menu_templates")
+            .insert([{
+                user_id: userId,
+                library_id: libraryId,
+                name: lib.name,
+                preview_url: lib.preview_url,
+                config: lib.config,
+                size_bytes: newBytes
+            }])
+            .single();
+        if (error)
+            throw error;
+        res.json(data);
     }
-    // 1) fetch the library config
-    const { data: lib, error: libErr } = await supabase
-        .from("library_templates")
-        .select("config, name,preview_url")
-        .eq("id", libraryId)
-        .single();
-    if (libErr)
-        return res.status(404).json({ error: libErr.message });
-    const size_bytes = byteSize(lib.config);
-    // 2) insert into user templates
-    const { data, error } = await supabase
-        .from("menu_templates")
-        .insert([
-        {
-            user_id: userId,
-            library_id: libraryId,
-            name: lib.name,
-            preview_url: lib.preview_url,
-            config: lib.config,
-            size_bytes,
-        },
-    ])
-        .single();
-    if (error)
-        return res.status(400).json({ error: error.message });
-    return res.json(data);
+    catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 // POST /:id/view
 export async function recordTemplateView(req, res) {
