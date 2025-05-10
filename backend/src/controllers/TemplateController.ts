@@ -3,6 +3,13 @@ import { adminSupabase, supabase } from "../config/supabaseClient.js";
 import { AuthRequest } from "../middleware/verifyAuth.js";
 import { handleUpload } from "../helper/helper.js";
 
+
+// Helper to compute size of a JS object when serialized
+function byteSize(obj: any) {
+  return Buffer.byteLength(JSON.stringify(obj), "utf8");
+}
+
+
 // GET /templates
 export const listUserTemplates = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
@@ -63,10 +70,13 @@ export const createTemplate = async (
       ...(imageUrl ? { headerImageUrl: imageUrl } : {}),
     };
 
-    // 2) insert into DB
+    // 2) compute byte size of the config
+    const size_bytes = byteSize(finalConfig);
+
+    // 3) insert into DB
     const { data, error } = await supabase
       .from("menu_templates")
-      .insert([{ user_id: userId, config: finalConfig }])
+      .insert([{ user_id: userId, config: finalConfig,size_bytes }])
       .single();
 
     if (error) return res.status(400).json({ error: error.message });
@@ -145,10 +155,13 @@ export const updateTemplate = async (
       newConfig.header_image = imageUrl;
     }
 
+    // compute new size
+    const size_bytes = byteSize(newConfig);
+
     // 5) Persist back to Supabase
     const { data, error: updateErr } = await adminSupabase
       .from("menu_templates")
-      .update({ config: newConfig, updated_at: "now()" })
+      .update({ config: newConfig, updated_at: "now()", size_bytes })
       .eq("id", templateId)
       .single();
 
@@ -234,6 +247,8 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
     .single();
   if (libErr) return res.status(404).json({ error: libErr.message });
 
+
+  const size_bytes = byteSize(lib.config);
   // 2) insert into user templates
   const { data, error } = await supabase
     .from("menu_templates")
@@ -244,6 +259,7 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
         name: lib.name,
         preview_url: lib.preview_url,
         config: lib.config,
+        size_bytes,
       },
     ])
     .single();

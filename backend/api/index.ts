@@ -17,6 +17,7 @@ import CheckoutRouter from '../src/routes/ChecoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
 import ContactRouter from '../src/routes/ContactRouter.js';
 import InvoicesRouter from '../src/routes/InvoiceRouter.js';
+import { getStorageUsage } from "../src/controllers/UsgaeController.js";
 
 config();
 const app = express();
@@ -57,6 +58,8 @@ app.use('/plans', PlansRouter);
 app.use('/checkout', CheckoutRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
+// in your routes file
+app.get("/usage/storage", verifyAuth, getStorageUsage);
 
 
 // example of a protected route
