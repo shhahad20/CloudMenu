@@ -142,34 +142,6 @@ export const updateTemplate = async (req, res) => {
     catch (err) {
         return res.status(500).json({ error: err.message });
     }
-    //   // 2) Upload new image if present
-    //   let newConfig = { ...existing.config };
-    //   if (req.file) {
-    //     try {
-    //       const imageUrl = await handleUpload(req.file, templateId);
-    //       newConfig.header_image = imageUrl;
-    //     } catch (uploadErr) {
-    //       console.error('handleUpload error:', uploadErr);
-    //       return res.status(500).json({ error: 'Image upload failed: ' + (uploadErr as Error).message });
-    //     }
-    //   } else {
-    //     console.log('No file in request; skipping upload.');
-    //   }
-    //   // 3) Persist the merged JSON
-    //   const { data, error: updateErr } = await adminSupabase
-    //     .from('menu_templates')
-    //     .update({ config: newConfig, updated_at: 'now()' })
-    //     .eq('id', templateId)
-    //     .single();
-    //   if (updateErr) {
-    //     console.error('Supabase update error:', updateErr);
-    //     return res.status(500).json({ error: 'DB update failed: ' + updateErr.message });
-    //   }
-    //   return res.json(data);
-    // } catch (err: any) {
-    //   console.error('Unexpected controller error:', err);
-    //   return res.status(500).json({ error: err.message });
-    // }
 };
 // DELETE /templates/:id
 export const deleteTemplate = async (req, res) => {
@@ -182,7 +154,9 @@ export const deleteTemplate = async (req, res) => {
         .eq("id", id)
         .eq("user_id", userId);
     if (!count) {
-        return res.status(403).json({ error: "Not authorized to delete this template." });
+        return res
+            .status(403)
+            .json({ error: "Not authorized to delete this template." });
     }
     const { error } = await adminSupabase
         .from("menu_templates")
@@ -195,7 +169,52 @@ export const deleteTemplate = async (req, res) => {
 // POST /templates/clone/:libraryId
 export const cloneTemplate = async (req, res) => {
     const userId = req.user.id;
+    const plan = req.user.plan;
     const libraryId = req.params.libraryId;
+    //0) If free plan
+    if (plan === "free") {
+        const { count: templateCount, error: countErr } = await adminSupabase
+            .from("menu_templates")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", userId);
+        if (countErr)
+            return res.status(500).json({ error: countErr.message });
+        if ((templateCount || 0) >= 2) {
+            return res.status(403).json({ error: "Free plan users can only have 2 templates." });
+        }
+        // b) compute existing usage
+        // — get DB bytes
+        const { data: dbRows, error: dbErr } = await adminSupabase
+            .from("menu_templates")
+            .select("size_bytes")
+            .eq("user_id", userId);
+        if (dbErr)
+            return res.status(500).json({ error: dbErr.message });
+        const dbBytes = (dbRows || []).reduce((s, r) => s + (r.size_bytes || 0), 0);
+        // — get file-storage bytes (page through if you have >1k files)
+        const { data: files, error: filesErr } = await adminSupabase
+            .storage
+            .from("user-menu-images")
+            .list(userId, { limit: 1000 });
+        if (filesErr)
+            return res.status(500).json({ error: filesErr.message });
+        const fileBytes = (files || []).reduce((s, f) => s + (f.metadata?.size || 0), 0);
+        const usedMB = (dbBytes + fileBytes) / 1024 / 1024;
+        // c) fetch the library config to compute its size
+        const { data: lib, error: libErr } = await supabase
+            .from("library_templates")
+            .select("config, name, preview_url")
+            .eq("id", libraryId)
+            .single();
+        if (libErr)
+            return res.status(404).json({ error: libErr.message });
+        const newBytes = byteSize(lib.config);
+        if (usedMB + newBytes / 1024 / 1024 > 50) {
+            return res
+                .status(403)
+                .json({ error: "Free plan storage limit (50MB) exceeded." });
+        }
+    }
     // 1) fetch the library config
     const { data: lib, error: libErr } = await supabase
         .from("library_templates")
@@ -229,30 +248,30 @@ export async function recordTemplateView(req, res) {
     const userId = req.user.id;
     // 1) Optional: verify that template belongs to this user
     const { data: tpl, error: fetchTplErr } = await adminSupabase
-        .from('menu_templates')
-        .select('id, view_count')
-        .eq('id', templateId)
-        .eq('user_id', userId)
+        .from("menu_templates")
+        .select("id, view_count")
+        .eq("id", templateId)
+        .eq("user_id", userId)
         .single();
     if (fetchTplErr || !tpl) {
-        return res.status(404).json({ error: 'Template not found.' });
+        return res.status(404).json({ error: "Template not found." });
     }
     // 2) Insert a view event
     const { error: insertErr } = await adminSupabase
-        .from('menu_template_views')
+        .from("menu_template_views")
         .insert([{ template_id: templateId }]);
     if (insertErr) {
-        console.error('Failed to insert into template_views:', insertErr);
+        console.error("Failed to insert into template_views:", insertErr);
         // continue anyway
     }
     // 3) Increment the aggregate counter
     const newCount = (tpl.view_count || 0) + 1;
     const { error: updateErr } = await adminSupabase
-        .from('menu_templates')
+        .from("menu_templates")
         .update({ view_count: newCount })
-        .eq('id', templateId);
+        .eq("id", templateId);
     if (updateErr) {
-        console.error('Failed to bump view_count:', updateErr);
+        console.error("Failed to bump view_count:", updateErr);
         // continue anyway
     }
     res.json({ ok: true });
@@ -262,22 +281,22 @@ export async function recordLibraryView(req, res) {
     const templateId = req.params.id;
     // 1) Read current count
     const { data: tmpl, error: fetchError } = await adminSupabase
-        .from('library_templates')
-        .select('view_count')
-        .eq('id', templateId)
+        .from("library_templates")
+        .select("view_count")
+        .eq("id", templateId)
         .single();
     if (fetchError || !tmpl) {
-        console.error('View tracking: template not found', fetchError);
-        return res.status(404).json({ error: 'Template not found.' });
+        console.error("View tracking: template not found", fetchError);
+        return res.status(404).json({ error: "Template not found." });
     }
     // 2) Write back incremented value
     const newCount = (tmpl.view_count || 0) + 1;
     const { error: updateError } = await adminSupabase
-        .from('library_templates')
+        .from("library_templates")
         .update({ view_count: newCount })
-        .eq('id', templateId);
+        .eq("id", templateId);
     if (updateError) {
-        console.error('View tracking: failed to increment', updateError);
+        console.error("View tracking: failed to increment", updateError);
         // proceed anyway
     }
     // 3) Return success (optionally include newCount)

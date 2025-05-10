@@ -3,7 +3,7 @@ import { supabase } from '../config/supabaseClient.js';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 export interface AuthRequest<Body = any> extends Request<any, any, Body> {
-  user?: { id: string; email: string };
+  user?: { id: string; email: string, plan?: string };
   supabase?: SupabaseClient;
 }
 
