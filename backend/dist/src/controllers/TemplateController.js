@@ -109,7 +109,11 @@ export const updateTemplate = async (req, res) => {
     const userId = req.user.id;
     const plan = req.user.plan;
     if (!plan || !planLimits[plan]) {
-        return res.status(400).json({ error: "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed." });
+        return res
+            .status(400)
+            .json({
+            error: "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed.",
+        });
     }
     const { maxProjects, maxStorageMB } = planLimits[plan];
     try {
@@ -142,7 +146,9 @@ export const updateTemplate = async (req, res) => {
             if ((cnt || 0) > maxProjects) {
                 return res
                     .status(403)
-                    .json({ error: `${plan} plan allows up to ${maxProjects} projects.` });
+                    .json({
+                    error: `${plan} plan allows up to ${maxProjects} projects.`,
+                });
             }
         }
         // b) Check storage usage
@@ -153,23 +159,22 @@ export const updateTemplate = async (req, res) => {
             .eq("user_id", userId);
         if (dbErr)
             throw dbErr;
-        const dbBytes = (allRows || [])
-            .reduce((sum, r) => sum + (r.size_bytes || 0), 0)
-            - (existing.size_bytes || 0);
-        //  • sum file-storage bytes
-        const { data: files, error: filesErr } = await adminSupabase
-            .storage.from("user-menu-images").list(userId, { limit: 1000 });
+        const dbBytes = (allRows || []).reduce((sum, r) => sum + (r.size_bytes || 0), 0) -
+            (existing.size_bytes || 0);
+        // sum file-storage bytes
+        const prefix = `templates/${userId}`;
+        const { data: files, error: filesErr } = await adminSupabase.storage
+            .from("users-menu-images")
+            .list(prefix, { limit: 1000 });
         if (filesErr)
             throw filesErr;
         const fileBytes = (files || []).reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
-        //  • new template size
+        // new template size
         const newBytes = byteSize(newConfig);
         const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
         if (projectedMB > maxStorageMB) {
-            return res
-                .status(403)
-                .json({
-                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`
+            return res.status(403).json({
+                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`,
             });
         }
         // 4) Persist update
@@ -178,7 +183,7 @@ export const updateTemplate = async (req, res) => {
             .update({
             config: newConfig,
             size_bytes: newBytes,
-            updated_at: "now()"
+            updated_at: "now()",
         })
             .eq("id", templateId)
             .single();
@@ -191,8 +196,7 @@ export const updateTemplate = async (req, res) => {
     }
 };
 // DELETE /templates/:id
-export const deleteTemplate = async (req, res) => {
-};
+export const deleteTemplate = async (req, res) => { };
 // POST /templates/:id/clone
 export const cloneTemplate = async (req, res) => {
     const userId = req.user.id;
@@ -224,7 +228,9 @@ export const cloneTemplate = async (req, res) => {
             if ((cnt || 0) >= maxProjects) {
                 return res
                     .status(403)
-                    .json({ error: `${plan} plan allows up to ${maxProjects} projects.` });
+                    .json({
+                    error: `${plan} plan allows up to ${maxProjects} projects.`,
+                });
             }
         }
         // b) storage usage
@@ -235,31 +241,32 @@ export const cloneTemplate = async (req, res) => {
         if (dbErr)
             throw dbErr;
         const dbBytes = dbRows.reduce((sum, r) => sum + (r.size_bytes || 0), 0);
-        const { data: files, error: filesErr } = await adminSupabase
-            .storage.from("user-menu-images").list(userId, { limit: 1000 });
+        const { data: files, error: filesErr } = await adminSupabase.storage
+            .from("users-menu-images")
+            .list(userId, { limit: 1000 });
         if (filesErr)
             throw filesErr;
         const fileBytes = files.reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
         const newBytes = byteSize(lib.config);
         const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
         if (projectedMB > maxStorageMB) {
-            return res
-                .status(403)
-                .json({
-                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`
+            return res.status(403).json({
+                error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(2)} / ${maxStorageMB} MB`,
             });
         }
         // 3) Insert clone
         const { data, error } = await supabase
             .from("menu_templates")
-            .insert([{
+            .insert([
+            {
                 user_id: userId,
                 library_id: libraryId,
                 name: lib.name,
                 preview_url: lib.preview_url,
                 config: lib.config,
-                size_bytes: newBytes
-            }])
+                size_bytes: newBytes,
+            },
+        ])
             .single();
         if (error)
             throw error;

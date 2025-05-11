@@ -59,7 +59,8 @@ export const signin = async (req: Request, res: Response) => {
     message: 'Signin successful!',
     user: data.user,
     access_token: data.session?.access_token,
-    expires_in: data.session?.expires_in
+    expires_in: data.session?.expires_in,
+    refresh_token: data.session?.refresh_token
   });
 };
 

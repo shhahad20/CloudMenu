@@ -1,17 +1,17 @@
 import { adminSupabase } from '../config/supabaseClient.js';
 // Helper to handle optional file upload & return a public URL
-export async function handleUpload(file, userId) {
+export async function handleUpload(templateId, file, userId) {
     if (!file || !userId)
         return;
-    const path = `templates/${userId}/${file.originalname}`;
+    console.log(`${userId} user Id`);
+    const path = `templates/${userId}/${templateId}/${file.originalname}`;
     const { data, error } = await adminSupabase.storage
         .from('users-menu-images')
         .upload(path, file.buffer, { upsert: false });
     if (error)
-        throw new Error('Storage upload failed ,' + error.message);
-    // Corrected property name here: publicUrl instead of publicURL
-    const { data: { publicUrl } } = adminSupabase.storage
+        throw new Error('Storage upload failed: ' + error.message);
+    const { data: urlData } = adminSupabase.storage
         .from('users-menu-images')
         .getPublicUrl(data.path);
-    return publicUrl;
+    return urlData.publicUrl;
 }
