@@ -191,7 +191,6 @@ export const updateTemplate = async (req, res) => {
             .single();
         if (updateErr)
             throw updateErr;
-        console.log("Updated template", data.config);
         return res.json({ config: data.config });
     }
     catch (err) {

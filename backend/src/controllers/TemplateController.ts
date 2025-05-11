@@ -225,7 +225,6 @@ export const updateTemplate = async (
       .select("config")
       .single<{ config: any }>();
     if (updateErr) throw updateErr;
-      console.log("Updated template", data.config);
     return res.json({ config: data.config });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
