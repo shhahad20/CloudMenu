@@ -1,6 +1,6 @@
 import { adminSupabase } from '../config/supabaseClient.js';
 // Helper to handle optional file upload & return a public URL
-export async function handleUpload(templateId, file, userId) {
+export async function handleUpload(file, templateId, userId) {
     if (!file || !userId)
         return;
     console.log(`${userId} user Id`);

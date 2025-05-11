@@ -134,6 +134,8 @@ export const updateTemplate = async (
 ) => {
   const userId = req.user!.id;
   const plan = req.user!.plan;
+  const templateId = req.params.id;
+
   if (!plan || !planLimits[plan]) {
     return res
       .status(400)
@@ -160,8 +162,8 @@ export const updateTemplate = async (
     // 2) Build newConfig
     let newConfig = { ...existing.config, ...(req.body.config || {}) };
     if (req.file) {
-      const imageUrl = await handleUpload(req.file, templateId);
-      newConfig.headerImageUrl = imageUrl;
+      const imageUrl = await handleUpload(req.file,templateId,  userId);
+      newConfig.header_image = imageUrl;
     }
 
     // 3) Enforce plan quotas
@@ -220,10 +222,11 @@ export const updateTemplate = async (
         updated_at: "now()",
       })
       .eq("id", templateId)
-      .single();
+      .select("config")
+      .single<{ config: any }>();
     if (updateErr) throw updateErr;
-
-    res.json(data);
+      console.log("Updated template", data.config);
+    return res.json({ config: data.config });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

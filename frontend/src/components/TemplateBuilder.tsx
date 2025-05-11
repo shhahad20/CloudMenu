@@ -116,11 +116,33 @@ const HeaderImageBuilder: React.FC = () => {
         },
         body: form,
       });
-      if (!res.ok) throw res;
-      const { config: newCfg } = await res.json();
-      setConfig(newCfg);
+    // Try to parse JSON, but guard against invalid bodies
+    let body: { config?: TemplateConfig; error?: string } | null = null;
+    try {
+      body = await res.json();
     } catch {
-      setError("Image upload failed. Try again.");
+      throw new Error("Server did not return valid JSON.");
+    }
+
+    // If the HTTP status is not OK, bubble up the server message
+    if (!res.ok) {
+      const msg = body?.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    // Now check that config really came back
+    if (!body || typeof body.config !== "object") {
+      throw new Error("No config returned from server.");
+    }
+
+    // Success!
+    setConfig(body.config);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(`Image upload failed: ${err.message}`);
+      } else {
+        setError("Image upload failed: An unknown error occurred.");
+      }
     } finally {
       setUploading(false);
     }

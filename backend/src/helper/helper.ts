@@ -2,8 +2,8 @@ import { adminSupabase, supabase } from '../config/supabaseClient.js';
 
 // Helper to handle optional file upload & return a public URL
 export async function handleUpload(
-  templateId?: string,
   file?: Express.Multer.File,
+  templateId?: string,
   userId?: string
 ): Promise<string | undefined> {
   if (!file || !userId) return;
