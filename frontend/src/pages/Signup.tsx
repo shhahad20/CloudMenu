@@ -16,11 +16,14 @@ const Signup: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+    const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,15 +114,46 @@ const Signup: React.FC = () => {
 
           <div>
             <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              minLength={8}
-              required
-            />
+                        <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="toggle-password-btn"
+                onClick={togglePassword}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  // eye-off icon
+                  <svg id="open" width="25" height="25">
+                    <g stroke="#1E1E1E" stroke-miterlimit="10">
+                      <path
+                        d="M21.632 12.5a9.759 9.759 0 01-18.264 0 9.759 9.759 0 0118.264 0z"
+                        fill="none"
+                      />
+                      <circle cx="12.5" cy="12.5" r="3" fill="#1E1E1E" />
+                      <path
+                        fill="none"
+                        d="M12.5 5v1-4M9.291 6.337L7.709 2.663M15.709 6.337l1.582-3.674"
+                      />
+                    </g>
+                  </svg>
+                ) : (
+                  // eye icon
+                  <svg id="close" width="25" height="25">
+                    <g fill="none" stroke="#1E1E1E" stroke-miterlimit="10">
+                      <path d="M21.632 12.5a9.759 9.759 0 01-18.264 0M12.5 19.5v-1 4M9.291 18.163l-1.582 3.674M15.709 18.163l1.582 3.674" />
+                    </g>
+                  </svg>
+                )}
+              </button>
+            </div>
             <p className="password-note">Must be at least 8 characters.</p>
           </div>
 
