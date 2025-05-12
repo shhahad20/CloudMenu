@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { API_URL } from "../api/api";
 
 import "../styles/signup.scss";
@@ -11,6 +11,7 @@ const SignIn: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation() as { state?: { from?: Location } };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -39,7 +40,9 @@ const SignIn: React.FC = () => {
       localStorage.setItem("access_token", json.access_token);
 
       // Go to dashboard or home
-      navigate("/", { replace: true });
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
+      
     } catch (err: unknown) {
       let errorMessage = "An unknown error occurred";
       if (err instanceof Error) {

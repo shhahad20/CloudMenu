@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import  { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -28,53 +28,77 @@ import LetsTalk from "./pages/LetsTalk.tsx";
 import InvoicesPage from "./pages/InvoicesPage.tsx";
 import InvoiceDetails from "./pages/InvoiceDetails.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
+import RequireAuth from "./components/RequireAuth.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
-    <CartProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/menus" element={<MenuTemplates />} />
+            <Route
+              path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6"
+              element={<Template1 />}
+            />
+            <Route path="/menus/:id" element={<Template1Renderer />} />
+            {/* <Route path="/builder/:id" element={<HeaderImageBuilder />} /> */}
+            <Route path="/sign-up" element={<Signup />} />
+            <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/confirm-email" element={<ConfirmEmailSent />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/menus" element={<MenuTemplates />} />
-          <Route
-            path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6"
-            element={<Template1 />}
-          />
-          <Route path="/menus/:id" element={<Template1Renderer />} />
-          <Route path="/builder/:id" element={<HeaderImageBuilder />} />
-          <Route path="/sign-up" element={<Signup />} />
-          <Route path="/sign-in" element={<SignIn />} />
-          <Route path="/confirm-email" element={<ConfirmEmailSent />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/faqs" element={<FAQ />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/contact" element={<LetsTalk />} />
 
-          <Route path="/faqs" element={<FAQ />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/contact" element={<LetsTalk />} />
+            {/* <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/menus" element={<DashboardMenus />} />
+            <Route
+              path="/dashboard/upgrade/pricing"
+              element={<PricingPage />}
+            />
+            <Route path="/dashboard/invoices" element={<InvoicesPage />} /> */}
 
+            {/* <Route path="/cart" element={<CartPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route
+              path="/checkout/cancel"
+              element={<h1>Checkout canceled.</h1>}
+            /> */}
+            {/* 
+            <Route path="/invoices" element={<InvoicesPage />} />
+            <Route path="/invoices/:id" element={<InvoiceDetails />} /> */}
 
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/menus" element={<DashboardMenus />} />
-          <Route path="/dashboard/upgrade/pricing" element={<PricingPage />} />
-          <Route path="/dashboard/invoices" element={<InvoicesPage />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/builder/:id" element={<HeaderImageBuilder />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/menus" element={<DashboardMenus />} />
+              <Route
+                path="/dashboard/upgrade/pricing"
+                element={<PricingPage />}
+              />
+              <Route path="/dashboard/invoices" element={<InvoicesPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route
+                path="/checkout/cancel"
+                element={<h1>Checkout canceled.</h1>}
+              />
 
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/checkout/cancel"  element={<h1>Checkout canceled.</h1>} />
-
-          <Route path="/invoices" element={<InvoicesPage />} />
-          <Route path="/invoices/:id" element={<InvoiceDetails />} />
-
-        </Routes>
-      </BrowserRouter>
+              <Route path="/invoices" element={<InvoicesPage />} />
+              <Route path="/invoices/:id" element={<InvoiceDetails />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </CartProvider>
-
     </Provider>
   </StrictMode>
 );
