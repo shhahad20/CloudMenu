@@ -8,28 +8,33 @@ import { API_URL } from "../../api/api";
 
 const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState("This Month");
- const [templates, setTemplates] = useState<Template[]>([]);
- const [loadingViews, setLoadingViews] = useState(true);
- const [errorViews, setErrorViews] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [loadingViews, setLoadingViews] = useState(true);
+  const [errorViews, setErrorViews] = useState<string | null>(null);
 
+  const [analytics, setAnalytics] = useState<{
+    usedMenus: number;
+    usedMB: number;
+    limitMenus: number;
+    limitStorageMB: number;
+  } | null>(null);
 
-  // Define constants for plan usage details
-  const usedMenus = 1; // Example value
-  const limitMenus = 5; // Example value
-  const usedStorageMB = 10; // Example value
-  const limitStorageMB = 50; // Example value
+  // const usedMenus = 1;
+  // const limitMenus = 5;
+  // const usedStorageMB = 10;
+  // const limitStorageMB = 50;
 
   // Dummy data for sparklines
   const totalViewsTrend = [20, 35, 25, 40, 30, 50, 45];
   // const topTemplateTrend = [5, 15, 10, 18, 14, 20, 17];
 
-
-
-// fetch user’s templates once on mount
+  // fetch user’s templates once on mount
   useEffect(() => {
-   setLoadingViews(true);
+    setLoadingViews(true);
     fetch(`${API_URL}/templates`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load templates");
@@ -38,28 +43,51 @@ const AnalyticsPage: React.FC = () => {
       .then((data: Template[]) => setTemplates(data))
       .catch((err) => setErrorViews(err.message))
       .finally(() => setLoadingViews(false));
+    // 2) fetch usage in MB
+    fetch(`${API_URL}/usage/analytics`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    })
+      .then((r) => r.json())
+      .then(setAnalytics)
+      .catch(console.error);
   }, []);
-// Sum up all the view_count values
   const totalViews = templates.reduce((sum, t) => sum + t.view_count, 0);
-
-  // pick highest-viewed template
   const topTemplate =
     templates.length > 0
-      ? templates.reduce((top, t) =>
-          t.view_count > top.view_count ? t : top
-        , templates[0])
+      ? templates.reduce(
+          (best, t) => (t.view_count > best.view_count ? t : best),
+          templates[0]
+        )
       : null;
 
   // const totalViews = totalViewsTrend.reduce((a, b) => a + b, 0);
-  const totalDeltaPct = Math.round((totalViewsTrend[6] / 50) * 100); // sample
+  // const totalDeltaPct = Math.round((totalViewsTrend[6] / 50) * 100); // sample
   // const topTemplate = {
   //   name: "Classic",
   //   views: topTemplateTrend.reduce((a, b) => a + b, 0),
   // };
-  const percent = Math.min(
-    100,
-    Math.round((usedStorageMB / limitStorageMB) * 100)
-  );
+  // const percent = Math.min(
+  //   100,
+  //   Math.round((usedStorageMB / limitStorageMB) * 100)
+  // );
+  const usedMenus = analytics?.usedMenus ?? 0;
+  const usedStorageMB = analytics?.usedMB ?? 0;
+  const limitMenus = analytics?.limitMenus ?? 0;
+  const limitStorageMB = analytics?.limitStorageMB ?? 0;
+  const percent =
+    limitStorageMB > 0
+      ? Math.min(100, Math.round((usedStorageMB / limitStorageMB) * 100))
+      : 0;
+  const totalDeltaPct = React.useMemo(() => {
+    // e.g. compare last two points of your sparkline data
+    if (totalViewsTrend.length < 2) return 0;
+    const last = totalViewsTrend[totalViewsTrend.length - 1];
+    const prev = totalViewsTrend[totalViewsTrend.length - 2];
+    return prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
+  }, [totalViewsTrend]);
+
   <Sparkline
     data={totalViewsTrend}
     strokeColor="#2563EB"
@@ -110,15 +138,15 @@ const AnalyticsPage: React.FC = () => {
               {totalViews.toLocaleString()} Total visits
             </div> */}
             {loadingViews ? (
-            <div>Loading…</div>
-           ) : errorViews ? (
-             <div className="error">Error: {errorViews}</div>
-           ) : (
-             <>
-               <div className="big-number">{totalViews.toLocaleString()}</div>
-               <div className="subtitle">Total visits</div>
-             </>
-           )}
+              <div>Loading…</div>
+            ) : errorViews ? (
+              <div className="error">Error: {errorViews}</div>
+            ) : (
+              <>
+                <div className="big-number">{totalViews.toLocaleString()}</div>
+                <div className="subtitle">Total visits</div>
+              </>
+            )}
           </div>
           <div className="card-chart chart-bars-blue">
             {/* {totalViewsTrend.map((v, i) => (
@@ -183,7 +211,7 @@ const AnalyticsPage: React.FC = () => {
               </div>
             ))}
           </div> */}
-            <div className="arrow-up">
+          <div className="arrow-up">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -192,42 +220,50 @@ const AnalyticsPage: React.FC = () => {
               fill="none"
             >
               <path
-              d="M12 19V5M12 5L5 12M12 5L19 12"
-              stroke="#6b7280"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+                d="M12 19V5M12 5L5 12M12 5L19 12"
+                stroke="#6b7280"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               />
             </svg>
             <div className="arrow-up__text">{totalDeltaPct}% vs last month</div>
-            </div>
+          </div>
         </div>
-        {/* Plan Card */}
+        {/* --- Plan Usage Card --- */}
         <div className="analytics-card">
           <div className="card-top">
             <div className="card-title">Plan Usage</div>
           </div>
           <div className="card-main">
-            <div className="plan-usage__percent">{percent}%</div>
+            {analytics == null ? (
+              <div>Loading…</div>
+            ) : (
+              <>
+                <div className="plan-usage__percent">{percent}%</div>
+                <div className="plan-usage__bar-container">
+                  <div
+                    className="plan-usage__bar"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
 
-            <div className="plan-usage__bar-container">
-              <div
-                className="plan-usage__bar"
-                style={{ width: `${percent}%` }}
-              />
+          {analytics != null && (
+            <div className="plan-usage__details">
+              <div className="plan-usage__details-primary">
+                {usedStorageMB} MB used&nbsp;–&nbsp;{usedMenus} Menu
+                {usedMenus !== 1 && "s"}
+              </div>
+              <div className="plan-usage__details-secondary">
+                {limitStorageMB - usedStorageMB} MB&nbsp;–&nbsp;
+                {limitMenus - usedMenus} Menu
+                {limitMenus - usedMenus !== 1 && "s"} Available
+              </div>
             </div>
-          </div>
-          <div className="plan-usage__details">
-            <div className="plan-usage__details-primary">
-              10 MB used – 1 Menu
-              {usedMenus !== 1 ? "s" : ""}
-            </div>
-            <div className="plan-usage__details-secondary">
-              {limitStorageMB - usedStorageMB} MB – {limitMenus - usedMenus}{" "}
-              Menu
-              {limitMenus - usedMenus !== 1 ? "s" : ""} Available
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

@@ -14,7 +14,7 @@ import CheckoutRouter from '../src/routes/ChecoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
 import ContactRouter from '../src/routes/ContactRouter.js';
 import InvoicesRouter from '../src/routes/InvoiceRouter.js';
-import { getTotalUsage } from "../src/controllers/UsgaeController.js";
+import { getAnalytics } from "../src/controllers/UsgaeController.js";
 config();
 const app = express();
 const PORT = 4000;
@@ -44,7 +44,8 @@ app.use('/checkout', CheckoutRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
 // in your routes file
-app.get('/usage/total', verifyAuth, getTotalUsage);
+// app.get('/usage/total', verifyAuth, getTotalUsage);
+app.get('/usage/analytics', verifyAuth, getAnalytics);
 // example of a protected route
 app.get('/profiles/me', verifyAuth, async (req, res) => {
     // req is typed as Request, so cast to AuthRequest to get .user
