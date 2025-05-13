@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getTemplate } from "../api/templates";
 import { API_URL } from "../api/api";
-import { TemplateConfig, Section } from "../api/templates";
+import { TemplateConfig } from "../api/templates";
 import "../styles/templateBuilder.scss";
+import Navbar from "./Navbar";
+
+type Tab = "general" | "sections" | "items";
 
 const HeaderImageBuilder: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +17,14 @@ const HeaderImageBuilder: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [activeTab, setActiveTab] = useState<Tab>("general");
   const navigate = useNavigate();
+
+  const [editingSectionIdx, setEditingSectionIdx] = useState<number | null>(
+    null
+  );
+  const [editingItemIdx, setEditingItemIdx] = useState<number | null>(null);
 
   // tpl => setCurrentUrl(tpl.config.header_image)
   useEffect(() => {
@@ -41,28 +51,34 @@ const HeaderImageBuilder: React.FC = () => {
     }
   };
 
-  const updateSection = (idx: number, section: Section) => {
-    if (!config) return;
-    const newSections = [...(config.sections || [])];
-    newSections[idx] = section;
-    updateField("sections", newSections);
-  };
+  const [newSectionName, setNewSectionName] = useState("");
+  const [sectionImagePreview, setSectionImagePreview] = useState<string | null>(
+    null
+  );
 
-  const addSection = () => {
+  const handleAddSection = () => {
+    if (!newSectionName.trim()) return;
     setConfig((c) =>
       c
         ? {
             ...c,
             sections: [
               ...c.sections,
-              { id: crypto.randomUUID(), name: "", items: [] },
+              {
+                id: crypto.randomUUID(),
+                name: newSectionName,
+                items: [],
+                image: sectionImagePreview,
+              },
             ],
           }
         : c
     );
+    setNewSectionName("");
+    setSectionImagePreview(null);
   };
 
-  const removeSection = (idx: number) => {
+  const handleRemoveSection = (idx: number) => {
     setConfig((c) =>
       c
         ? {
@@ -72,6 +88,74 @@ const HeaderImageBuilder: React.FC = () => {
         : c
     );
   };
+
+  const handleDeleteSections = () => {
+    setConfig((c) =>
+      c
+        ? {
+            ...c,
+            sections: [],
+          }
+        : c
+    );
+  };
+
+  const handleSectionImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setSectionImagePreview(url);
+    // you’ll also want to include this file in your PATCH when saving…
+  };
+  const handleUpdateSection = () => {
+    if (editingSectionIdx === null) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const secs = [...c.sections];
+      secs[editingSectionIdx] = {
+        ...secs[editingSectionIdx],
+        name: newSectionName,
+        // image: sectionImagePreview || secs[editingSectionIdx].image,
+      };
+      return { ...c, sections: secs };
+    });
+    // reset:
+    setEditingSectionIdx(null);
+    setNewSectionName("");
+    setSectionImagePreview(null);
+  };
+
+  // const updateSection = (idx: number, section: Section) => {
+  //   if (!config) return;
+  //   const newSections = [...(config.sections || [])];
+  //   newSections[idx] = section;
+  //   updateField("sections", newSections);
+  // };
+
+  // const addSection = () => {
+  //   setConfig((c) =>
+  //     c
+  //       ? {
+  //           ...c,
+  //           sections: [
+  //             ...c.sections,
+  //             { id: crypto.randomUUID(), name: "", items: [] },
+  //           ],
+  //         }
+  //       : c
+  //   );
+  // };
+
+  // const removeSection = (idx: number) => {
+  //   setConfig((c) =>
+  //     c
+  //       ? {
+  //           ...c,
+  //           sections: c.sections.filter((_, i) => i !== idx),
+  //         }
+  //       : c
+  //   );
+  // };
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this template?"))
@@ -116,27 +200,27 @@ const HeaderImageBuilder: React.FC = () => {
         },
         body: form,
       });
-    // Try to parse JSON, but guard against invalid bodies
-    let body: { config?: TemplateConfig; error?: string } | null = null;
-    try {
-      body = await res.json();
-    } catch {
-      throw new Error("Server did not return valid JSON.");
-    }
+      // Try to parse JSON, but guard against invalid bodies
+      let body: { config?: TemplateConfig; error?: string } | null = null;
+      try {
+        body = await res.json();
+      } catch {
+        throw new Error("Server did not return valid JSON.");
+      }
 
-    // If the HTTP status is not OK, bubble up the server message
-    if (!res.ok) {
-      const msg = body?.error || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
+      // If the HTTP status is not OK, bubble up the server message
+      if (!res.ok) {
+        const msg = body?.error || `HTTP ${res.status}`;
+        throw new Error(msg);
+      }
 
-    // Now check that config really came back
-    if (!body || typeof body.config !== "object") {
-      throw new Error("No config returned from server.");
-    }
+      // Now check that config really came back
+      if (!body || typeof body.config !== "object") {
+        throw new Error("No config returned from server.");
+      }
 
-    // Success!
-    setConfig(body.config);
+      // Success!
+      setConfig(body.config);
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(`Image upload failed: ${err.message}`);
@@ -174,227 +258,453 @@ const HeaderImageBuilder: React.FC = () => {
       setSaving(false);
     }
   };
+  // items state
+  // which section we’re managing items for
+  const [selectedSectionIdx, setSelectedSectionIdx] = useState<number>(0);
+  // new-item fields
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemPrice, setNewItemPrice] = useState("");
+  const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
+
+  const handleAddItem = () => {
+    if (!newItemName.trim()) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const sections = [...c.sections];
+      const sec = { ...sections[selectedSectionIdx] };
+      sec.items = [
+        ...sec.items,
+        {
+          id: crypto.randomUUID(),
+          name: newItemName,
+          price: newItemPrice,
+          imageUrl: itemImagePreview || undefined,
+        },
+      ];
+      sections[selectedSectionIdx] = sec;
+      return { ...c, sections };
+    });
+    // reset
+    setNewItemName("");
+    setNewItemPrice("");
+    setItemImagePreview(null);
+  };
+
+  const handleRemoveItem = (itemIdx: number) => {
+    setConfig((c) => {
+      if (!c) return c;
+      const sections = [...c.sections];
+      const sec = { ...sections[selectedSectionIdx] };
+      sec.items = sec.items.filter((_, i) => i !== itemIdx);
+      sections[selectedSectionIdx] = sec;
+      return { ...c, sections };
+    });
+  };
+
+  const handleDeleteAllItems = () => {
+    setConfig((c) => {
+      if (!c) return c;
+      const sections = [...c.sections];
+      sections[selectedSectionIdx] = {
+        ...sections[selectedSectionIdx],
+        items: [],
+      };
+      return { ...c, sections };
+    });
+  };
+  const handleUpdateItem = () => {
+    if (editingItemIdx === null) return;
+    setConfig((c) => {
+      if (!c) return c;
+      const secs = [...c.sections];
+      const sec = { ...secs[selectedSectionIdx] };
+      const items = [...sec.items];
+      items[editingItemIdx] = {
+        ...items[editingItemIdx],
+        name: newItemName,
+        price: newItemPrice,
+        // imageUrl: itemImagePreview || items[editingItemIdx].imageUrl,
+      };
+      sec.items = items;
+      secs[selectedSectionIdx] = sec;
+      return { ...c, sections: secs };
+    });
+    // reset:
+    setEditingItemIdx(null);
+    setNewItemName("");
+    setNewItemPrice("");
+    // setItemImagePreview(null);
+  };
+
+  const handleItemImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setItemImagePreview(url);
+  };
 
   if (loading) return <p>Loading…</p>;
 
   return (
-    <div className="builder-container">
-      <h1>Edit Template</h1>
-      {/* Logo */}
-      <fieldset>
-        <legend>Logo</legend>
-        <div className="logo-container">
-          <label></label>
-          <input
-            type="text"
-            value={config?.logo || ""}
-            onChange={(e) => updateField("logo", e.target.value)}
-          />
+    <>
+      <Navbar />
+      <div className="builder-container">
+        <h1 className="builder-header">Edit Template</h1>
+
+        {/* 1) Tabs */}
+        <div className="tabs-wrapper">
+          <div className="builder-tabs">
+            {(["general", "sections", "items"] as Tab[]).map((t) => (
+              <button
+                key={t}
+                className={`tab-btn ${activeTab === t ? "active" : ""}`}
+                onClick={() => setActiveTab(t)}
+              >
+                {t[0].toUpperCase() + t.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
-      </fieldset>
-      {/* Colors */}
-      <fieldset style={{ marginTop: 14 }}>
-        <legend>Colors</legend>
-        {(["primary", "secondary", "background"] as const).map((colKey) => (
-          <div key={colKey} className="color-picker">
-            <label>{colKey}: </label>
-            <input
-              className="color-input-text"
-              type="text"
-              value={config?.colors?.[colKey] || ""}
-              onChange={(e) => updateColor(colKey, e.target.value)}
-              style={{ marginLeft: 8 }}
-            />
-            <input
-              className="color-input "
-              type="color"
-              value={config?.colors?.[colKey] || ""}
-              onChange={(e) => updateColor(colKey, e.target.value)}
-            />
-          </div>
-        ))}
-      </fieldset>
-
-      {/* Text */}
-
-      <fieldset style={{ marginBottom: 14 }}>
-        <legend>Text Blocks</legend>
-
-        {config?.text?.map((tb, ti) => (
-          <div
-            className="text-conatiner"
-            key={tb.id}
-            style={{ marginBottom: 12 }}
-          >
-            <label style={{ display: "block", fontWeight: 500 }}>
-              {tb.label}
-            </label>
-            <textarea
-              rows={2}
-              style={{ width: "100%", padding: 8 }}
-              value={tb.value}
-              onChange={(e) => {
-                const newText = [...(config?.text || [])];
-                newText[ti] = { ...tb, value: e.target.value };
-                updateField("text", newText);
-              }}
-            />
-            {/* <button
-              style={{ marginTop: 4 }}
-              onClick={() => {
-                const filtered = config?.text?.filter((_, i) => i !== ti) || [];
-                updateField("text", filtered);
-              }}
-            >
-              Delete
-            </button> */}
-          </div>
-        ))}
-
-        {/* <button
-          onClick={() => {
-            const id = crypto.randomUUID();
-            updateField("text", [
-              ...(config?.text || []),
-              { id, label: "New Text", value: "" },
-            ]);
-          }}
-        >
-          + Add Text Block
-        </button> */}
-      </fieldset>
-
-      {/* Sections & Items */}
-      <fieldset style={{ marginTop: 14 }}>
-        <legend>Sections</legend>
-        {config?.sections?.map((sec, si) => (
-          <div className="t-section-container" key={si}>
-            <div className="t-section-header">
-              <label>Name: </label>
-              <input
-                type="text"
-                value={sec.name}
-                onChange={(e) =>
-                  updateSection(si, { ...sec, name: e.target.value })
-                }
-              />
-              <button onClick={() => removeSection(si)}>Delete</button>
-            </div>
-            <div className="t-section-items">
-              <h4>Items</h4>
-              {sec.items.map((item, ii) => (
-                <div
-                  className="t-section-item"
-                  key={ii}
-                  style={{ marginBottom: 4 }}
-                >
+        <div className="builder-container-inner">
+          {/* 2) Tab Content */}
+          {activeTab === "general" && (
+            <div className="tab-content general">
+              {/* Left Column */}
+              <div className="col left">
+                {/* Logo */}
+                <fieldset>
+                  <legend>Logo</legend>
                   <input
                     type="text"
-                    value={item.name}
-                    onChange={(e) => {
-                      const newItems = [...sec.items];
-                      newItems[ii] = { ...item, name: e.target.value };
-                      updateSection(si, { ...sec, items: newItems });
-                    }}
-                    placeholder="Item name"
+                    value={config?.logo || ""}
+                    onChange={(e) => updateField("logo", e.target.value)}
+                    placeholder="Logo URL or name"
                   />
+                </fieldset>
+
+                {/* Colors */}
+                <fieldset>
+                  <legend>Color Palette</legend>
+                  <div className="color-row">
+                    {(["primary", "secondary", "background"] as const).map(
+                      (key) => (
+                        <div key={key} className="color-picker">
+                          <label className="swatch-input" title={key}>
+                            <input
+                              type="color"
+                              className="swatch"
+                              value={config?.colors[key] || "#000000"}
+                              onChange={(e) => updateColor(key, e.target.value)}
+                            />
+                            <input
+                              className="color-input-text"
+                              type="text"
+                              value={config?.colors?.[key] || ""}
+                              onChange={(e) => updateColor(key, e.target.value)}
+                            />
+                          </label>
+                          <div className="label">{key}</div>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </fieldset>
+
+                {/* Text Blocks */}
+                <fieldset>
+                  <legend>Text Block 1</legend>
                   <input
-                    className="t-section-item-price"
-                    type="number"
-                    step="0.01"
-                    value={item.price}
+                    type="text"
+                    value={config?.text?.[0]?.value || ""}
                     onChange={(e) => {
-                      const price =
-                        parseFloat(e.target.value.replace(/[^\d.]/g, "")) || 0;
-                      const newItems = [...sec.items];
-                      newItems[ii] = {
-                        ...item,
-                        price: price.toLocaleString("en-US", {
-                          useGrouping: false,
-                        }),
-                      };
-                      updateSection(si, { ...sec, items: newItems });
+                      const newText = [...(config?.text || [])];
+                      newText[0] = { ...newText[0], value: e.target.value };
+                      updateField("text", newText);
                     }}
-                    placeholder="Price"
-                    style={{ marginLeft: 8 }}
                   />
-                  <button
-                    className="t-section-item-delete"
-                    onClick={() => {
-                      const newItems = sec.items.filter((_, i) => i !== ii);
-                      updateSection(si, { ...sec, items: newItems });
+                </fieldset>
+
+                <fieldset>
+                  <legend>Text Block 2</legend>
+                  <input
+                    type="text"
+                    value={config?.text?.[1]?.value || ""}
+                    onChange={(e) => {
+                      const newText = [...(config?.text || [])];
+                      newText[1] = { ...newText[1], value: e.target.value };
+                      updateField("text", newText);
                     }}
+                  />
+                </fieldset>
+
+                <fieldset>
+                  <legend>Footer Text</legend>
+                  <input
+                    type="text"
+                    // value={config?.footer || ""}
+                    // onChange={(e) => updateField("footer", e.target.value)}
+                  />
+                </fieldset>
+              </div>
+
+              {/* Right Column */}
+              <div className="col right">
+                {/* Header Image */}
+                <fieldset>
+                  <legend>Header Image</legend>
+                  <div className="image-container">
+                    {config?.header_image ? (
+                      <img src={config.header_image} alt="Header" />
+                    ) : (
+                      <div className="placeholder">No image</div>
+                    )}
+                    <input
+                      className="file-input"
+                      type="file"
+                      accept="image/*"
+                      disabled={uploading}
+                      onChange={handleHeaderUpload}
+                    />
+                  </div>
+                </fieldset>
+
+                {/* Footer Text */}
+                {/* <fieldset>
+                <legend>Footer Text</legend>
+                <input
+                  type="text"
+                  value={config?.footer || ""}
+                  onChange={(e) => updateField("footer", e.target.value)}
+                />
+              </fieldset> */}
+
+                {/* Actions */}
+                <div className="actions">
+                  <button
+                    className="btn save"
+                    onClick={handleSave}
+                    disabled={saving}
                   >
-                    ×
+                    Save All Changes
+                  </button>
+                  <button className="btn delete" onClick={handleDelete}>
+                    Delete Template
                   </button>
                 </div>
-              ))}
-              <button
-                className="t-section-item-add"
-                onClick={() => {
-                  updateSection(si, {
-                    ...sec,
-                    items: [
-                      ...sec.items,
-                      { id: crypto.randomUUID(), name: "", price: "0" },
-                    ],
-                  });
-                }}
-              >
-                + Add Item
-              </button>
+              </div>
             </div>
-          </div>
-        ))}
-        <button className="add-new-section" onClick={addSection}>
-          + Add Section
-        </button>
-      </fieldset>
+          )}
 
-      {/* Header Image (you can still reuse your old file uploader) */}
-      {/* Header Image */}
-      <div className="headerImageSection">
-        <h2>Header Image</h2>
+          {activeTab === "sections" && (
+            <div className="tab-content two-col">
+              {/* Left: Add / Upload */}
+              <div className="col left">
+                <fieldset>
+                  <legend>
+                    {editingSectionIdx !== null
+                      ? "Edit Section"
+                      : "Add New Section"}
+                  </legend>
+                  <div className="add-row">
+                    <input
+                      type="text"
+                      placeholder="Section name"
+                      value={newSectionName}
+                      onChange={(e) => setNewSectionName(e.target.value)}
+                    />
+                    <button
+                      onClick={
+                        editingSectionIdx !== null
+                          ? handleUpdateSection
+                          : handleAddSection
+                      }
+                    >
+                      {editingSectionIdx !== null ? "Update" : "Add"}
+                    </button>
+                  </div>
+                </fieldset>
 
-        {config?.header_image ? (
-          <img src={config.header_image} alt="Header" />
-        ) : (
-          <p>No header image set.</p>
-        )}
+                <fieldset>
+                  <legend>Section Image</legend>
+                  <div className="image-container">
+                    {sectionImagePreview ? (
+                      <img src={sectionImagePreview} />
+                    ) : (
+                      <div className="placeholder">
+                        Section image not available for this menu
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleSectionImageUpload}
+                    />
+                  </div>
+                </fieldset>
+              </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          disabled={uploading}
-          onChange={handleHeaderUpload}
-        />
+              {/* Right: List of Sections */}
+              <div className="col right">
+                <fieldset>
+                  <legend>Sections</legend>
+                  <ul className="item-list">
+                    {config!.sections.map((sec, idx) => (
+                      <li key={sec.id}>
+                        <span>{sec.name}</span>
+                        <div className="actions">
+                          <button
+                            onClick={() => {
+                              // start editing this one:
+                              setEditingSectionIdx(idx);
+                              setNewSectionName(sec.name);
+                              // setSectionImagePreview(sec.image || null);
+                              // switch back to the left column UI:
+                              setActiveTab("sections");
+                            }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="delete-btn"
+                            onClick={() => handleRemoveSection(idx)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </fieldset>
+                <div className="actions-bottom">
+                  <button className="btn save" onClick={handleSave}>
+                    Save All Changes
+                  </button>
+                  <button className="btn delete" onClick={handleDeleteSections}>
+                    Delete All Sections
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
-        {uploading && <p>Uploading…</p>}
+          {activeTab === "items" && (
+            <div className="tab-content two-col">
+              {/* Left: Choose section + add item */}
+              <div className="col left">
+                <fieldset>
+                  <legend>Select Section</legend>
+                  <select
+                    value={selectedSectionIdx}
+                    onChange={(e) => setSelectedSectionIdx(+e.target.value)}
+                  >
+                    {config!.sections.map((sec, idx) => (
+                      <option key={sec.id} value={idx}>
+                        {sec.name}
+                      </option>
+                    ))}
+                  </select>
+                </fieldset>
+
+                <fieldset>
+                  <legend>
+                    {editingItemIdx !== null ? "Edit Item" : "Add New Item"}
+                  </legend>{" "}
+                  <div className="add-row">
+                    <input
+                      type="text"
+                      placeholder="Item name"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Price"
+                      value={newItemPrice}
+                      onChange={(e) => setNewItemPrice(e.target.value)}
+                    />
+                    <button
+                      onClick={
+                        editingItemIdx !== null
+                          ? handleUpdateItem
+                          : handleAddItem
+                      }
+                    >
+                      {editingItemIdx !== null ? "Update" : "Add"}
+                    </button>
+                  </div>
+                </fieldset>
+
+                <fieldset>
+                  <legend>Item Image</legend>
+                  <div className="image-container">
+                    {itemImagePreview ? (
+                      <img src={itemImagePreview} alt="Preview" />
+                    ) : (
+                      <div className="placeholder">
+                        Item image not available for this menu
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleItemImageUpload}
+                    />
+                  </div>
+                </fieldset>
+              </div>
+
+              {/* Right: List of items in that section */}
+              <div className="col right">
+                <fieldset>
+                  <legend>
+                    Items in “{config!.sections[selectedSectionIdx].name}”
+                  </legend>
+                  <ul className="item-list">
+                    {config!.sections[selectedSectionIdx].items.map(
+                      (it, idx) => (
+                        <li key={it.id}>
+                          <span>
+                            {it.name} — ${it.price}
+                          </span>
+                          <div className="actions">
+                            <button
+                              onClick={() => {
+                                setEditingItemIdx(idx);
+                                setNewItemName(it.name);
+                                setNewItemPrice(it.price);
+                                // setItemImagePreview(it.imageUrl || null);
+                                setActiveTab("items");
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleRemoveItem(idx)}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </fieldset>
+
+                <div className="actions-bottom">
+                  <button className="btn save" onClick={handleSave}>
+                    Save All Changes
+                  </button>
+                  <button className="btn delete" onClick={handleDeleteAllItems}>
+                    Delete All Items
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      {/* …either embed your HeaderImageBuilder here, or replicate the file input logic… */}
-
-      <div style={{ marginTop: 20 }}>
-        <button onClick={handleSave} disabled={saving} className="save-button">
-          {saving ? "Saving…" : "Save All Changes"}
-        </button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-      </div>
-
-      <button
-        onClick={handleDelete}
-        className="delete-button"
-        style={{
-          background: "#e74c3c",
-          color: "#fff",
-          border: "none",
-          padding: "0.75rem 1.5rem",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Delete Template
-      </button>
-    </div>
+    </>
   );
 };
 

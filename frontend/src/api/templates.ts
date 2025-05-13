@@ -1,4 +1,3 @@
-// src/api/templates.ts
 export interface Section {
   id: string;
   name: string;
