@@ -28,10 +28,13 @@ const CheckoutPage: React.FC = () => {
         items.map(async (i) => {
           if (i.id.startsWith("plan-")) {
             // subscription flow
-            const planName = i.id.replace("plan-", "") as
-              | "Free"
-              | "Pro"
-              | "Enterprise";
+            let planName = i.name.replace("plan-", ""); // e.g. "pro"
+            planName = planName.charAt(0).toUpperCase() + planName.slice(1);
+
+            // const planName = i.id.replace("plan-", "") as
+            //   | "Free"
+            //   | "Pro"
+            //   | "Enterprise";
             const resp = await fetch(`${API_URL}/plans/me/plan`, {
               method: "PATCH",
               headers: {
@@ -40,7 +43,12 @@ const CheckoutPage: React.FC = () => {
               },
               body: JSON.stringify({ plan: planName }),
             });
-            if (!resp.ok) throw new Error("Failed to update plan");
+            if (!resp.ok) {
+              const body = await resp.json().catch(() => null);
+              throw new Error(
+                body?.error || `Failed to update plan (${resp.status})`
+              );
+            }
           } else {
             // menu clone flow
             await cloneTemplate(i.id);

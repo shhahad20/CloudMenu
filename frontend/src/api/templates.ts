@@ -126,15 +126,14 @@ export const cloneTemplate = async (id: string): Promise<{ id: string }> => {
   return payload;
 };
 
-// A reasonable default config for “new” templates:
-// export const defaultConfig: TemplateConfig = {
-//   layoutVariant: 'classic',
-//   logoUrl: '',
-//   baseColors: {
-//     primary: '#6d5bba',
-//     secondary: '#f0f0f0',
-//     background: '#ffffff',
-//     text: '#333333',
-//   },
-//   sections: [],
-// };
+export const plans = () =>
+  fetch(`${API}/plans`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Not found");
+    return res.json();
+  });

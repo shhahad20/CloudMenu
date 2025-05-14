@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { signup, signin, signout, forgotPassword, resetPassword, confirmEmail, changeUserRole, deleteUser } from '../controllers/AuthController.js';
+import { signup, signin, signout, forgotPassword, resetPassword, confirmEmail, changeUserRole, deleteUser, updateUser } from '../controllers/AuthController.js';
 import { verifyAuth } from '../middleware/verifyAuth.js';
 import { requireAdmin } from '../middleware/requireAdmin.js';
 
@@ -23,7 +23,11 @@ router.patch(
     requireAdmin,
     changeUserRole
   );
-  
+  router.patch(
+    '/users/:id',
+    verifyAuth,
+    updateUser
+  );
   router.delete(
     '/users/:id',
     verifyAuth,

@@ -1,4 +1,4 @@
-import  { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
@@ -29,6 +29,7 @@ import InvoicesPage from "./pages/InvoicesPage.tsx";
 import InvoiceDetails from "./pages/InvoiceDetails.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
+import SettingsPage from "./pages/SettingPage.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
@@ -95,6 +96,8 @@ createRoot(document.getElementById("root")!).render(
 
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/invoices/:id" element={<InvoiceDetails />} />
+
+              <Route path="dashboard/settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

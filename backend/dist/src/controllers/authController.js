@@ -163,3 +163,37 @@ export const deleteUser = async (req, res) => {
     // await adminSupabase.from('profiles').delete().eq('id', userId);
     return res.json({ message: 'User account deleted.' });
 };
+export const updateUser = async (req, res) => {
+    const userId = req.params.id;
+    const { email, username } = req.body;
+    if (!email && !username) {
+        return res.status(400).json({ error: 'At least one field (email or username) is required.' });
+    }
+    try {
+        // 1) Update email in Supabase Auth if provided
+        if (email) {
+            const { error: emailError } = await adminSupabase.auth.admin.updateUserById(userId, {
+                email,
+            });
+            if (emailError) {
+                return res.status(400).json({ error: emailError.message });
+            }
+        }
+        // 2) Update username in profiles table if provided
+        if (username) {
+            const { error: usernameError } = await adminSupabase
+                .from('profiles')
+                .update({ username })
+                .eq('id', userId);
+            if (usernameError) {
+                return res.status(400).json({ error: usernameError.message });
+            }
+        }
+        return res.json({ message: 'User information updated successfully.' });
+    }
+    catch (error) {
+        return res.status(500).json({
+            error: error instanceof Error ? error.message : 'An unexpected error occurred.',
+        });
+    }
+};
