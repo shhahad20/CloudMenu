@@ -51,6 +51,7 @@ export interface InvoiceType {
 }
 
 const API = "http://localhost:4000";
+
 const getHeaders = () => {
   const token = localStorage.getItem("access_token");
   return {
@@ -135,5 +136,17 @@ export const plans = () =>
     },
   }).then((res) => {
     if (!res.ok) throw new Error("Not found");
+    return res.json();
+  });
+
+export const userInvoices = () =>
+  fetch(`${API}/invoices`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("Invoices not found");
     return res.json();
   });

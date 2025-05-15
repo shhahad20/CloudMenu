@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../api/api";
 import "../styles/settings.scss";
 import { useCart } from "../context/CartContext";
-import { plans } from "../api/templates";
+import { plans, userInvoices } from "../api/templates";
 import Navbar from "../components/Navbar";
-import Contact from "../components/Contact";
+import { tags } from "../components/Contact";
 
-type Tab = "general" | "security" | "Subscription" | "help";
+type Tab = "general" | "security" | "Subscription" | "invoices" | "help";
 // At top of file, define your icons:
 const UserIcon = () => (
   <svg
@@ -59,6 +59,22 @@ const PlanIcon = () => (
     />
   </svg>
 );
+const InvoiceIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="13"
+    height="13"
+    viewBox="0 0 13 13"
+    fill="none"
+  >
+    <path
+      d="M7.1875 11.9994C7.12226 12 7.04906 12 6.96546 12H3.19788C2.42931 12 2.04445 12 1.75061 11.8503C1.49189 11.7185 1.28169 11.5079 1.14987 11.2492C1 10.955 1 10.5702 1 9.80013V3.20013C1 2.43006 1 2.04474 1.14987 1.75061C1.28169 1.49189 1.49189 1.28169 1.75061 1.14987C2.04474 1 2.43006 1 3.20013 1H9.80013C10.5702 1 10.9547 1 11.2488 1.14987C11.5076 1.28169 11.7185 1.49189 11.8503 1.75061C12 2.04445 12 2.42931 12 3.19788V6.96386C12 7.04815 12 7.12186 11.9994 7.1875M7.1875 11.9994C7.38389 11.9976 7.5081 11.9905 7.62671 11.9621C7.76701 11.9284 7.90102 11.8726 8.02405 11.7972C8.16281 11.7122 8.28172 11.5936 8.51953 11.3558L11.3558 8.51953C11.5936 8.28172 11.7118 8.16281 11.7969 8.02405C11.8723 7.90102 11.928 7.76667 11.9617 7.62637C11.9902 7.50779 11.9975 7.38375 11.9994 7.1875M7.1875 11.9994V8.28757C7.1875 7.90253 7.1875 7.70987 7.26243 7.56281C7.32835 7.43344 7.43344 7.32835 7.56281 7.26243C7.70987 7.1875 7.9022 7.1875 8.28723 7.1875H11.9994"
+      stroke="#1E1E1E"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
 const HelpIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -85,11 +101,20 @@ const SettingsPage: React.FC = () => {
     Array<{
       id: string;
       name: string;
-      features: string[]; // ← array now
+      features: string[];
       price_cents: string;
     }>
   >([]);
-
+  const [invoices, setInvoices] = useState<
+    Array<{
+      id: string;
+      status: string;
+      invoice_date: string;
+      subtotal: number;
+      tax: number;
+      total: number;
+    }>
+  >([]);
   // form state
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -124,7 +149,16 @@ const SettingsPage: React.FC = () => {
         // assume your API returns { plans: [...] }
         setAvailablePlans(data.plans ?? data);
       })
+      .catch((e) => setError(e.message));
+
+    // 3) fetch invoices
+    userInvoices()
+      .then((data) => {
+        // assume your API returns { invoices: [...] }
+        setInvoices(data.invoices ?? data);
+      })
       .catch((e) => setError(e.message))
+
       .finally(() => setLoading(false));
   }, []);
 
@@ -217,6 +251,71 @@ const SettingsPage: React.FC = () => {
       }
     }
   };
+  const downloadCsv = () => {
+    if (!invoices.length) return;
+    const header = ["ID", "Date", "Subtotal", "Tax", "Total", "Status"].join(
+      ","
+    );
+    const rows = invoices.map((inv) =>
+      [
+        inv.id,
+        inv.invoice_date,
+        inv.subtotal.toFixed(2),
+        inv.tax.toFixed(2),
+        inv.total.toFixed(2),
+        inv.status,
+      ].join(",")
+    );
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "invoices.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    tag: "problem",
+    message: "",
+  });
+  const [status, setStatus] = useState<
+    "idle" | "sending" | "success" | "error"
+  >("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+    setErrorMsg("");
+    try {
+      const res = await fetch(`${API_URL}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setStatus("success");
+      setForm({ name: "", email: "", tag: "problem", message: "" });
+    } catch (err: unknown) {
+      setStatus("error");
+      if (err instanceof Error) {
+        setErrorMsg(err.message);
+      } else {
+        setErrorMsg("Submission failed.");
+      }
+    }
+  };
   if (loading) return <p>Loading…</p>;
 
   return (
@@ -224,20 +323,6 @@ const SettingsPage: React.FC = () => {
       <Navbar />
       <div className="settings-page layout">
         <div className="settings-container">
-          {/* <div className="settings-tabs">
-        {(["general", "security", "Subscription"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            className={activeTab === t ? "active" : ""}
-            onClick={() => {
-              setActiveTab(t);
-              setError(null);
-            }}
-          >
-            {t[0].toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div> */}
           {/* 1) Sidebar */}
           <aside className="settings-sidebar">
             <h2>Settings</h2>
@@ -250,6 +335,11 @@ const SettingsPage: React.FC = () => {
                     key: "Subscription",
                     icon: <PlanIcon />,
                     label: "Subscription",
+                  },
+                  {
+                    key: "invoices",
+                    icon: <InvoiceIcon />,
+                    label: "Invoices",
                   },
                   {
                     key: "help",
@@ -394,7 +484,7 @@ const SettingsPage: React.FC = () => {
                         </ul>
 
                         <div className="plan-price">
-                          ${parseFloat(planDef.price_cents) / 100}/month
+                          ${planDef.price_cents}/month
                         </div>
                         {isCurrent ? (
                           <button className="current-plan-btn">
@@ -423,9 +513,107 @@ const SettingsPage: React.FC = () => {
               </div>
             )}
 
+            {activeTab === "invoices" && (
+              <div className="settings-section invoices-section">
+                <h1 className="setting-t-header">My Invoices</h1>
+
+                <table className="invoices-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Date</th>
+                      <th>Subtotal</th>
+                      <th>Tax</th>
+                      <th>Total</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoices.map((inv) => (
+                      <tr key={inv.id}>
+                        <td>{inv.id}</td>
+                        <td>
+                          {new Date(inv.invoice_date).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
+                        </td>
+                        <td>{inv.subtotal.toFixed(2)}$</td>
+                        <td>{inv.tax.toFixed(2)}</td>
+                        <td>{inv.total.toFixed(2)}$</td>
+                        <td>{inv.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <button className="save-btn" onClick={downloadCsv}>
+                  Download All Invoices (CSV)
+                </button>
+              </div>
+            )}
+
             {activeTab === "help" && (
               <div className="settings-section">
+                <h1 className="setting-t-header">Help & Support</h1>
+                <form className="contact-form" onSubmit={handleSubmit}>
+                  <label>
+                    Your Name
+                    <input
+                      name="name"
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={handleChange}
+                    />
+                  </label>
 
+                  <label>
+                    Your Email
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      value={form.email}
+                      onChange={handleChange}
+                    />
+                  </label>
+
+                  <label>
+                    Topic
+                    <select name="tag" value={form.tag} onChange={handleChange}>
+                      {tags.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Message
+                    <textarea
+                      name="message"
+                      rows={6}
+                      required
+                      value={form.message}
+                      onChange={handleChange}
+                    />
+                  </label>
+
+                  <button className="save-btn" type="submit" disabled={status === "sending"}>
+                    {status === "sending" ? "Sending…" : "Send Message"}
+                  </button>
+
+                  {status === "success" && (
+                    <p className="success">Thanks! We'll be in touch.</p>
+                  )}
+                  {status === "error" && <p className="error">{errorMsg}</p>}
+                </form>
               </div>
             )}
           </section>

@@ -3,7 +3,7 @@ import "../styles/contact.scss";
 import { API_URL } from "../api/api";
 import { Link } from "react-router-dom";
 
-const tags = [
+export const tags = [
   { value: "problem", label: "Report a Problem" },
   { value: "suggest", label: "Suggestion" },
   { value: "custom", label: "Custom Menu Request" },
