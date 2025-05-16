@@ -3,10 +3,12 @@
   z-index: 1; // ensure content sits above
   padding: 4rem 2rem;
   height: 100%;
-  margin-top: 10rem;
+  // margin-top: 10rem;
+    margin-top: clamp(5rem, 10vw, 10rem);
+
   width: 100%;
   display: flex;
-  // justify-content: center;
+  justify-content: center;
   flex-direction: column;
   align-items: center;
   &::before {
@@ -32,8 +34,8 @@
   .newsletter-header {
     margin-top: 5rem;
     width: 58%;
-    text-align: left;
-    font-size: 4rem;
+    text-align: center;
+    font-size: 3.5rem;
     font-weight: 600;
     padding: 0 15px;
     background: linear-gradient(95deg, #000000, #666666);
@@ -47,7 +49,7 @@
 
   .btns-container {
     display: flex;
-    justify-content: left;
+    justify-content: center;
     align-items: center;
     gap: 4rem;
     width: 57%;
@@ -65,7 +67,7 @@
       align-items: center;
       padding: 0.4rem 3rem;
       background: transparent;
-      background-color: #e37300;
+      background-color: #1e1e1e;
       color: white;
       border-radius: 50px;
       font-weight: 500;
@@ -134,18 +136,23 @@
       }
     }
     .demo-btn {
-      background-color: #1e1e1e;
+      // background-color: #1e1e1e;
+      background-color: white;
+      border: 1px solid #ccc;
+      color: #1e1e1e;
+
     }
   }
   .news-text {
     width: 58%;
     padding: 2rem 1rem;
+    text-align: center;
   }
 
   .newsletter-input-container {
     width: 57%;
     display: flex;
-    justify-content: left;
+    justify-content: center;
     form {
       display: flex;
       width: 58%;
@@ -204,6 +211,11 @@
         width: 100%;
       }
     }
+      .newsletter-header {
+        margin-top: 0;
+      font-size: 3.5rem;
+      line-height: 4rem;
+    }
     .btns-container {
       gap: 1rem;
     }
@@ -212,6 +224,8 @@
     .newsletter-header {
       width: 100%;
       text-align: center;
+      font-size: 3rem;
+      line-height: 3.5rem;
     }
     .btns-container {
       width: 100%;
@@ -227,7 +241,7 @@
       width: 100%;
       justify-content: center;
       form {
-        width: 70%;
+        width: 80%;
       }
     }
   }
@@ -249,8 +263,9 @@
     .newsletter-header {
       width: 100%;
       text-align: center;
-      font-size: 2.5rem;
-      line-height: 3rem;
+        font-size: 2rem;
+        line-height: 2.5rem;
+        margin-top: 0;
     }
     .btns-container {
       width: 100%;
@@ -262,7 +277,7 @@
         width: 100%;
         padding: 2rem 0 ;
         text-align: center;
-        font-size: 0.8rem;
+        font-size: .875rem;
       }
       .newsletter-input-container {
         width: 100%;

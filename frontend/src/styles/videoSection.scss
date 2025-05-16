@@ -8,11 +8,12 @@
   height: 100%;
   overflow: hidden;
   text-align: center;
-  margin-top: 10rem;
+  // margin-top: 5rem;
+  margin-top: clamp(5rem, 10vw, 10rem);
 
   .video-header {
     text-align: center;
-    font-size: 4rem;
+    font-size: 3.5rem;
     font-weight: 600;
     padding: 0 15px;
     background: linear-gradient(95deg, #000000, #666666);
@@ -21,8 +22,8 @@
     display: block;
     -webkit-text-fill-color: transparent;
     text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
-    line-height: 5rem;
-
+    line-height: 4rem;
+    width: 40%;
     margin-bottom: 1.5rem;
   }
   .video-container {
@@ -123,11 +124,30 @@
       }
     }
   }
-
+    @media (max-width: 1024px){
+    .video-header{
+        font-size: 3.5rem;
+        line-height: 4rem;
+        width: 70%;
+    }
+  }
+  @media (max-width: 768px){
+    .video-header{
+        font-size: 3rem;
+        line-height: 3.5rem;
+    }
+  }
   @media (max-width: 480px){
     .video-header{
-      font-size: 2.1rem;
-      line-height: 3rem;
+        font-size: 2rem;
+        line-height: 2.5rem;
+        // padding: 0 25px;
+    }
+      .video-text-btn {
+        font-size: .875rem;
+      }
+    .video-text {
+        font-size: .875rem;
     }
   }
 }

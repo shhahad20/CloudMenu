@@ -91,6 +91,16 @@ const HelpIcon = () => (
     />
   </svg>
 );
+
+// just above your component
+const TABS = [
+  { key: "general" as Tab, icon: <UserIcon />, label: "General" },
+  { key: "security" as Tab, icon: <LockIcon />, label: "Security" },
+  { key: "Subscription" as Tab, icon: <PlanIcon />, label: "Subscription" },
+  { key: "invoices" as Tab, icon: <InvoiceIcon />, label: "Invoices" },
+  { key: "help" as Tab, icon: <HelpIcon />, label: "Help" },
+];
+
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>("general");
   const [loading, setLoading] = useState(true);
@@ -323,47 +333,45 @@ const SettingsPage: React.FC = () => {
       <Navbar />
       <div className="settings-page layout">
         <div className="settings-container">
-          {/* 1) Sidebar */}
-          <aside className="settings-sidebar">
-            <h2>Settings</h2>
-            <nav className="nav-tabs">
-              {(
-                [
-                  { key: "general", icon: <UserIcon />, label: "General" },
-                  { key: "security", icon: <LockIcon />, label: "Security" },
-                  {
-                    key: "Subscription",
-                    icon: <PlanIcon />,
-                    label: "Subscription",
-                  },
-                  {
-                    key: "invoices",
-                    icon: <InvoiceIcon />,
-                    label: "Invoices",
-                  },
-                  {
-                    key: "help",
-                    icon: <HelpIcon />,
-                    label: "Help",
-                  },
-                ] as const
-              ).map(({ key, icon, label }) => (
-                <button
-                  key={key}
-                  className={`tab-btn ${activeTab === key ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveTab(key);
-                    setError(null);
-                  }}
-                >
-                  <span className="icon">{icon}</span>
-                  <span className="label">{label}</span>
-                </button>
-              ))}
-            </nav>
-          </aside>
+{/*** Desktop sidebar ***/}
+        <aside className="settings-sidebar">
+          <h2>Settings</h2>
+          <nav className="nav-tabs">
+            {TABS.map(({ key, icon, label }) => (
+              <button
+                key={key}
+                className={`tab-btn ${activeTab === key ? "active" : ""}`}
+                onClick={() => {
+                  setActiveTab(key);
+                  setError(null);
+                }}
+              >
+                <span className="icon">{icon}</span>
+                <span className="label">{label}</span>
+              </button>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="divider" />
+
+        {/*** Mobile top‐nav: hidden by default, shown at ≤480px ***/}
+        <div className="mobile-tab-nav">
+          {TABS.map(({ key, icon, label }) => (
+            <button
+              key={key}
+              className={`tab-btn ${activeTab === key ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab(key);
+                setError(null);
+              }}
+            >
+              <span className="icon">{icon}</span>
+              <span className="label">{label}</span>
+            </button>
+          ))}
+        </div>
           {/* 2) Divider */}
-          <div className="divider" />
           {error && <div className="error">{error}</div>}
 
           {/* 3) Main content */}
@@ -516,41 +524,41 @@ const SettingsPage: React.FC = () => {
             {activeTab === "invoices" && (
               <div className="settings-section invoices-section">
                 <h1 className="setting-t-header">My Invoices</h1>
-
-                <table className="invoices-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Date</th>
-                      <th>Subtotal</th>
-                      <th>Tax</th>
-                      <th>Total</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {invoices.map((inv) => (
-                      <tr key={inv.id}>
-                        <td>{inv.id}</td>
-                        <td>
-                          {new Date(inv.invoice_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            }
-                          )}
-                        </td>
-                        <td>{inv.subtotal.toFixed(2)}$</td>
-                        <td>{inv.tax.toFixed(2)}</td>
-                        <td>{inv.total.toFixed(2)}$</td>
-                        <td>{inv.status}</td>
+                <div className="invoices-table-wrapper ">
+                  <table className="invoices-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Subtotal</th>
+                        <th>Tax</th>
+                        <th>Total</th>
+                        <th>Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-
+                    </thead>
+                    <tbody>
+                      {invoices.map((inv) => (
+                        <tr key={inv.id}>
+                          <td>{inv.id}</td>
+                          <td>
+                            {new Date(inv.invoice_date).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </td>
+                          <td>{inv.subtotal.toFixed(2)}$</td>
+                          <td>{inv.tax.toFixed(2)}</td>
+                          <td>{inv.total.toFixed(2)}$</td>
+                          <td>{inv.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 <button className="save-btn" onClick={downloadCsv}>
                   Download All Invoices (CSV)
                 </button>
@@ -605,7 +613,11 @@ const SettingsPage: React.FC = () => {
                     />
                   </label>
 
-                  <button className="save-btn" type="submit" disabled={status === "sending"}>
+                  <button
+                    className="save-btn"
+                    type="submit"
+                    disabled={status === "sending"}
+                  >
                     {status === "sending" ? "Sending…" : "Send Message"}
                   </button>
 

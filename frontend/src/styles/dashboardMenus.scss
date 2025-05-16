@@ -1,12 +1,14 @@
 .dashboard-container {
   display: flex;
-  margin-top: 5rem;
+  // margin-top: 5rem;
+  margin-top: clamp(5rem, 10vw, 10rem);
 }
 
 .user-menus {
   width: 100%;
   max-width: 1200px;
   padding: 0 1rem;
+  margin-top: 1rem;
 }
 .menus-grid {
   display: grid;

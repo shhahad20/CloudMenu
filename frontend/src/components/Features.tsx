@@ -101,7 +101,7 @@ const Features: React.FC = () => {
           <span className="dot">•</span> FEATURES
         </div>
         <h2 className="features-slogan">
-          Discover Our <br /> Exceptional Features
+          Discover Our Exceptional Features
         </h2>
       </div>
       <div className="features-flex">

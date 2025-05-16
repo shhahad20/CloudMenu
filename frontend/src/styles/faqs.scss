@@ -1,46 +1,48 @@
 .faqs-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-    margin-top: 10rem;
-    min-height: 60vh;
-    .faqs-header {
-        text-align: center;
-        font-size: 2rem;
-        font-weight: 600;
-        padding: 0 15px;
-        background: linear-gradient(95deg, #000000, #666666);
-        background-clip: text;
-        color: transparent;
-        display: block;
-        -webkit-text-fill-color: transparent;
-        text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
-        line-height: 5rem;
-    }
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  // margin-top: 10rem;
+  min-height: 70vh;
+  margin-top: clamp(10rem, 10vw, 10rem);
+
+  .faqs-header {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    padding: 0 15px;
+    background: linear-gradient(95deg, #000000, #666666);
+    background-clip: text;
+    color: transparent;
+    display: block;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+    line-height: 5rem;
+  }
   /* Tabs */
   .faq-tabs {
     display: flex;
     position: relative;
     // border-bottom: 2px solid #e0e0e0;
-    margin: 1rem 0 ;
+    margin: 1rem 0;
     gap: 1rem;
     justify-content: center;
     .tab-button {
       background: none;
-      border: 1px solid #B3B3B3;
+      border: 1px solid #b3b3b3;
       border-radius: 8px;
       padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
       position: relative;
       color: #555;
-  
+
       &.active {
         color: #000;
         font-weight: 600;
       }
     }
-  
+
     .tab-indicator {
       position: absolute;
       bottom: -2px;
@@ -48,7 +50,7 @@
       background-color: #6d5bba;
       width: 0;
     }
-  
+
     /* measure & place the indicator under the active tab */
     .tab-button.active ~ .tab-indicator {
       /* this rule won’t do it alone—we rely on Framer Motion’s layoutId magic */
@@ -56,9 +58,9 @@
   }
   .faq-item {
     border-bottom: 1px solid #e0e0e0;
-    overflow: hidden; 
+    overflow: hidden;
   }
-  
+
   .faq-question {
     display: flex;
     justify-content: space-between;
@@ -70,7 +72,7 @@
       display: inline-block;
     }
   }
-  
+
   .faq-answer {
     overflow: hidden;
     p {
@@ -79,18 +81,16 @@
       line-height: 1.5;
     }
   }
-    @media screen and (max-width: 480px){
-        .faqs-header {
-            font-size: 1.7rem;
-            line-height: 2.2rem;
-        }  
+  @media screen and (max-width: 480px) {
+    .faqs-header {
+      font-size: 1.7rem;
+      line-height: 2.2rem;
+    }
 
-        .faq-tabs{
-            .tab-button{
-                padding: 0.2rem 0.5rem;
-            }
-        }
+    .faq-tabs {
+      .tab-button {
+        padding: 0.2rem 0.5rem;
+      }
     }
   }
-
-  
+}

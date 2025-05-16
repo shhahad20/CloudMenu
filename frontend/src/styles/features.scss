@@ -4,7 +4,9 @@
   align-items: center;
   flex-direction: column;
   width: 100%;
-  margin-top: 10rem;
+  // margin-top: 10rem;
+    margin-top: clamp(5rem, 10vw, 10rem);
+
   .features-header {
     display: flex;
     justify-content: center;
@@ -12,22 +14,23 @@
     flex-direction: column;
     gap: 0;
     .features-dot-title {
-      font-weight: 700;
-      font-size: 14px;
+      font-weight: 600;
+      font-size: 12px;
       color: #5e5e5e;
     }
     .features-slogan {
       text-align: center;
-      font-size: 4rem;
+      font-size: 3.5rem;
       font-weight: 600;
       padding: 0 15px;
+      width: 70%;
       background: linear-gradient(95deg, #000000, #666666);
       background-clip: text;
       color: transparent;
       display: block;
       -webkit-text-fill-color: transparent;
       text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
-      line-height: 5rem;
+      line-height: 4rem;
     }
   }
   .features-flex {
@@ -136,18 +139,29 @@
       gap: 25px;
       height: 180px;
       align-items: flex-end;
-  
+
       // Remove any animation: xxx; from these:
-      .shape1, .shape2, .shape3, .shape4 {
+      .shape1,
+      .shape2,
+      .shape3,
+      .shape4 {
         width: 30px;
         background-color: #e37300; // override per shape if needed
         border-radius: 50px;
       }
-  
-      .shape1 { background-color: #e37300; }
-      .shape2 { background-color: #e37300; }
-      .shape3 { background-color: #f8ab00; }
-      .shape4 { background-color: #f8ab00; }
+
+      .shape1 {
+        background-color: #e37300;
+      }
+      .shape2 {
+        background-color: #e37300;
+      }
+      .shape3 {
+        background-color: #f8ab00;
+      }
+      .shape4 {
+        background-color: #f8ab00;
+      }
     }
   }
 
@@ -357,7 +371,15 @@
   //////////////////////////// Responsive Styles ///////////////////////////////
   ///////////////////////////// MEDIA QUERIES /////////////////////////////
   @media screen and (max-width: 1024px) {
-    // Let the flex container take full width
+    .features-header {
+      .features-slogan {
+        padding: 0 8rem;
+        font-size: 3.5rem;
+                line-height: 4rem;
+
+        width: 90%;
+      }
+    }
     .features-flex {
       width: 95%;
       gap: 1rem;
@@ -376,9 +398,9 @@
         flex-direction: column;
         .image-container1 {
           justify-content: center;
-          align-items: flex-end; 
+          align-items: flex-end;
           margin-bottom: 0;
-          height: 100%; 
+          height: 100%;
           .feature-img1 {
             width: 200px;
             height: auto;
@@ -397,7 +419,13 @@
     }
   }
   @media screen and (max-width: 768px) {
-    // Let the flex container take full width
+    .features-header {
+      .features-slogan {
+        font-size: 3rem;
+        line-height: 3.5rem;
+        padding: 0 5rem;
+      }
+    }
     .features-flex {
       width: 95%;
       gap: 1.5rem;
@@ -425,24 +453,28 @@
         }
       }
     }
-    // Adjust headings and other typography
-    .features-slogan {
-      font-size: 2.5rem;
-      line-height: 3rem;
-    }
   }
 
   @media screen and (max-width: 480px) {
     .features-header {
       .features-slogan {
-        font-size: 2.5rem;
-        line-height: 3rem;
+        font-size: 2rem;
+        line-height: 2.5rem;
       }
     }
 
     // Reduce margins/paddings if needed
     .box {
       padding: 15px;
+      .header-description {
+        h3 {
+          font-size: 1.25rem;
+          margin-bottom: 0;
+        }
+        p {
+          font-size: 0.875rem;
+        }
+      }
     }
     .box1 {
       padding-bottom: 0;

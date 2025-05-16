@@ -113,6 +113,7 @@
         font-size: 1.1rem;
         flex-wrap: wrap;
         padding-left: 1rem;
+        
       }
       .badge--warning {
         font-size: 0.7rem;
@@ -125,6 +126,10 @@
         margin: 0 auto; 
       }
       .dashboard-table{
+        
+        th{
+          font-size: 0.7rem;
+        }
         td{
           font-size: 0.7rem;
         }

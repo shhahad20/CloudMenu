@@ -38,7 +38,7 @@ const VideoSection: React.FC = () => {
     <section ref={sectionRef} className="video-section">
       <h1 className="video-header">
         Your Food Deserves
-        <br />
+        
         a Spotlight
       </h1>
 
