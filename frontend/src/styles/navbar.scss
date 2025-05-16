@@ -19,16 +19,16 @@
     .logo {
       font-size: 1.4rem;
       font-weight: 700;
-      color: #1E1E1E;
+      color: #1e1e1e;
     }
 
     .center-links {
       display: none;
       gap: 2rem;
-    font-size: 14px;
-    background-color: #f2f2f2;
-    padding: 0.3rem 1.4rem;
-    border-radius: 9999px;
+      font-size: 14px;
+      background-color: #f2f2f2;
+      padding: 0.3rem 1.4rem;
+      border-radius: 9999px;
       a {
         color: #0d0d0d;
         text-decoration: none;
@@ -37,9 +37,8 @@
         &:hover {
           // color: #6b7280;
           background-color: #fff;
-        
-          border-radius: 9999px;
 
+          border-radius: 9999px;
         }
       }
 
@@ -47,32 +46,32 @@
         display: flex;
       }
     }
-    
+
     .contact-btn-wrapper {
       display: inline-block;
       overflow: hidden;
       border-radius: 50px;
     }
-    
+
     .circle-arrow-btn {
       position: relative;
       display: inline-flex;
       align-items: center;
       padding: 0.3rem 3rem;
       background: transparent;
-      background-color: #1E1E1E;
+      background-color: #1e1e1e;
       color: white;
       border-radius: 50px;
       font-weight: 500;
       transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       overflow: hidden;
-      
+
       .btn-text {
         position: relative;
         z-index: 2;
         transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
-      
+
       .icon-container {
         position: absolute;
         right: 15px;
@@ -83,18 +82,18 @@
         border-radius: 50%;
         z-index: 2;
         &::before {
-          content: '';
+          content: "";
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%) scale(1);
           width: 8px;
           height: 8px;
-          background: currentColor;  
+          background: currentColor;
           border-radius: 50%;
           transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-        
+
         .arrow {
           position: absolute;
           top: 50%;
@@ -102,26 +101,26 @@
           transform: translate(-50%, -50%);
           opacity: 0;
           transition: opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          
+
           svg {
             width: 15px;
             height: 15px;
-            stroke: #1E1E1E;
+            stroke: #1e1e1e;
           }
         }
       }
-      
+
       &:hover {
         .btn-text {
           transform: translateX(-12px);
         }
-        
+
         .icon-container {
           &::before {
             transform: translate(-50%, -50%) scale(3);
             background: white;
           }
-          
+
           .arrow {
             opacity: 1;
           }
@@ -129,24 +128,20 @@
       }
     }
     /* Navbar.scss */
-.cart-icon {
-  position: relative;
-  font-size: 1.5rem;
-  .cart-count {
-    position: absolute;
-    top: -6px;
-    right: -8px;
-    background: #FF4612;
-    color: white;
-    border-radius: 50%;
-    padding: 0 5.5px;
-    font-size: 0.6rem;
-  }
-}
-
-    
-    
-    
+    .cart-icon {
+      position: relative;
+      font-size: 1.5rem;
+      .cart-count {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        background: #ff4612;
+        color: white;
+        border-radius: 50%;
+        padding: 0 5.5px;
+        font-size: 0.6rem;
+      }
+    }
 
     // .account-menu {
     //   position: relative;
@@ -213,12 +208,33 @@
     overflow: hidden;
     background: white;
 
+      &.open {
+    /* adjust color, thickness to your taste */
+    border-bottom: 1px solid #ccc;
+  }
     .mobile-links {
       display: flex;
       flex-direction: column;
+      text-align: left;
       gap: 1rem;
       padding: 1rem;
+      a,
+      button.logout-button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        // padding: 0.75rem 1rem;
+        color: #0d0d0d;
+        background: none;
+        border: none;
+        font: inherit;
+        cursor: pointer;
+        transition: background 0.2s;
 
+        &:hover {
+          background: #f2f2f2;
+        }
+      }
       a {
         color: #0d0d0d;
         text-decoration: none;
@@ -240,9 +256,9 @@
         text-align: center;
         margin-bottom: 0.5rem;
         font-size: 1.5rem;
-
       }
-      .center-links,.contact-btn-wrapper{
+      .center-links,
+      .contact-btn-wrapper {
         display: none;
       }
       // .contact-btn-wrapper {
