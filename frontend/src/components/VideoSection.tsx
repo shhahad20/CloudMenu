@@ -1,14 +1,13 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 import "../styles/videoSection.scss";
 
 const VideoSection: React.FC = () => {
-  // refs for play/pause
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef   = useRef<HTMLVideoElement>(null);
 
-  // play/pause when section enters/exits view
   const inView = useInView(sectionRef, { once: false, amount: 0.3 });
   useEffect(() => {
     if (!videoRef.current) return;
@@ -20,7 +19,6 @@ const VideoSection: React.FC = () => {
     }
   }, [inView]);
 
-  // compute our "shrunk" width based on window.innerWidth
   const [targetWidth, setTargetWidth] = useState("60%");
   useEffect(() => {
     const update = () => {
@@ -33,6 +31,8 @@ const VideoSection: React.FC = () => {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  const navigate = useNavigate();
 
   return (
     <section ref={sectionRef} className="video-section">
@@ -62,7 +62,7 @@ const VideoSection: React.FC = () => {
         <div className="video-btn-wrapper">
           <button
             className="circle-arrow-btn"
-            onClick={() => alert("Button Clicked!")}
+            onClick={() => navigate("/menus")}
           >
             <span className="btn-text">Explore Menus</span>
             <span className="icon-container">

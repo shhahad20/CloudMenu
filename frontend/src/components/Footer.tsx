@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="">
+                  <a href="/pricing" className="">
                     Pricing
                   </a>
                 </li>
@@ -39,17 +39,17 @@ const Footer: React.FC = () => {
               <h3 className="">Product</h3>
               <ul className="">
                 <li>
-                  <a href="#" className="">
+                  <a href="/faqs" className="">
                     How to Start
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="">
+                  <a href="/contact" className="">
                     Request Design ↗
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="">
+                  <a href="/menus" className="">
                     Menu Templates ↗
                   </a>
                 </li>
@@ -76,7 +76,7 @@ const Footer: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="">
+                  <a href="/contact" className="">
                     Support
                   </a>
                 </li>
