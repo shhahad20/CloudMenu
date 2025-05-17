@@ -17,7 +17,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 // import PlanUsage from "../components/UI/PlanUsage";
 import AnalyticsPage from "../components/UI/Analytics";
-import { InvoiceType, Template } from "../api/templates";
+import { fetchUserInvoices, fetchUserTemplates, InvoiceType, PaginatedResult, Template } from "../api/templates";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -30,69 +30,64 @@ const Dashboard: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      return navigate("/sign-in", { replace: true });
+useEffect(() => {
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    navigate("/sign-in", { replace: true });
+    return;
+  }
+
+  (async () => {
+    try {
+      // 1) load profile (same as before)…
+      const pRes = await fetch(`${API_URL}/profiles/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!pRes.ok) throw new Error("Not authorized");
+      const profileData: Profile = await pRes.json();
+      setProfile(profileData);
+
+      // 2) load last 3 templates via your helper
+      setLoadingTemplates(true);
+      const {
+        data: templList,
+      }: PaginatedResult<Template> = await fetchUserTemplates({
+        page: 1,
+        pageSize: 3,
+        sortBy: "updated_at",
+        order: "desc",
+      });
+      setTemplates(templList);
+      setLoadingTemplates(false);
+
+      // 3) load last 5 invoices via similar helper
+      setLoadingInvoices(true);
+      const {
+        data: invList,
+      }: PaginatedResult<InvoiceType> = await fetchUserInvoices({
+        page: 1,
+        pageSize: 5,
+        sortBy: "invoice_date",
+        order: "desc",
+      });
+      setInvoices(invList);
+      setLoadingInvoices(false);
+    } catch (err: unknown) {
+      console.error(err);
+      if (err instanceof Error && err.message === "Not authorized") {
+        navigate("/sign-in", { replace: true });
+      } else if (err instanceof Error) {
+        setErrorInvoices(err.message);
+      } else {
+        setErrorInvoices("An unknown error occurred.");
+      }
+      setLoadingTemplates(false);
+      setLoadingInvoices(false);
+    } finally {
+      setLoading(false);
     }
-
-    fetch(`${API_URL}/profiles/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Not authorized");
-        return res.json();
-      })
-      .then((data: Profile) => {
-        setProfile(data);
-
-        // 2) load templates
-        setLoadingTemplates(true);
-        fetch(`${API_URL}/templates`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => {
-            if (!r.ok) throw new Error("Failed to load templates");
-            return r.json();
-          })
-          .then((list: Template[]) => {
-            // sort by most recent update
-            const sorted = list.sort(
-              (a, b) =>
-                new Date(b.updated_at).getTime() -
-                new Date(a.updated_at).getTime()
-            );
-            setTemplates(sorted);
-          })
-          .catch(console.error)
-          .finally(() => setLoadingTemplates(false));
-
-        // 3) load last 5 invoices
-        setLoadingInvoices(true);
-        fetch(`${API_URL}/invoices`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-          .then((r) => {
-            if (!r.ok) throw new Error("Failed to load invoices");
-            return r.json();
-          })
-          .then((list: InvoiceType[]) => {
-            // sort newest first, take 5
-            const recent = list
-              .sort(
-                (a, b) =>
-                  new Date(b.invoice_date).getTime() -
-                  new Date(a.invoice_date).getTime()
-              )
-              .slice(0, 5);
-            setInvoices(recent);
-          })
-          .catch((err) => setErrorInvoices(err.message))
-          .finally(() => setLoadingInvoices(false));
-      })
-      .catch(() => navigate("/sign-in", { replace: true }))
-      .finally(() => setLoading(false));
-  }, [navigate]);
+  })();
+}, [navigate]);
 
   if (loading) {
     return <div className="dashboard-loading">Loading…</div>;
@@ -252,13 +247,14 @@ const Dashboard: React.FC = () => {
           <section className="dashboard-section">
             <h2 className="section-title">
               Last Invoices{" "}
-                {invoices.some((inv) => inv.status === "Overdue") ? (
+              {invoices.some((inv) => inv.status === "Overdue") ? (
                 <span className="badge badge--warning">
-                  {invoices.filter((inv) => inv.status === "Overdue").length} – Overdue
+                  {invoices.filter((inv) => inv.status === "Overdue").length} –
+                  Overdue
                 </span>
-                ) : (
+              ) : (
                 <span className="badge badge--warning">0 – Overdue</span>
-                )}
+              )}
             </h2>
             <div className="table-container">
               <table className="dashboard-table">

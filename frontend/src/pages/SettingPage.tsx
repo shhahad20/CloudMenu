@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../api/api";
 import "../styles/settings.scss";
 import { useCart } from "../context/CartContext";
-import { plans, userInvoices } from "../api/templates";
+import { plans, fetchUserInvoices } from "../api/templates";
 import Navbar from "../components/Navbar";
 import { tags } from "../components/Contact";
 
@@ -162,10 +162,10 @@ const SettingsPage: React.FC = () => {
       .catch((e) => setError(e.message));
 
     // 3) fetch invoices
-    userInvoices()
+    fetchUserInvoices()
       .then((data) => {
         // assume your API returns { invoices: [...] }
-        setInvoices(data.invoices ?? data);
+        setInvoices(data.data ?? data);
       })
       .catch((e) => setError(e.message))
 

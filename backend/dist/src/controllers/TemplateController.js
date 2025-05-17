@@ -1,5 +1,6 @@
 import { adminSupabase, supabase } from "../config/supabaseClient.js";
 import { handleUpload } from "../helper/helper.js";
+import { listService } from "../services/listService.js";
 // Helper to compute size of a JS object when serialized
 function byteSize(obj) {
     return Buffer.byteLength(JSON.stringify(obj), "utf8");
@@ -14,20 +15,78 @@ function bytesToMB(bytes) {
 }
 // GET /templates
 export const listUserTemplates = async (req, res) => {
-    const userId = req.user.id;
-    const { data, error } = await supabase
-        .from("menu_templates")
-        .select("*")
-        .eq("user_id", userId);
-    if (error)
-        return res.status(400).json({ error: error.message });
-    res.json(data);
+    try {
+        // parse query-string params
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+        const sortBy = req.query.sortBy || "created_at";
+        const sortOrder = req.query.order || "desc";
+        const search = req.query.q || "";
+        const opts = {
+            table: "menu_templates",
+            filters: { user_id: req.user.id },
+            search: search
+                ? { term: search, columns: ["name", "description"] }
+                : undefined,
+            sort: { column: sortBy, order: sortOrder },
+            pagination: { page, pageSize },
+        };
+        const { data, total } = await listService(supabase, opts);
+        res.json({
+            data,
+            pagination: {
+                page,
+                pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(400).json({ error: error.message });
+    }
+    // const userId = req.user!.id;
+    // const { data, error } = await supabase
+    //   .from("menu_templates")
+    //   .select("*")
+    //   .eq("user_id", userId);
+    // if (error) return res.status(400).json({ error: error.message });
+    // res.json(data);
 };
-export const listLibraryTemplates = async (_req, res) => {
-    const { data, error } = await supabase.from("library_templates").select("*");
-    if (error)
-        return res.status(400).json({ error: error.message });
-    res.json(data);
+export const listLibraryTemplates = async (req, res) => {
+    // const { data, error } = await supabase.from("library_templates").select("*");
+    // if (error) return res.status(400).json({ error: error.message });
+    // res.json(data);
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 9;
+        const sortBy = req.query.sortBy || "view_count";
+        const order = req.query.order || "asc";
+        const q = req.query.q || "";
+        const opts = {
+            table: "library_templates",
+            search: q
+                ? { term: q, columns: ["name", "category"] }
+                : undefined,
+            sort: { column: sortBy, order },
+            pagination: { page, pageSize },
+        };
+        const { data, total } = await listService(supabase, opts);
+        res.json({
+            data,
+            pagination: {
+                page,
+                pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(400).json({ error: err.message });
+    }
 };
 export const getLibraryTemplate = async (req, res) => {
     const { id } = req.params;

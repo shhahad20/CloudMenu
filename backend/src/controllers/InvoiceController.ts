@@ -2,31 +2,57 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 import { adminSupabase } from '../config/supabaseClient.js';
+import { ListOptions, listService } from '../services/listService.js';
 
 interface LineItem {
   id: string;
   name: string;
   price: number;     // DECIMAL(10,2)
   quantity: number;
-}
+} 
 
 // GET /api/invoices
 export async function listInvoices(
   req: AuthRequest,
   res: Response
 ) {
-  const userId = req.user!.id;
-  const { data, error } = await adminSupabase
-    .from('invoices')
-    .select('id, invoice_date, subtotal, tax, total, status')
-    .eq('user_id', userId)
-    .order('invoice_date', { ascending: false });
+try {
+    // 1) parse query-string
+    const page     = parseInt(req.query.page  as string) || 1;
+    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const sortBy   = (req.query.sortBy  as string) || "invoice_date";
+    const order    = (req.query.order   as string) as "asc"|"desc" || "desc";
+    const q        = (req.query.q       as string) || "";
 
-  if (error) {
-    console.error('listInvoices error:', error);
-    return res.status(500).json({ error: error.message });
+    // 2) build service options
+    const opts: ListOptions = {
+      table: "invoices",
+      select: "id, invoice_date, subtotal, tax, total, status",
+      filters: { user_id: req.user!.id },
+      search: q
+        ? { term: q, columns: ["status", "id"] }
+        : undefined,
+      sort: { column: sortBy, order },
+      pagination: { page, pageSize },
+    };
+
+    // 3) call listService
+    const { data, total } = await listService(adminSupabase, opts);
+
+    // 4) respond with data + pagination meta
+    res.json({
+      data,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    });
+  } catch (err: any) {
+    console.error("listInvoices error:", err);
+    res.status(500).json({ error: err.message });
   }
-  res.json(data);
 }
 
 // GET /api/invoices/:id

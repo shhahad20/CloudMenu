@@ -1,29 +1,28 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-
-
-
-
-
+import React, { useState, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
 
 // Basic usage
-{/* <SearchBar 
+{
+  /* <SearchBar 
   onSearch={(query) => console.log('Searching for:', query)}
-/> */}
+/> */
+}
 
 // Customized usage
-{/* <SearchBar
+{
+  /* <SearchBar
   onSearch={(query) => handleSearch(query)}
   placeholder="Find products..."
   debounceTime={500}
   className="max-w-xl mx-auto"
   showIcon={false}
-/> */}
-
-
+/> */
+}
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
+  /** New prop: starting value of the input */
+  initialValue?: string;
   placeholder?: string;
   debounceTime?: number;
   className?: string;
@@ -32,20 +31,24 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
-  placeholder = 'Search...',
+  initialValue = "",
+  placeholder = "Search...",
   debounceTime = 300,
-  className = '',
+  className = "",
   showIcon = true,
 }) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    setQuery(initialValue);
+  }, [initialValue]);
 
   // Debounce the search execution
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(query);
     }, debounceTime);
-
     return () => clearTimeout(timer);
   }, [query, debounceTime, onSearch]);
 
@@ -56,7 +59,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     []
   );
 
-  const handleKeyPress = useCallback(
+    const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter') {
         onSearch(query);
@@ -64,7 +67,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     },
     [query, onSearch]
   );
-
   return (
     <motion.div
       className={`relative ${className}`}
@@ -75,9 +77,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
       <div className="relative">
         {showIcon && (
           <svg
-          className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${
-            isFocused ? 'text-[#D9D9D9]' : 'text-gray-400'  // Updated color here
-          }`}
+            className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${
+              isFocused ? "text-[#D9D9D9]" : "text-gray-400" // Updated color here
+            }`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -90,8 +92,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
             />
           </svg>
         )}
-        
-        <input
+
+       <input
           type="text"
           value={query}
           onChange={handleInputChange}

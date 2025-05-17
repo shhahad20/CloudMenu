@@ -1,48 +1,77 @@
 // src/pages/InvoicesPage.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 // import { Link } from 'react-router-dom';
-import { API_URL } from '../api/api';
-import '../styles/invoices.scss';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { Link } from 'react-router-dom';
+// import { API_URL } from '../api/api';
+import "../styles/invoices.scss";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
+import { SortOption, useListControls } from "../hooks/userListControls";
+import { fetchUserInvoices, InvoiceType, PaginatedResult } from "../api/templates";
+import ListToolbar from "../components/UI/ListToolbar";
+import Pagination from "../components/UI/Pagination";
 // import { Link } from 'react-router-dom';
 
-export interface Invoice {
-  id: string;
-  subtotal: number;
-  total: number;
-  tax: number;
-  status: 'Paid' | 'Draft' | 'Canceled';
-  invoice_date: string;
-}
+// export interface Invoice {
+//   id: string;
+//   subtotal: number;
+//   total: number;
+//   tax: number;
+//   status: "Paid" | "Draft" | "Canceled";
+//   invoice_date: string;
+// }
+const SORT_OPTIONS: SortOption[] = [
+  { value: "invoice_date", label: "Date" },
+  { value: "total", label: "Total" },
+  { value: "status", label: "Status" },
+];
+const STATUS_OPTIONS = ["", "Paid", "Draft", "Canceled"];
 
 const InvoicesPage: React.FC = () => {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
 
+  const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
+    pageSize: 10,
+    sortBy: "invoice_date",
+    order: "desc",
+  });
+  const [statusFilter, setStatusFilter] = useState("");
+
+  // whenever controls change, refetch
   useEffect(() => {
-    fetch(`${API_URL}/invoices`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+    setLoading(true);
+    setError(null);
+
+    fetchUserInvoices({
+      page,
+      pageSize,
+      sortBy,
+      order,
+      q: query,
+      status: statusFilter,
     })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load invoices');
-        return res.json();
+      .then((res: PaginatedResult<InvoiceType>) => {
+        setInvoices(res.data);
+        setTotalPages(res.pagination.totalPages);
       })
-      .then((data: Invoice[]) => setInvoices(data))
-      .catch(err => setError(err.message))
+      .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [page, pageSize, sortBy, order, query, statusFilter]);
 
   return (
     <>
-    <Navbar/>
-    <div className="invoices-page">
-      <h1 className='invoice-header'>Invoices</h1>
-      <header className="invoices-header">
-        <div className="invoices-summary">
-          <span className="icon">              <svg
+      <Navbar />
+      <div className="invoices-page">
+        <h1 className="invoice-header">Invoices</h1>
+        <header className="invoices-header">
+          <div className="invoices-summary">
+            <div className="in-summary-container">
+            <span className="icon">
+              {" "}
+              <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
@@ -56,17 +85,19 @@ const InvoicesPage: React.FC = () => {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 />
-              </svg></span>
-          <span className="count">{invoices.length}</span>
-          <span className="label">Total Invoices</span>
-        </div>
+              </svg>
+            </span>
+            <span className="count">{invoices.length}</span>
+            <span className="label">Total Invoices</span>
+            </div>
+          </div>
 
-        <div className="invoices-controls">
-          <div className="search">
+          <div className="invoices-controls">
+            {/* <div className="search">
             <input type="text" placeholder="Search by date, #num" />
             <span className="search-icon">🔍</span>
-          </div>
-          <select>
+          </div> */}
+            {/* <select>
             <option>This Month</option>
             <option>Last 7 Days</option>
             <option>Last 30 Days</option>
@@ -76,64 +107,96 @@ const InvoicesPage: React.FC = () => {
             <option>Paid</option>
             <option>Draft</option>
             <option>Canceled</option>
-          </select>
-          <button className="support-btn">Support</button>
-        </div>
-      </header>
+          </select> */}
+            <ListToolbar
+              state={{ page, pageSize, sortBy, order, query }}
+              handlers={handlers}
+              sortOptions={SORT_OPTIONS}
+            />
 
-      {loading && <p>Loading invoices…</p>}
-      {error   && <p className="error">Error: {error}</p>}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                handlers.setPage(1);
+              }}
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "" ? "All Status" : s}
+                </option>
+              ))}
+            </select>
+            <button className="support-btn">Support</button>
+          </div>
+        </header>
 
-      {!loading && !error && (
-        <div className="table-container">
-          <table className="invoices-table">
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Time</th>
-                <th>#Num</th>
-                <th>Total</th>
-                <th>View</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map(inv => {
-              const dt = new Date(inv.invoice_date);
-              const date = dt.toLocaleDateString('en-GB').replace(/\//g, '.');
-              const time = dt.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
-              });
-              return (
-                
-                <tr key={inv.id}>
-                <td>
-                  <span className={`status-pill status-${inv.status.toLowerCase()}`}>
-                  {inv.status}
-                  </span>
-                </td>
-                <td>{date}</td>
-                <td>{time}</td>
-                <td>#{inv.id}</td>
-                <td>{inv.total.toFixed(2)} SAR</td>
-                <td className="view-cell">
-                    <Link to={`/invoices/${inv.id}`} className="view-link" target="_blank" rel="noopener noreferrer">
-                    ⋮
-                    </Link>
-                </td>
-                
-                </tr>
-                
-              );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-    <Footer/>
+        {loading && <p>Loading invoices…</p>}
+        {error && <p className="error">Error: {error}</p>}
+
+        {!loading && !error && (
+          <>
+            <div className="table-container">
+              <table className="invoices-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>#Num</th>
+                    <th>Total</th>
+                    <th>View</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => {
+                    const dt = new Date(inv.invoice_date);
+                    const date = dt
+                      .toLocaleDateString("en-GB")
+                      .replace(/\//g, ".");
+                    const time = dt.toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    });
+                    return (
+                      <tr key={inv.id}>
+                        <td>
+                          <span
+                            className={`status-pill status-${inv.status.toLowerCase()}`}
+                          >
+                            {inv.status}
+                          </span>
+                        </td>
+                        <td>{date}</td>
+                        <td>{time}</td>
+                        <td>#{inv.id}</td>
+                        <td>{inv.total.toFixed(2)} SAR</td>
+                        <td className="view-cell">
+                          <Link
+                            to={`/invoices/${inv.id}`}
+                            className="view-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            ⋮
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlers.setPage}
+            />
+          </>
+        )}
+      </div>
+      <Footer />
     </>
   );
 };

@@ -5,6 +5,9 @@ import Home from "./pages/Home";
 import { Provider } from "react-redux";
 import App from "./App.tsx";
 import "./index.css";
+// e.g. in App.tsx or index.tsx
+import "./styles/UI/listControls.scss";
+
 import store from "./redux/store.ts";
 import MenuTemplates from "./pages/MenuTemplates.tsx";
 import Signup from "./pages/Signup.tsx";

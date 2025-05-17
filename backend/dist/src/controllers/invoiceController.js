@@ -1,17 +1,42 @@
 import { adminSupabase } from '../config/supabaseClient.js';
+import { listService } from '../services/listService.js';
 // GET /api/invoices
 export async function listInvoices(req, res) {
-    const userId = req.user.id;
-    const { data, error } = await adminSupabase
-        .from('invoices')
-        .select('id, invoice_date, subtotal, tax, total, status')
-        .eq('user_id', userId)
-        .order('invoice_date', { ascending: false });
-    if (error) {
-        console.error('listInvoices error:', error);
-        return res.status(500).json({ error: error.message });
+    try {
+        // 1) parse query-string
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+        const sortBy = req.query.sortBy || "invoice_date";
+        const order = req.query.order || "desc";
+        const q = req.query.q || "";
+        // 2) build service options
+        const opts = {
+            table: "invoices",
+            select: "id, invoice_date, subtotal, tax, total, status",
+            filters: { user_id: req.user.id },
+            search: q
+                ? { term: q, columns: ["status", "id"] }
+                : undefined,
+            sort: { column: sortBy, order },
+            pagination: { page, pageSize },
+        };
+        // 3) call listService
+        const { data, total } = await listService(adminSupabase, opts);
+        // 4) respond with data + pagination meta
+        res.json({
+            data,
+            pagination: {
+                page,
+                pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        });
     }
-    res.json(data);
+    catch (err) {
+        console.error("listInvoices error:", err);
+        res.status(500).json({ error: err.message });
+    }
 }
 // GET /api/invoices/:id
 export async function getInvoice(req, res) {

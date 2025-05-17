@@ -11,8 +11,13 @@
   margin-top: 1rem;
 }
 .menus-grid {
+display: flex;
+
+}
+.templates-grid {
   display: grid;
   gap: 1rem;
+  margin: 1rem 0;
   // default: mobile (1 column)
   grid-template-columns: 1fr;
 
@@ -31,7 +36,6 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
-
 .menu-card {
   background: #fff;
   border: 1px solid #ccc;
@@ -39,6 +43,7 @@
   overflow: hidden;
   text-align: center;
   padding-bottom: 1rem;
+
   // width: 260px;
   .menu-preview-img {
     width: 100%;

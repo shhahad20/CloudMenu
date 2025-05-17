@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../../styles/analytics.scss";
 import "../../styles/UI/planUsage.scss";
 import Sparkline from "./Sparkline";
-import { Template } from "../../api/templates";
+import { fetchUserTemplates, PaginatedResult, Template } from "../../api/templates";
 import { API_URL } from "../../api/api";
 // import PlanUsage from "./PlanUsage";
 
@@ -31,18 +31,19 @@ const AnalyticsPage: React.FC = () => {
   // fetch user’s templates once on mount
   useEffect(() => {
     setLoadingViews(true);
-    fetch(`${API_URL}/templates`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
+    fetchUserTemplates({
+      page: 1,
+      pageSize: 1000, // pull as many as you need for analytics
+      sortBy: "view_count",
+      order: "desc",
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load templates");
-        return res.json();
+      .then((res: PaginatedResult<Template>) => {
+        setTemplates(res.data);
       })
-      .then((data: Template[]) => setTemplates(data))
       .catch((err) => setErrorViews(err.message))
       .finally(() => setLoadingViews(false));
+
+
     // 2) fetch usage in MB
     fetch(`${API_URL}/usage/analytics`, {
       headers: {
@@ -53,14 +54,27 @@ const AnalyticsPage: React.FC = () => {
       .then(setAnalytics)
       .catch(console.error);
   }, []);
-  const totalViews = templates.reduce((sum, t) => sum + t.view_count, 0);
-  const topTemplate =
-    templates.length > 0
-      ? templates.reduce(
-          (best, t) => (t.view_count > best.view_count ? t : best),
-          templates[0]
-        )
-      : null;
+
+
+  // const totalViews = templates.reduce((sum, t) => sum + t.view_count, 0);
+  // const topTemplate =
+  //   templates.length > 0
+  //     ? templates.reduce(
+  //         (best, t) => (t.view_count > best.view_count ? t : best),
+  //         templates[0]
+  //       )
+  //     : null;
+  const tplArray = Array.isArray(templates) ? templates : [];
+
+  const totalViews = tplArray.reduce((sum, t) => sum + (t.view_count || 0), 0);
+
+  const topTemplate = tplArray.length
+    ? tplArray.reduce(
+        (best, t) =>
+          (t.view_count || 0) > (best.view_count || 0) ? t : best,
+        tplArray[0]
+      )
+    : null;
 
   // const totalViews = totalViewsTrend.reduce((a, b) => a + b, 0);
   // const totalDeltaPct = Math.round((totalViewsTrend[6] / 50) * 100); // sample
