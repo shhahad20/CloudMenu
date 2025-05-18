@@ -1,0 +1,136 @@
+.our-services {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: clamp(5rem, 10vw, 10rem);
+
+  .section-title {
+    text-align: center;
+    font-size: 3.5rem;
+    font-weight: 600;
+    padding: 0 15px;
+    background: linear-gradient(95deg, #000000, #666666);
+    background-clip: text;
+    color: transparent;
+    display: block;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 10px rgba(174, 207, 242, 0.24);
+    line-height: 4rem;
+    // width: 40%;
+    margin: 1.5rem 0;
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 3rem;
+    align-items: start;
+    justify-items: start;
+  }
+
+  .service-card {
+    background: #f5f5f5;
+    // border: 1px solid ;
+    border-radius: 12px;
+    padding: 1.5rem;
+    max-width: 400px;
+    // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    text-align: left;
+
+    .service-header{
+        display: flex;
+    .service-icon {
+      font-size: 1.75rem;
+    //   margin-bottom: 0.75rem;
+    //   display: inline-block;
+      padding-right: 0.5rem;
+    //   border-radius: 8px;
+    //   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .service-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    //   margin: 0.5rem 0;
+      color: #1e1e1e;
+    }
+    }
+
+
+    .service-desc {
+      font-size: 0.95rem;
+      color: #555;
+      line-height: 1.5;
+    }
+  }
+}
+
+/* Stagger the vertical position for a “masonry” feel */
+.service-card:nth-child(odd) {
+  margin-top: 2rem;
+}
+/* ─── Responsive Breakpoints ─────────────────────────────────────────── */
+
+/* At <=1024px: slightly narrower grid columns */
+@media (max-width: 1024px) {
+  .our-services {
+    .section-title {
+      width: 100%;
+
+    }
+    .services-grid {
+    //   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem 2rem;
+      justify-items: center;
+    }
+    .service-card:nth-child(odd) {
+      margin-top: 1.5rem;
+    }
+  }
+}
+
+/* At <=768px: single-column layout */
+@media (max-width: 768px) {
+  .our-services {
+    .section-title {
+      font-size: 3rem;
+      line-height: 3.5rem;
+      width: 100%;
+    }
+    .services-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      justify-items: center;
+    }
+    .service-card {
+      max-width: 450px;
+      padding: 1rem;
+    }
+    .service-card:nth-child(odd) {
+      margin-top: 1rem;
+    }
+  }
+}
+
+/* At <=480px: further adjust typography & spacing */
+@media (max-width: 480px) {
+  .our-services {
+    padding: 0 20px;
+    .section-title {
+      font-size: 2rem;
+      line-height: 2.5rem;
+      width: 90%;
+    }
+    .service-card {
+      padding: 0.75rem;
+      .service-header .service-title {
+        font-size: 1rem;
+      }
+      .service-desc {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

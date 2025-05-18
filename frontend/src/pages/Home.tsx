@@ -6,6 +6,7 @@ import VideoSection from "../components/VideoSection";
 // import ShortAboutUs from "../components/ShortAboutUs";
 import Newsletter from "../components/Newsletter";
 import AiFeature from "../components/AiFeature";
+import OurServices from "../components/OurServices";
 
 const Home: React.FC = () => {
   return (
@@ -15,6 +16,7 @@ const Home: React.FC = () => {
       <Features />
       <VideoSection/>
       <AiFeature/>
+      <OurServices/>
       {/* <ShortAboutUs/> */}
       <Newsletter/>
       </section>
