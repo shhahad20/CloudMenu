@@ -42,9 +42,9 @@ const Hero: React.FC = () => {
       </p>
       <h1 className="hero-heading">Make Your Menu a Work of Art</h1>
       <div className="contact-btn-wrapper">
+        <a href="#services">
         <button
           className="circle-arrow-btn"
-          onClick={() => alert("Button Clicked!")}
         >
           <span className="btn-text">Our Services</span>
           <span className="icon-container">
@@ -61,6 +61,7 @@ const Hero: React.FC = () => {
             </span>
           </span>
         </button>
+        </a>
       </div>
     </motion.div>
   );

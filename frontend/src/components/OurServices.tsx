@@ -158,7 +158,7 @@ const OurServices: React.FC = () => (
     whileInView="visible"
     viewport={{ once: true, amount: 0.3 }}
     variants={containerVariants}>
-    <motion.h1 className="section-title" variants={itemVariants}>Value Driven Services</motion.h1>
+    <motion.h1 className="section-title"  variants={itemVariants}>Value Driven Services</motion.h1>
     <motion.div
       className="services-grid"
     >
