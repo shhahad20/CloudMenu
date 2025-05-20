@@ -12,11 +12,27 @@ const CheckoutPage: React.FC = () => {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
+
+  // if (!cardNumber || !expiry || !cvc) {
+  //   setError("Please fill out all card details.");
+  //   setProcessing(false);
+  //   return;
+  // }
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   const handlePay = async () => {
     setProcessing(true);
     setError("");
+
+    // 1) quick client-side validation:
+    if (!cardNumber || !expiry || !cvc) {
+      setError("Please fill out all card details.");
+      setProcessing(false);
+      return;
+    }
 
     try {
       // 1) (Optional) call your backend /api/checkout if using Stripe
@@ -28,9 +44,10 @@ const CheckoutPage: React.FC = () => {
         items.map(async (i) => {
           if (i.id.startsWith("plan-")) {
             // subscription flow
-            let planName = i.name.replace("plan-", ""); // e.g. "pro"
-            planName = planName.charAt(0).toUpperCase() + planName.slice(1);
-
+            const key = i.id.slice("plan-".length); // "pro"
+            const planName = key.charAt(0).toUpperCase() + key.slice(1);
+            
+            console.log("planName:", planName);
             // const planName = i.id.replace("plan-", "") as
             //   | "Free"
             //   | "Pro"
@@ -72,7 +89,7 @@ const CheckoutPage: React.FC = () => {
       if (!invoiceResp.ok) {
         throw new Error("Failed to save invoice.");
       }
-      const { invoiceId } = await invoiceResp.json();
+      // const { invoiceId } = await invoiceResp.json();
 
       // (optional) redirect straight to your GET-invoice-PDF endpoint:
       // window.open(`${API_URL}/invoices/${invoiceId}/pdf`, '_blank');
@@ -85,48 +102,12 @@ const CheckoutPage: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("Payment failed.");
+        setError("Payment/clone failed.");
       }
     } finally {
       setProcessing(false);
     }
   };
-
-  // const handlePay = async () => {
-  //   setProcessing(true);
-  //   setError('');
-
-  //   try {
-  //     // 1) Send cart to your backend
-  //     const res = await fetch(`${API_URL}/checkout`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-  //       },
-  //       body: JSON.stringify({
-  //         items,
-  //         currency: 'SAR',  // or whatever your UI lets the user pick
-  //       }),
-  //     });
-  //     if (!res.ok) throw new Error('Failed to create checkout session');
-
-  //     const { url } = await res.json();
-
-  //     // 2) Redirect to Stripe Checkout
-  //     window.location.href = url;
-  //     // nothing below this line will run, so move fulfillment logic to your webhook
-  //   } catch (err: unknown) {
-  //     if (err instanceof Error) {
-  //       console.error(err);
-  //       setError(err.message || 'Payment failed.');
-  //     } else {
-  //       console.error('An unknown error occurred:', err);
-  //       setError('Payment failed.');
-  //     }
-  //     setProcessing(false);
-  //   }
-  // };
 
   if (items.length === 0) {
     return (
@@ -190,15 +171,32 @@ const CheckoutPage: React.FC = () => {
                 type="text"
                 placeholder="•••• •••• •••• ••••"
                 disabled={processing}
+                required
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
               />
             </label>
             <label>
               Expiry
-              <input type="text" placeholder="MM/YY" disabled={processing} />
+              <input
+                type="text"
+                placeholder="MM/YY"
+                disabled={processing}
+                value={expiry}
+                onChange={(e) => setExpiry(e.target.value)}
+                required
+              />
             </label>
             <label>
               CVC
-              <input type="text" placeholder="CVC" disabled={processing} />
+              <input
+                type="text"
+                placeholder="CVC"
+                value={cvc}
+                onChange={(e) => setCvc(e.target.value)}
+                disabled={processing}
+                required
+              />
             </label>
           </div>
 

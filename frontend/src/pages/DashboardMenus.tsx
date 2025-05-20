@@ -225,6 +225,7 @@ const DashboardMenus: React.FC = () => {
                         >
                           View ↗
                         </button>
+                        <Link to={`/templates/qr/${tpl.id}`}>View QR</Link>
                       </div>
                     </div>
                   ))}

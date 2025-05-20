@@ -92,6 +92,7 @@ const MenuTemplates: React.FC = () => {
     try {
       const newTpl = await cloneTemplate(tplId);
       navigate(`/builder/${newTpl.id}`);
+      
     } catch (err: unknown) {
       console.error(err);
       setCloneErrors((errs) => ({

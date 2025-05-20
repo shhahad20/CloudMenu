@@ -1,6 +1,7 @@
 import { adminSupabase, supabase } from "../config/supabaseClient.js";
 import { handleUpload } from "../helper/helper.js";
 import { listService } from "../services/listService.js";
+import QRCode from "qrcode";
 // Helper to compute size of a JS object when serialized
 function byteSize(obj) {
     return Buffer.byteLength(JSON.stringify(obj), "utf8");
@@ -66,9 +67,7 @@ export const listLibraryTemplates = async (req, res) => {
         const q = req.query.q || "";
         const opts = {
             table: "library_templates",
-            search: q
-                ? { term: q, columns: ["name", "category"] }
-                : undefined,
+            search: q ? { term: q, columns: ["name", "category"] } : undefined,
             sort: { column: sortBy, order },
             pagination: { page, pageSize },
         };
@@ -169,9 +168,7 @@ export const updateTemplate = async (req, res) => {
     const plan = req.user.plan;
     const templateId = req.params.id;
     if (!plan || !planLimits[plan]) {
-        return res
-            .status(400)
-            .json({
+        return res.status(400).json({
             error: "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed.",
         });
     }
@@ -204,9 +201,7 @@ export const updateTemplate = async (req, res) => {
             if (cntErr)
                 throw cntErr;
             if ((cnt || 0) > maxProjects) {
-                return res
-                    .status(403)
-                    .json({
+                return res.status(403).json({
                     error: `${plan} plan allows up to ${maxProjects} projects.`,
                 });
             }
@@ -257,7 +252,28 @@ export const updateTemplate = async (req, res) => {
     }
 };
 // DELETE /templates/:id
-export const deleteTemplate = async (req, res) => { };
+export const deleteTemplate = async (req, res) => {
+    const userId = req.user.id;
+    const templateId = req.params.id;
+    // 1) Delete from DB
+    const { error: deleteErr } = await adminSupabase
+        .from("menu_templates")
+        .delete()
+        .eq("id", templateId)
+        .eq("user_id", userId);
+    if (deleteErr) {
+        return res.status(400).json({ error: deleteErr.message });
+    }
+    // 2) Delete from storage
+    const { error: storageErr } = await adminSupabase.storage
+        .from("users-menu-images")
+        .remove([`templates/${userId}/${templateId}`]);
+    if (storageErr) {
+        console.error("Failed to delete from storage:", storageErr);
+        // proceed anyway
+    }
+    res.json({ ok: true });
+};
 // POST /templates/:id/clone
 export const cloneTemplate = async (req, res) => {
     const userId = req.user.id;
@@ -287,9 +303,7 @@ export const cloneTemplate = async (req, res) => {
             if (cntErr)
                 throw cntErr;
             if ((cnt || 0) >= maxProjects) {
-                return res
-                    .status(403)
-                    .json({
+                return res.status(403).json({
                     error: `${plan} plan allows up to ${maxProjects} projects.`,
                 });
             }
@@ -331,7 +345,14 @@ export const cloneTemplate = async (req, res) => {
             .single();
         if (error)
             throw error;
-        res.json(data);
+        const clonedId = data.id;
+        // 4) Generate QR right away
+        const url = `${process.env.FRONTEND_URL}/templates/qr/${clonedId}`;
+        const qrDataUrl = await QRCode.toDataURL(url);
+        res.json({
+            ...data,
+            qr: qrDataUrl,
+        });
     }
     catch (err) {
         res.status(500).json({ error: err.message });
@@ -397,3 +418,19 @@ export async function recordLibraryView(req, res) {
     // 3) Return success (optionally include newCount)
     res.json({ ok: true, view_count: newCount });
 }
+// GET /templates/:id/qr
+export const getTemplateQRCode = async (req, res) => {
+    const { id } = req.params;
+    const url = `${process.env.FRONTEND_URL}/templates/qr/${id}`;
+    try {
+        // generates a data-URL PNG
+        const dataUrl = await QRCode.toDataURL(url);
+        // strip header so we can return raw base64 if you want:
+        // const b64 = dataUrl.split(",")[1];
+        res.json({ qr: dataUrl });
+    }
+    catch (err) {
+        console.error("Failed to generate QR:", err);
+        res.status(500).json({ error: "QR generation failed" });
+    }
+};

@@ -41,6 +41,10 @@ export interface Template {
   updated_at: string;
   created_at: string;
 }
+
+export interface ClonedTemplate extends Template {
+  qr: string;   // new
+}
 export interface InvoiceType {
   id: string;
   status: string;
@@ -188,7 +192,7 @@ export const updateTemplate = (
     return res.json();
   });
 
-export const cloneTemplate = async (id: string): Promise<{ id: string }> => {
+export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
   const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("You need to be logged in to clone a template.");
@@ -197,9 +201,15 @@ export const cloneTemplate = async (id: string): Promise<{ id: string }> => {
     method: "POST",
     headers: getHeaders(),
   });
-  const payload = await res.json();
-  if (!res.ok) throw new Error(payload.error || "Clone failed");
-  return payload;
+const body = await res.json().catch(() => null);
+  if (!res.ok || !body || !body.id) {
+    throw new Error(
+      body?.error
+        ? `Clone failed: ${body.error}`
+        : `Clone failed: HTTP ${res.status}`
+    );
+  }
+  return body as ClonedTemplate;
 };
 
 export const plans = () =>
@@ -259,3 +269,15 @@ export async function fetchUserInvoices(
   if (!res.ok) throw new Error("Failed to fetch invoices");
   return res.json();
 }
+
+export const fetchTemplateQR = (id: string) =>
+  fetch(`${API}/templates/${id}/qrcode`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    },
+  }).then((res) => {
+    if (!res.ok) throw new Error("QR code not found");
+    return res.json();
+  });

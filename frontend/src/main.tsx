@@ -33,6 +33,7 @@ import InvoiceDetails from "./pages/InvoiceDetails.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
 import SettingsPage from "./pages/SettingPage.tsx";
+import TemplateQRCode from "./pages/TemplateQRCode.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
@@ -49,6 +50,7 @@ createRoot(document.getElementById("root")!).render(
               path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6"
               element={<Template1 />}
             />
+            <Route path="/templates/qr/:id" element={<TemplateQRCode />} />
             <Route path="/menus/:id" element={<Template1Renderer />} />
             {/* <Route path="/builder/:id" element={<HeaderImageBuilder />} /> */}
             <Route path="/sign-up" element={<Signup />} />

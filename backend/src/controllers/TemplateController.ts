@@ -3,6 +3,7 @@ import { adminSupabase, supabase } from "../config/supabaseClient.js";
 import { AuthRequest } from "../middleware/verifyAuth.js";
 import { handleUpload } from "../helper/helper.js";
 import { ListOptions, listService } from "../services/listService.js";
+import QRCode from "qrcode";
 
 // Helper to compute size of a JS object when serialized
 function byteSize(obj: any) {
@@ -22,13 +23,12 @@ function bytesToMB(bytes: number) {
 }
 // GET /templates
 export const listUserTemplates = async (req: AuthRequest, res: Response) => {
-
   try {
     // parse query-string params
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 10;
     const sortBy = (req.query.sortBy as string) || "created_at";
-    const sortOrder = (req.query.order as string) as "asc"|"desc" || "desc";
+    const sortOrder = (req.query.order as string as "asc" | "desc") || "desc";
     const search = (req.query.q as string) || "";
 
     const opts: ListOptions = {
@@ -40,7 +40,7 @@ export const listUserTemplates = async (req: AuthRequest, res: Response) => {
       sort: { column: sortBy, order: sortOrder },
       pagination: { page, pageSize },
     };
-const { data, total } = await listService(supabase, opts);
+    const { data, total } = await listService(supabase, opts);
 
     res.json({
       data,
@@ -51,9 +51,8 @@ const { data, total } = await listService(supabase, opts);
         totalPages: Math.ceil(total / pageSize),
       },
     });
-
   } catch (error: any) {
-     console.error(error);
+    console.error(error);
     res.status(400).json({ error: error.message });
   }
   // const userId = req.user!.id;
@@ -74,14 +73,12 @@ export const listLibraryTemplates = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 9;
     const sortBy = (req.query.sortBy as string) || "view_count";
-    const order = (req.query.order as string) as "asc"|"desc" || "asc";
+    const order = (req.query.order as string as "asc" | "desc") || "asc";
     const q = (req.query.q as string) || "";
- 
+
     const opts: ListOptions = {
       table: "library_templates",
-      search: q
-        ? { term: q, columns: ["name", "category"] }
-        : undefined,
+      search: q ? { term: q, columns: ["name", "category"] } : undefined,
       sort: { column: sortBy, order },
       pagination: { page, pageSize },
     };
@@ -202,12 +199,10 @@ export const updateTemplate = async (
   const templateId = req.params.id;
 
   if (!plan || !planLimits[plan]) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed.",
-      });
+    return res.status(400).json({
+      error:
+        "Invalid or missing subscription plan. Please ensure your account has a valid plan to proceed.",
+    });
   }
   const { maxProjects, maxStorageMB } = planLimits[plan];
 
@@ -227,7 +222,7 @@ export const updateTemplate = async (
     // 2) Build newConfig
     let newConfig = { ...existing.config, ...(req.body.config || {}) };
     if (req.file) {
-      const imageUrl = await handleUpload(req.file,templateId,  userId);
+      const imageUrl = await handleUpload(req.file, templateId, userId);
       newConfig.header_image = imageUrl;
     }
 
@@ -240,11 +235,9 @@ export const updateTemplate = async (
         .eq("user_id", userId);
       if (cntErr) throw cntErr;
       if ((cnt || 0) > maxProjects) {
-        return res
-          .status(403)
-          .json({
-            error: `${plan} plan allows up to ${maxProjects} projects.`,
-          });
+        return res.status(403).json({
+          error: `${plan} plan allows up to ${maxProjects} projects.`,
+        });
       }
     }
 
@@ -265,7 +258,10 @@ export const updateTemplate = async (
       .from("users-menu-images")
       .list(prefix, { limit: 1000 });
     if (filesErr) throw filesErr;
-    const fileBytes = (files || []).reduce((sum, f) => sum + (f.metadata?.size || 0), 0);
+    const fileBytes = (files || []).reduce(
+      (sum, f) => sum + (f.metadata?.size || 0),
+      0
+    );
 
     // new template size
     const newBytes = byteSize(newConfig);
@@ -297,7 +293,31 @@ export const updateTemplate = async (
 };
 
 // DELETE /templates/:id
-export const deleteTemplate = async (req: AuthRequest, res: Response) => {};
+export const deleteTemplate = async (req: AuthRequest, res: Response) => {
+  const userId = req.user!.id;
+  const templateId = req.params.id;
+
+  // 1) Delete from DB
+  const { error: deleteErr } = await adminSupabase
+    .from("menu_templates")
+    .delete()
+    .eq("id", templateId)
+    .eq("user_id", userId);
+  if (deleteErr) {
+    return res.status(400).json({ error: deleteErr.message });
+  }
+
+  // 2) Delete from storage
+  const { error: storageErr } = await adminSupabase.storage
+    .from("users-menu-images")
+    .remove([`templates/${userId}/${templateId}`]);
+  if (storageErr) {
+    console.error("Failed to delete from storage:", storageErr);
+    // proceed anyway
+  }
+
+  res.json({ ok: true });
+};
 // POST /templates/:id/clone
 export const cloneTemplate = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
@@ -329,11 +349,9 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
         .eq("user_id", userId);
       if (cntErr) throw cntErr;
       if ((cnt || 0) >= maxProjects) {
-        return res
-          .status(403)
-          .json({
-            error: `${plan} plan allows up to ${maxProjects} projects.`,
-          });
+        return res.status(403).json({
+          error: `${plan} plan allows up to ${maxProjects} projects.`,
+        });
       }
     }
 
@@ -377,10 +395,23 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
           size_bytes: newBytes,
         },
       ])
-      .single();
+      .single<{
+        id: string;
+        name: string;
+        preview_url: string;
+        config: any;
+        size_bytes: number;
+      }>();
     if (error) throw error;
+    const clonedId = data.id;
+    // 4) Generate QR right away
+    const url = `${process.env.FRONTEND_URL}/templates/qr/${clonedId}`;
+    const qrDataUrl = await QRCode.toDataURL(url);
 
-    res.json(data);
+    res.json({
+      ...data,
+      qr: qrDataUrl,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -458,3 +489,19 @@ export async function recordLibraryView(req: AuthRequest, res: Response) {
   // 3) Return success (optionally include newCount)
   res.json({ ok: true, view_count: newCount });
 }
+
+// GET /templates/:id/qr
+export const getTemplateQRCode = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const url = `${process.env.FRONTEND_URL}/templates/qr/${id}`;
+  try {
+    // generates a data-URL PNG
+    const dataUrl = await QRCode.toDataURL(url);
+    // strip header so we can return raw base64 if you want:
+    // const b64 = dataUrl.split(",")[1];
+    res.json({ qr: dataUrl });
+  } catch (err) {
+    console.error("Failed to generate QR:", err);
+    res.status(500).json({ error: "QR generation failed" });
+  }
+};

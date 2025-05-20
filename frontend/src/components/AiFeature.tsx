@@ -35,9 +35,9 @@ const AiFeature: React.FC = () => {
       variants={containerVariants}
     >
 <motion.div className="features-header" variants={itemVariants}>
-        <motion.div className="features-dot-title" variants={itemVariants}>
+        {/* <motion.div className="features-dot-title" variants={itemVariants}>
           <span className="dot">•</span> AI Bot
-        </motion.div>
+        </motion.div> */}
         <motion.h2 className="features-slogan" variants={itemVariants}>
           Augment your Team
             

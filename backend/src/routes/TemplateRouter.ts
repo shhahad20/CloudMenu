@@ -10,6 +10,7 @@ import {
   getLibraryTemplate,
   recordTemplateView,
   recordLibraryView,
+  getTemplateQRCode,
 } from "../controllers/TemplateController.js";
 import { verifyAuth } from "../middleware/verifyAuth.js";
 import { uploadMiddleware } from "../middleware/upload.js";
@@ -19,6 +20,9 @@ const router = Router();
 router.get("/lib", listLibraryTemplates);
 router.get("/lib/:id", getLibraryTemplate);
 router.post('/lib/:id/view', recordLibraryView)
+
+router.get("/:id/qrcode", getTemplateQRCode);
+
 // Protect all routes below this middleware
 router.use(verifyAuth);
 
