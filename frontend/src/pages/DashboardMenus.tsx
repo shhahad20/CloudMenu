@@ -219,13 +219,15 @@ const DashboardMenus: React.FC = () => {
                         <Link to={`/builder/${tpl.id}`} className="btn">
                           Edit
                         </Link>
+                        <Link to={`/templates/qr/${tpl.id}`} className="qr-btn">
+                          QR
+                        </Link>
                         <button
                           onClick={() => handleView(tpl.id)}
                           className="btn secondary"
                         >
                           View ↗
                         </button>
-                        <Link to={`/templates/qr/${tpl.id}`}>View QR</Link>
                       </div>
                     </div>
                   ))}

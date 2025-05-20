@@ -11,8 +11,7 @@
   margin-top: 1rem;
 }
 .menus-grid {
-display: flex;
-
+  display: flex;
 }
 .templates-grid {
   display: grid;
@@ -83,5 +82,14 @@ display: flex;
         border: 1px solid #1e1e1e;
       }
     }
+  }
+  .qr-btn {
+    padding: 0.1rem 1.5rem;
+    color: white;
+    border-radius: 150px;
+    font-weight: 500;
+    text-decoration: none;
+    background: #1e1e1e;
+    font-size: 0.9rem;
   }
 }

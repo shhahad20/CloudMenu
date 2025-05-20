@@ -6,7 +6,7 @@
   color: #0d0d0d;
   background: rgba(255, 255, 255, 0.85);
   z-index: 1000;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(4px);
   transition: background-color 0.3s ease, backdrop-filter 0.3s ease;
   .container {
     max-width: 1200px;
@@ -128,6 +128,10 @@
       }
     }
     /* Navbar.scss */
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+    }
     .cart-icon {
       position: relative;
       font-size: 1.5rem;
@@ -191,7 +195,6 @@
       background: none;
       border: none;
       cursor: pointer;
-
       svg {
         width: 1.5rem;
         height: 1.5rem;
@@ -208,10 +211,10 @@
     overflow: hidden;
     background: white;
 
-      &.open {
-    /* adjust color, thickness to your taste */
-    border-bottom: 1px solid #ccc;
-  }
+    &.open {
+      /* adjust color, thickness to your taste */
+      border-bottom: 1px solid #ccc;
+    }
     .mobile-links {
       display: flex;
       flex-direction: column;
@@ -256,6 +259,7 @@
         text-align: center;
         margin-bottom: 0.5rem;
         font-size: 1.5rem;
+        padding-left: 2.5rem;
       }
       .center-links,
       .contact-btn-wrapper {

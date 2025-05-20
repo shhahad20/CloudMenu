@@ -146,9 +146,8 @@ const Navbar: React.FC = () => {
               <span className="cart-count">{itemCount}</span>
             </Link>
           )}
-        </div>
-        {/* Mobile Menu Button */}
-        <button className="mobile-menu-button" onClick={toggleMenu}>
+
+                  <button className="mobile-menu-button" onClick={toggleMenu}>
           <motion.div
             initial={{ rotate: 0 }}
             animate={{ rotate: isOpen ? 90 : 0 }}
@@ -168,6 +167,9 @@ const Navbar: React.FC = () => {
             </svg>
           </motion.div>
         </button>
+        </div>
+        {/* Mobile Menu Button */}
+
       </div>
 
       {/* Mobile Menu */}
