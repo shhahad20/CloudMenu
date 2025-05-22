@@ -132,8 +132,20 @@ export const createTemplate = async (
 ) => {
   try {
     const userId = req.user!.id;
-    const { config } = req.body as { config: any };
-
+    // const { config } = req.body as { config: any };
+    const {
+      name,
+      preview_url,
+      price,
+      category,
+      config: config,
+    } = req.body as {
+      name: string;
+      preview_url?: string;
+      price?: string;
+      category?: string;
+      config: any;
+    };
     // 1) optionally upload and inject into config
     const imageUrl = await handleUpload(req.file);
     const finalConfig = {
@@ -142,12 +154,20 @@ export const createTemplate = async (
     };
 
     // 2) compute byte size of the config
-    const size_bytes = byteSize(finalConfig);
+    // const size_bytes = byteSize(finalConfig);
 
     // 3) insert into DB
     const { data, error } = await supabase
-      .from("menu_templates")
-      .insert([{ user_id: userId, config: finalConfig, size_bytes }])
+      .from("library_templates")
+      .insert([{
+          user_id: userId,
+          name,
+          config: finalConfig,
+          preview_url: preview_url ?? null,
+          price: price ?? null,
+          category: category ?? null,
+          // size_bytes,
+        },])
       .single();
 
     if (error) return res.status(400).json({ error: error.message });

@@ -1,0 +1,120 @@
+.t2-menu-container {
+  //   background-color: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  //   justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  color: var(--color-primary);
+  min-height: 100vh;
+  .t2-menu-sections {
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 3rem 0;
+    .t2-navbar-wrapper {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border-bottom: 1px solid #333333;
+    }
+    .t2-navbar {
+      //   display: flex;
+      //   justify-content: center;
+      //   align-items: center;
+      display: inline-flex;
+      white-space: nowrap;
+      will-change: transform;
+      gap: 5rem;
+      width: 60%;
+      padding-bottom: 0.5rem;
+
+      .t2-navbar-item {
+        flex: 0 0 auto;
+        padding: 0.5rem 1rem;
+        background: none;
+        border: none;
+        font-size: 1rem;
+        cursor: pointer;
+        &.active {
+          color: var(--color-primary);
+          font-weight: bold;
+          //   border-bottom: 2px solid var(--color-primary);
+        }
+      }
+    }
+  }
+
+  .t2-menu-bottom-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    .temp2-list-container {
+      //   border: 1px solid blue;
+      width: 60%;
+
+      .t2-list-items {
+        // border: 1px solid green;
+
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, auto);
+        gap: 5rem;
+
+        @media (max-width: 1024px) {
+          grid-template-columns: 1fr;
+          grid-template-rows: none;
+        }
+
+        .t2-item {
+          //   border: 1px solid black;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0;
+          .t2-item-left {
+            width: 224px;
+            height: 224px;
+            border: 1px dashed gray;
+          }
+          .t2-item-right {
+            width: 224px;
+            height: 224px;
+            // border: 1px solid rgb(128, 98, 0);
+            display: flex;
+            align-items: flex-start;
+            // justify-content: center;
+            flex-direction: column;
+            text-align: left;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            .t2-item-name,
+            .t2-price {
+              font-weight: 600;
+              font-size: 1.1rem;
+            }
+            .t2-item-description,
+            .t2-item-calories {
+              font-size: 0.78rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .t2-footer {
+    width: 100%;
+    margin-top: auto;
+    p {
+      font-size: 12px;
+      padding: 5px;
+      text-align: center;
+      padding-top: 0;
+    }
+  }
+}
