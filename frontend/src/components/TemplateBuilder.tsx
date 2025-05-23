@@ -375,11 +375,37 @@ const HeaderImageBuilder: React.FC = () => {
                 <fieldset>
                   <legend>Logo</legend>
                   <input
-                    type="text"
-                    value={config?.logo || ""}
-                    onChange={(e) => updateField("logo", e.target.value)}
-                    placeholder="Logo URL or name"
+                  type="text"
+                  value={config?.logo || ""}
+                  onChange={(e) => updateField("logo", e.target.value)}
+                  placeholder="Logo URL or name"
                   />
+                  {config?.logo && config.logo.startsWith("http") ? (
+                  <div className="logo-image-container">
+                    {config.logo ? (
+                    <img src={config.logo} alt="Logo" />
+                    ) : (
+                    <div className="placeholder">No logo image</div>
+                    )}
+                    <input
+                    className="file-input"
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    // You need to implement handleLogoUpload if you want to support logo image upload
+                    // onChange={handleLogoUpload}
+                    onClick={(e) => {
+                      if (!config.logo || !config.logo.startsWith("http")) {
+                      e.preventDefault();
+                      }
+                    }}
+                    />
+                  </div>
+                  ) : (
+                  <div style={{ color: "#888", fontSize: "0.9em", marginTop: 8 }}>
+                    Image upload only allowed if logo is an image URL.
+                  </div>
+                  )}
                 </fieldset>
 
                 {/* Colors */}
@@ -427,45 +453,71 @@ const HeaderImageBuilder: React.FC = () => {
                 <fieldset>
                   <legend>Text Block 2</legend>
                   <input
-                    type="text"
-                    value={config?.text?.[1]?.value || ""}
-                    onChange={(e) => {
-                      const newText = [...(config?.text || [])];
-                      newText[1] = { ...newText[1], value: e.target.value };
-                      updateField("text", newText);
-                    }}
+                  type="text"
+                  value={
+                    config?.text?.[1]?.id === "footer"
+                    ? ""
+                    : config?.text?.[1]?.value || ""
+                  }
+                  onChange={(e) => {
+                    const newText = [...(config?.text || [])];
+                    // Only update if not footer
+                    if (newText[1]?.id !== "footer") {
+                    newText[1] = { ...newText[1], value: e.target.value };
+                    updateField("text", newText);
+                    }
+                  }}
                   />
                 </fieldset>
 
-                <fieldset>
-                  <legend>Footer Text</legend>
-                  <input
-                    type="text"
-                    // value={config?.footer || ""}
-                    // onChange={(e) => updateField("footer", e.target.value)}
-                  />
-                </fieldset>
+                {config?.text?.some((t) => t.id === "footer") && (
+                  <fieldset>
+                    <legend>Footer Text</legend>
+                    <input
+                      type="text"
+                      value={
+                        config?.text?.find((t) => t.id === "footer")?.value || ""
+                      }
+                      onChange={(e) => {
+                        const newText = [...(config?.text || [])];
+                        const idx = newText.findIndex((t) => t.id === "footer");
+                        if (idx !== -1) {
+                          newText[idx] = { ...newText[idx], value: e.target.value };
+                          updateField("text", newText);
+                        }
+                      }}
+                    />
+                  </fieldset>
+                )}
               </div>
 
               {/* Right Column */}
               <div className="col right">
                 {/* Header Image */}
                 <fieldset>
-                  <legend>Header Image</legend>
-                  <div className="image-container">
-                    {config?.header_image ? (
+                    <legend>Header Image</legend>
+                    <div className="image-container">
+                    {"header_image" in (config || {}) ? (
+                      config?.header_image ? (
                       <img src={config.header_image} alt="Header" />
-                    ) : (
+                      ) : (
                       <div className="placeholder">No image</div>
+                      )
+                    ) : (
+                      <div className="placeholder">
+                      This template doesn't support header_image.
+                      </div>
                     )}
-                    <input
+                    {"header_image" in (config || {}) && (
+                      <input
                       className="file-input"
                       type="file"
                       accept="image/*"
                       disabled={uploading}
                       onChange={handleHeaderUpload}
-                    />
-                  </div>
+                      />
+                    )}
+                    </div>
                 </fieldset>
 
                 {/* Footer Text */}
@@ -609,85 +661,276 @@ const HeaderImageBuilder: React.FC = () => {
                   <legend>
                     {editingItemIdx !== null ? "Edit Item" : "Add New Item"}
                   </legend>{" "}
-                  <div className="add-row">
-                    <input
-                      type="text"
-                      placeholder="Item name"
-                      value={newItemName}
-                      onChange={(e) => setNewItemName(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Price"
-                      value={newItemPrice}
-                      onChange={(e) => setNewItemPrice(e.target.value)}
-                    />
-                    <button
-                      onClick={
-                        editingItemIdx !== null
-                          ? handleUpdateItem
-                          : handleAddItem
-                      }
-                    >
-                      {editingItemIdx !== null ? "Update" : "Add"}
-                    </button>
-                  </div>
+                    <div className="add-row two-rows">
+                      {/* First row: name + price */}
+                      <div className="row">
+                        <input
+                          type="text"
+                          placeholder="Item name"
+                          value={newItemName}
+                          onChange={(e) => setNewItemName(e.target.value)}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Price"
+                          value={newItemPrice}
+                          onChange={(e) => setNewItemPrice(e.target.value)}
+                        />
+                      </div>
+                      {/* Second row: description + subtext + calories + image */}
+                      <div className="row">
+                        {/* Description */}
+                        {"description" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
+                          <input
+                            type="text"
+                            placeholder="Description"
+                            value={
+                              editingItemIdx !== null
+                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.description || ""
+                                : ""
+                            }
+                            onChange={(e) => {
+                              if (editingItemIdx !== null) {
+                                setConfig((c) => {
+                                  if (!c) return c;
+                                  const secs = [...c.sections];
+                                  const sec = { ...secs[selectedSectionIdx] };
+                                  const items = [...sec.items];
+                                  items[editingItemIdx] = {
+                                    ...items[editingItemIdx],
+                                    description: e.target.value,
+                                  };
+                                  sec.items = items;
+                                  secs[selectedSectionIdx] = sec;
+                                  return { ...c, sections: secs };
+                                });
+                              }
+                            }}
+                          />
+                        )}
+                        {/* Subtext */}
+                        {"subtext" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
+                          <input
+                            type="text"
+                            placeholder="Subtext"
+                            value={
+                              editingItemIdx !== null
+                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.subText || ""
+                                : ""
+                            }
+                            onChange={(e) => {
+                              if (editingItemIdx !== null) {
+                                setConfig((c) => {
+                                  if (!c) return c;
+                                  const secs = [...c.sections];
+                                  const sec = { ...secs[selectedSectionIdx] };
+                                  const items = [...sec.items];
+                                  items[editingItemIdx] = {
+                                    ...items[editingItemIdx],
+                                    subText: e.target.value,
+                                  };
+                                  sec.items = items;
+                                  secs[selectedSectionIdx] = sec;
+                                  return { ...c, sections: secs };
+                                });
+                              }
+                            }}
+                          />
+                        )}
+                        {/* Calories */}
+                        {"calories" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
+                          <input
+                            type="text"
+                            placeholder="Calories"
+                            value={
+                              editingItemIdx !== null
+                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.calories || ""
+                                : ""
+                            }
+                            onChange={(e) => {
+                              if (editingItemIdx !== null) {
+                                setConfig((c) => {
+                                  if (!c) return c;
+                                  const secs = [...c.sections];
+                                  const sec = { ...secs[selectedSectionIdx] };
+                                  const items = [...sec.items];
+                                  items[editingItemIdx] = {
+                                    ...items[editingItemIdx],
+                                    calories: e.target.value,
+                                  };
+                                  sec.items = items;
+                                  secs[selectedSectionIdx] = sec;
+                                  return { ...c, sections: secs };
+                                });
+                              }
+                            }}
+                          />
+                        )}
+                        {/* Image */}
+                        {"imageUrl" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            value={
+                              editingItemIdx !== null
+                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.image || ""
+                                : ""
+                            }
+                            onChange={(e) => {
+                              if (editingItemIdx !== null) {
+                                setConfig((c) => {
+                                  if (!c) return c;
+                                  const secs = [...c.sections];
+                                  const sec = { ...secs[selectedSectionIdx] };
+                                  const items = [...sec.items];
+                                  items[editingItemIdx] = {
+                                    ...items[editingItemIdx],
+                                    image: e.target.value,
+                                  };
+                                  sec.items = items;
+                                  secs[selectedSectionIdx] = sec;
+                                  return { ...c, sections: secs };
+                                });
+                              }
+                            }}
+                          />
+                        )}
+                        <button
+                          onClick={
+                            editingItemIdx !== null
+                              ? handleUpdateItem
+                              : handleAddItem
+                          }
+                        >
+                          {editingItemIdx !== null ? "Update" : "Add"}
+                        </button>
+                      </div>
+                    </div>
                 </fieldset>
 
-                <fieldset>
+                {("image" in (config!.sections[selectedSectionIdx].items[0] || {})) ? (
+                  <fieldset>
                   <legend>Item Image</legend>
                   <div className="image-container">
-                    {itemImagePreview ? (
-                      <img src={itemImagePreview} alt="Preview" />
-                    ) : (
-                      <div className="placeholder">
-                        Item image not available for this menu
-                      </div>
-                    )}
+                    {editingItemIdx !== null && config!.sections[selectedSectionIdx].items[editingItemIdx]?.image ? (
+                    <img
+                      src={config!.sections[selectedSectionIdx].items[editingItemIdx].image}
+                      alt="Item"
+                    />
+                    ) : itemImagePreview ? (
+                    <img src={itemImagePreview} alt="Preview" />
+                    ) : null}
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleItemImageUpload}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleItemImageUpload}
+                    />
+                    <input
+                    type="text"
+                    placeholder="No image selected yet."
+                    value={
+                      editingItemIdx !== null
+                      ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.image || ""
+                      : ""
+                    }
+                    onChange={(e) => {
+                      if (editingItemIdx !== null) {
+                      setConfig((c) => {
+                        if (!c) return c;
+                        const secs = [...c.sections];
+                        const sec = { ...secs[selectedSectionIdx] };
+                        const items = [...sec.items];
+                        items[editingItemIdx] = {
+                        ...items[editingItemIdx],
+                        image: e.target.value,
+                        };
+                        sec.items = items;
+                        secs[selectedSectionIdx] = sec;
+                        return { ...c, sections: secs };
+                      });
+                      }
+                    }}
                     />
                   </div>
-                </fieldset>
+                  </fieldset>
+                ) : (
+                  <fieldset>
+                  <legend>Item Image</legend>
+                  <p>This template doesn't support item images.</p>
+                  </fieldset>
+                )}
               </div>
 
               {/* Right: List of items in that section */}
               <div className="col right">
                 <fieldset>
                   <legend>
-                    Items in “{config!.sections[selectedSectionIdx].name}”
+                  Items in “{config!.sections[selectedSectionIdx].name}”
                   </legend>
                   <ul className="item-list">
-                    {config!.sections[selectedSectionIdx].items.map(
-                      (it, idx) => (
-                        <li key={it.id}>
-                          <span>
-                            {it.name} — ${it.price}
-                          </span>
-                          <div className="actions">
-                            <button
-                              onClick={() => {
-                                setEditingItemIdx(idx);
-                                setNewItemName(it.name);
-                                setNewItemPrice(it.price);
-                                // setItemImagePreview(it.imageUrl || null);
-                                setActiveTab("items");
-                              }}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => handleRemoveItem(idx)}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        </li>
-                      )
-                    )}
+                  {config!.sections[selectedSectionIdx].items.map(
+                    (it, idx) => (
+                    <li key={it.id} style={{ display: "flex", alignItems: "center" }}>
+                      {/* Thumbnail */}
+                      <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        marginRight: 5,
+                        borderRadius: 2,
+                        background: "#eee",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        border: "1px solid #ccc",
+                      }}
+                      >
+                      {it.image ? (
+                        <img
+                        src={it.image}
+                        alt={it.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        />
+                      ) : (
+                        <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: "#ccc",
+                        }}
+                        />
+                      )}
+                      </div>
+                      <span>
+                      {it.name} — SAR {it.price}
+                      </span>
+                      <div className="actions" style={{ marginLeft: "auto" }}>
+                      <button
+                        onClick={() => {
+                        setEditingItemIdx(idx);
+                        setNewItemName(it.name);
+                        setNewItemPrice(it.price);
+                        // setItemImagePreview(it.imageUrl || null);
+                        setActiveTab("items");
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleRemoveItem(idx)}
+                      >
+                        ×
+                      </button>
+                      </div>
+                    </li>
+                    )
+                  )}
                   </ul>
                 </fieldset>
 
