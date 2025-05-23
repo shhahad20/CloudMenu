@@ -6,7 +6,10 @@ export interface Section {
     id: string;
     name: string;
     price: string;
-    imageUrl?: string;
+    image?: string;
+    subText?: string;
+    description?: string;
+    calories?: string;
   }>;
 }
 export type TextBlock = {
@@ -17,6 +20,7 @@ export type TextBlock = {
 export interface TemplateConfig {
   id?: string;
   logo: string;
+  slogan?: string;
   header_image: string;
   colors: {
     primary: string;
