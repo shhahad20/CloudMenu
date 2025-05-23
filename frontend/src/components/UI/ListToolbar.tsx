@@ -46,7 +46,7 @@ const ListToolbar: React.FC<Props> = ({ state, handlers, sortOptions }) => {
           ))}
         </select>
 
-        <button onClick={toggleOrder}>{order === "asc" ? "↑" : "↓"}</button>
+        <button onClick={toggleOrder}>{order === "desc" ? "↓" : "↑"}</button>
       </div>
     </div>
   );

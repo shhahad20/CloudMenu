@@ -32,7 +32,7 @@ export function useListControls(
   const [page, setPage] = useState(initial.page ?? 1);
   const [pageSize, setPageSize] = useState(initial.pageSize ?? 10);
   const [sortBy, setSortBy] = useState(initial.sortBy ?? "");
-  const [order, setOrder] = useState<"asc" | "desc">(initial.order ?? "desc");
+  const [order, setOrder] = useState<"asc" | "desc">(initial.order ?? "asc");
   const [query, setQuery] = useState(initial.query ?? "");
 
   const toggleOrder = useCallback(

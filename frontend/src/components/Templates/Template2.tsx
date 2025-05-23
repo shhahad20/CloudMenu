@@ -87,7 +87,7 @@ const Template2 = () => {
               }
               }}
             />
-            <p>{template?.config.slogan || "Quality Beans, Rich Flavor"}</p>
+            <p className="t2-slogan">{template?.config.slogan || "Quality Beans, Rich Flavor"}</p>
             </div>
         </div>
       </div>

@@ -126,7 +126,8 @@ export const createTemplate = async (req, res) => {
         // 3) insert into DB
         const { data, error } = await supabase
             .from("library_templates")
-            .insert([{
+            .insert([
+            {
                 user_id: userId,
                 name,
                 config: finalConfig,
@@ -134,7 +135,8 @@ export const createTemplate = async (req, res) => {
                 price: price ?? null,
                 category: category ?? null,
                 // size_bytes,
-            },])
+            },
+        ])
             .single();
         if (error)
             return res.status(400).json({ error: error.message });
@@ -283,7 +285,7 @@ export const deleteTemplate = async (req, res) => {
     }
     res.json({ ok: true });
 };
-// POST /templates/:id/clone
+// POST /templates/clone/:id
 export const cloneTemplate = async (req, res) => {
     const userId = req.user.id;
     const plan = req.user.plan;
@@ -339,7 +341,7 @@ export const cloneTemplate = async (req, res) => {
             });
         }
         // 3) Insert clone
-        const { data, error } = await supabase
+        const { data, error } = await adminSupabase
             .from("menu_templates")
             .insert([
             {
@@ -351,7 +353,15 @@ export const cloneTemplate = async (req, res) => {
                 size_bytes: newBytes,
             },
         ])
+            .select("id, name, preview_url, config, size_bytes")
             .single();
+        // .single<{
+        //   id: string;
+        //   name: string;
+        //   preview_url: string;
+        //   config: any;
+        //   size_bytes: number;
+        // }>();
         if (error)
             throw error;
         const clonedId = data.id;

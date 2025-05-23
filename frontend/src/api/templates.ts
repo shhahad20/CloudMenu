@@ -196,25 +196,75 @@ export const updateTemplate = (
     return res.json();
   });
 
+// export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
+//   const token = localStorage.getItem("access_token");
+//   if (!token) {
+//     throw new Error("You need to be logged in to clone a template.");
+//   }
+//   const res = await fetch(`${API}/templates/clone/${id}`, {
+//     method: "POST",
+//     headers: getHeaders(),
+//   });
+// const body = await res.json().catch(() => null);
+//   if (!res.ok || !body || !body.id) {
+//     throw new Error(
+//       body?.error
+//         ? `Clone failed: ${body.error}`
+//         : `Clone failed: HTTP ${res.status}`
+//     );
+//   }
+//   return body as ClonedTemplate;
+// };
+
 export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
   const token = localStorage.getItem("access_token");
   if (!token) {
     throw new Error("You need to be logged in to clone a template.");
   }
+
   const res = await fetch(`${API}/templates/clone/${id}`, {
     method: "POST",
     headers: getHeaders(),
   });
-const body = await res.json().catch(() => null);
-  if (!res.ok || !body || !body.id) {
-    throw new Error(
-      body?.error
-        ? `Clone failed: ${body.error}`
-        : `Clone failed: HTTP ${res.status}`
-    );
+
+  // 1) Read raw text
+  const text = await res.text();
+
+  // 2) Try to parse JSON, but keep it as unknown
+  let body: unknown;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    body = null;
   }
+
+  // 3) Log for debugging
+  console.groupCollapsed(`cloneTemplate [${res.status}]`);
+  console.log("RAW response text:", text);
+  console.log("PARSED JSON body:", body);
+  console.groupEnd();
+
+  // 4) Narrow: make sure we got an object with an 'id' string
+  if (
+    !res.ok ||
+    typeof body !== "object" ||
+    body === null ||
+    !("id" in body) ||
+    typeof (body as { id: string }).id !== "string"
+  ) {
+    // Try to extract an error message
+    const errMsg =
+      typeof body === "object" && body !== null && "error" in body
+        ? String((body as Record<string, unknown>).error)
+        : `HTTP ${res.status}`;
+    throw new Error(`Clone failed: ${errMsg}`);
+  }
+
+  // 5) Safe to cast now
   return body as ClonedTemplate;
 };
+
+
 
 export const plans = () =>
   fetch(`${API}/plans`, {

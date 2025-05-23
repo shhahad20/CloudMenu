@@ -40,8 +40,8 @@ const MenuTemplates: React.FC = () => {
   // const [query, setQuery] = useState("");
   const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
     pageSize: 12,
-    sortBy: "view_count",
-    order: "desc",
+    sortBy: "created_at",
+    order: "asc",
   });
 
   const navigate = useNavigate();
@@ -70,31 +70,40 @@ const MenuTemplates: React.FC = () => {
       .finally(() => setLoading(false));
   }, [page, pageSize, sortBy, order, query]);
 
-  //   const handleSearch = (q: string) => {
-  //   setQuery(q);
-  //   setPage(1);
-  // };
+  // const handleClone = async (tplId: string) => {
+  //   setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
+  //   setCloneLoading((ls) => ({ ...ls, [tplId]: true }));
+  //   try {
+  //     const newTpl = await cloneTemplate(tplId);
+  //     navigate(`/builder/${newTpl.id}`);
 
-  // const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //   setSortBy(e.target.value);
-  //   setPage(1);
+  //   } catch (err: unknown) {
+  //     console.error(err);
+  //     setCloneErrors((errs) => ({
+  //       ...errs,
+  //       [tplId]:
+  //         err instanceof Error ? err.message : "Could not create your copy.",
+  //     }));
+  //   } finally {
+  //     setCloneLoading((ls) => ({ ...ls, [tplId]: false }));
+  //   }
   // };
-
-  // const handleOrderToggle = () => {
-  //   setOrder((o) => (o === "asc" ? "desc" : "asc"));
-  //   setPage(1);
-  // };
-
   const handleClone = async (tplId: string) => {
-    // clear any previous error for this template
     setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
     setCloneLoading((ls) => ({ ...ls, [tplId]: true }));
+    console.log("Cloning template:", tplId);
     try {
       const newTpl = await cloneTemplate(tplId);
+
+      // ← guard here:
+      if (!newTpl || typeof newTpl.id !== "string") {
+        console.error("cloneTemplate returned:", newTpl);
+        throw new Error("Unexpected response from clone API");
+      }
+
       navigate(`/builder/${newTpl.id}`);
-      
     } catch (err: unknown) {
-      console.error(err);
+      console.error("Clone failed:", err);
       setCloneErrors((errs) => ({
         ...errs,
         [tplId]:
@@ -137,26 +146,6 @@ const MenuTemplates: React.FC = () => {
       <section id="menu-templates-section">
         <div className="templates-container">
           <h2 className="section-title">Menu Templates</h2>
-          {/* <div className="searchbar-container">
-            <SearchBar
-              onSearch={(query) => console.log("Searching for:", query)}
-            />
-          </div> */}
-          {/* <div className="controls">
-            <SearchBar onSearch={handleSearch} />
-            <div className="sort-controls">
-              <select value={sortBy} onChange={handleSortChange}>
-                {SORT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <button onClick={handleOrderToggle}>
-                {order === "asc" ? "↑" : "↓"}
-              </button>
-            </div>
-          </div> */}
 
           {/* Search + Sort */}
           <ListToolbar
@@ -190,6 +179,7 @@ const MenuTemplates: React.FC = () => {
                     </a>
                   </div>
                 </div>
+
                 {templates.map((tpl) => (
                   <div key={tpl.id} className="template-card">
                     {/* Price badge */}
@@ -225,9 +215,9 @@ const MenuTemplates: React.FC = () => {
                               ? "Cloning…"
                               : "Use this Template ↗"}
                           </button>
-                          {cloneErrors[tpl.id] && (
+                          {/* {cloneErrors[tpl.id] && (
                             <p className="clone-error">{cloneErrors[tpl.id]}</p>
-                          )}
+                          )} */}
                         </>
                       ) : (
                         // PAID: show “Add to Cart”
@@ -264,23 +254,6 @@ const MenuTemplates: React.FC = () => {
                 totalPages={totalPages}
                 onPageChange={handlers.setPage}
               />
-              {/* <div className="pagination-controls">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Prev
-                </button>
-                <span>
-                  Page {page} of {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Next
-                </button>
-              </div> */}
             </>
           )}
         </div>
