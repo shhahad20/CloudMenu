@@ -12,7 +12,7 @@ interface LocationState {
 const TemplateQRCode: React.FC = () => {
   // no generic here
   const params = useParams();
-  const id = params.id!;               // assume route always provides it
+  const id = params.id!; // assume route always provides it
 
   // no generic here either
   const location = useLocation();
@@ -49,7 +49,7 @@ const TemplateQRCode: React.FC = () => {
   return (
     <>
       <Navbar />
-      <main style={{ textAlign: "center", padding: "2rem" }}>
+      <main style={{ textAlign: "center", padding: "2rem", height: "80vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
         <h1>Scan to open Menu #{id}</h1>
 
         {loading && <p>Loading QR code…</p>}
@@ -57,11 +57,30 @@ const TemplateQRCode: React.FC = () => {
         {!loading && error && <p style={{ color: "red" }}>Error: {error}</p>}
 
         {!loading && !error && qr && (
-          <img
-            src={qr}
-            alt={`QR code for menu ${id}`}
-            style={{ maxWidth: "100%", height: "auto" }}
-          />
+          <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", alignItems: "center", justifyContent:"center" }}>
+            <img
+              src={qr}
+              alt={`QR code for menu ${id}`}
+              style={{ maxWidth: "300px", height: "auto" }}
+            />
+            <br />
+            <a
+              href={qr}
+              download={`menu-${id}-qr.png`}
+              style={{
+                display: "inline-block",
+                marginTop: "1rem",
+                padding: "0.5rem 1rem",
+                backgroundColor: "#1e1e1e",
+                color: "#fff",
+                borderRadius: "5px",
+                textDecoration: "none",
+                fontWeight: "500",
+              }}
+            >
+              Download QR Code
+            </a>
+          </div>
         )}
 
         {!loading && !error && !qr && <p>QR code not available.</p>}

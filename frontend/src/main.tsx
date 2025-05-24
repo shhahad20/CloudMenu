@@ -18,9 +18,9 @@ import ForgotPassword from "./pages/ForgotPassword.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import ConfirmEmailSent from "./pages/ConfirmEmail.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
-import Template1 from "./components/Templates/Classic.tsx";
+// import Template1 from "./components/Templates/Classic.tsx";
 import HeaderImageBuilder from "./components/TemplateBuilder.tsx";
-import Template1Renderer from "./components/Templates/ClassicRenderer.tsx";
+// import Template1Renderer from "./components/Templates/ClassicRenderer.tsx";
 import DashboardMenus from "./pages/DashboardMenus.tsx";
 // import Upgrade from "./pages/Upgarde.tsx";
 import PricingPage from "./pages/PricingPage.tsx";
@@ -35,6 +35,7 @@ import RequireAuth from "./components/RequireAuth.tsx";
 import SettingsPage from "./pages/SettingPage.tsx";
 import TemplateQRCode from "./pages/TemplateQRCode.tsx";
 import Template2 from "./components/Templates/Template2.tsx";
+import TemplateRenderer from "./pages/TemplateRenderer.tsx";
 
 // import Logout from './pages/Logout.tsx';
 
@@ -47,16 +48,19 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/" element={<App />} />
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
-            <Route
+            {/* <Route
               path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6"
               element={<Template1 />}
-            />
+            /> */}
+
                         <Route
               path="/menus/83c312aa-0fa5-4ea0-833c-736ceca462d9"
               element={<Template2 />}
             />
+            <Route path="/menus/:id" element={<TemplateRenderer />} />
+
             <Route path="/templates/qr/:id" element={<TemplateQRCode />} />
-            <Route path="/menus/:id" element={<Template1Renderer />} />
+            {/* <Route path="/menus/:id" element={<Template1Renderer />} /> */}
             {/* <Route path="/builder/:id" element={<HeaderImageBuilder />} /> */}
             <Route path="/sign-up" element={<Signup />} />
             <Route path="/sign-in" element={<SignIn />} />

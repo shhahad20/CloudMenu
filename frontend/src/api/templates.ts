@@ -20,6 +20,7 @@ export type TextBlock = {
 export interface TemplateConfig {
   id?: string;
   logo: string;
+  type?: string;
   slogan?: string;
   header_image: string;
   colors: {
@@ -169,6 +170,9 @@ export function getTemplate(id: string): Promise<Template> {
     if (!res.ok) throw new Error("Not found");
     return res.json();
   });
+}
+export function fetchAnyTemplate(id: string): Promise<Template> {
+  return fetchLibraryTemplate(id).catch(() => getTemplate(id));
 }
 
 export const createTemplate = (config: TemplateConfig): Promise<Template> =>
