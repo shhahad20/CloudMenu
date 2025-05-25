@@ -2,32 +2,41 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import "../../styles/menus/template2.scss";
-import { fetchLibraryTemplate, Template } from "../../api/templates";
+import { Template, TextBlock } from "../../api/templates";
 
 export const cureentYear = new Date().getFullYear();
+interface Props {
+  template: Template;
+}
 
-const Template2 = () => {
+const Template2: React.FC<Props> = ({ template }) => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [template, setTemplate] = useState<Template | null>(null);
+  // const [template, setTemplate] = useState<Template | null>(null);
 
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
+  // useEffect(() => {
+  //   fetchLibraryTemplate("83c312aa-0fa5-4ea0-833c-736ceca462d9").then(
+  //     (data: Template) => {
+  //       setTemplate(data);
+
+  //       // find the "New" section (case-insensitive)
+  //       const newIndex = data.config.sections.findIndex(
+  //         (sec) => sec.name.trim().toLowerCase() === "new"
+  //       );
+
+  //       // if we found it, use that index; otherwise default to 0
+  //       setCurrentSectionIndex(newIndex >= 0 ? newIndex : 0);
+  //     }
+  //   );
+  // }, []);
   useEffect(() => {
-    fetchLibraryTemplate("83c312aa-0fa5-4ea0-833c-736ceca462d9").then(
-      (data: Template) => {
-        setTemplate(data);
-
-        // find the "New" section (case-insensitive)
-        const newIndex = data.config.sections.findIndex(
-          (sec) => sec.name.trim().toLowerCase() === "new"
-        );
-
-        // if we found it, use that index; otherwise default to 0
-        setCurrentSectionIndex(newIndex >= 0 ? newIndex : 0);
-      }
+    const idx = template?.config.sections.findIndex(
+      (sec) => sec.name.trim().toLowerCase() === "new"
     );
-  }, []);
+    if (idx >= 0) setCurrentSectionIndex(idx);
+  }, [template]);
 
   // compute and animate offset
   const [xOffset, setXOffset] = useState(0);
@@ -75,20 +84,24 @@ const Template2 = () => {
     >
       <div className="t2-menu-top-container">
         <div className="t2-top-item">
-            <div className="t2-top-container">
+          <div className="t2-top-container">
             <img
               src={template?.config.logo ? template.config.logo : "/Kia.svg"}
               className="t2-logo"
               alt="Logo"
               onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              if (target.src !== window.location.origin + "/Kia.svg") {
-                target.src = "/Kia.svg";
-              }
+                const target = e.target as HTMLImageElement;
+                if (target.src !== window.location.origin + "/Kia.svg") {
+                  target.src = "/Kia.svg";
+                }
               }}
             />
-            <p className="t2-slogan">{template?.config.slogan || "Quality Beans, Rich Flavor"}</p>
-            </div>
+            <p className="t2-slogan">
+              {template?.config.text?.find?.(
+                (t: TextBlock) => t.id === "slogan"
+              )?.value || "Quality Beans, Rich Flavor"}
+            </p>
+          </div>
         </div>
       </div>
       <div className="t2-menu-sections">
@@ -141,7 +154,7 @@ const Template2 = () => {
                           {item.description || "No description available"}
                         </p>
                         <p className="t2-item-calories">
-                          {item.calories || "342 "} calories
+                          {item.calories || "000 "} calories
                         </p>
                         <p className="t2-price">
                           <span>
@@ -169,7 +182,7 @@ const Template2 = () => {
                               </defs>
                             </svg>
                           </span>
-                          {item.price} SAR
+                          {item.price}
                         </p>
                       </div>
                     </div>

@@ -1,10 +1,9 @@
-// src/components/menus/Template1Renderer.tsx
 import React, { useState } from "react";
 import "../../styles/menus/template1.scss";
 import { Template, TextBlock } from "../../api/templates";
 
 export const currentYear = new Date().getFullYear();
-
+ 
 interface Props {
   template: Template;
 }

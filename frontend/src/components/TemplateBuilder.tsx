@@ -233,31 +233,89 @@ const HeaderImageBuilder: React.FC = () => {
   };
 
   const handleSave = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_URL}/templates/${id}`, {
-        method: "PATCH",
+  setSaving(true);
+  setError(null);
+
+  try {
+    let options: RequestInit;
+ 
+    // If there’s an image file staged, build a FormData payload
+    if (itemImageFile && editingItemIdx !== null) {
+      const formData = new FormData();
+      formData.append("config", JSON.stringify(config));
+
+      // the file itself
+      formData.append("image_url", itemImageFile);
+
+      // metadata so the server can locate the right item
+      if (!config) throw new Error("Config is not loaded.");
+      const section = config.sections[selectedSectionIdx];
+      formData.append("sectionId", section.id);
+      formData.append("itemId", section.items[editingItemIdx].id);
+
+      options = {
+        method:  "PATCH",
         headers: {
-          "Content-Type": "application/json",
+          // NOTE: do NOT set Content-Type here! let the browser set multipart/form-data
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
+        body: formData,
+      };
+    } else {
+      // no file to upload → just send JSON
+      options = {
+        method:  "PATCH",
+        headers: {
+          "Content-Type":  "application/json",
+          Authorization:   `Bearer ${localStorage.getItem("access_token")}`,
+        },
         body: JSON.stringify({ config }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      // you could re-fetch if you like, or trust it worked
-      alert("Saved successfully!");
-      navigate(`/menus/${id}`, { replace: true });
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError("Save failed: " + err.message);
-      } else {
-        setError("Save failed: An unknown error occurred.");
-      }
-    } finally {
-      setSaving(false);
+      };
     }
-  };
+
+    const res = await fetch(`${API_URL}/templates/${id}`, options);
+    if (!res.ok) throw new Error(await res.text());
+
+    alert("Saved successfully!");
+    navigate(`/menus/${id}`, { replace: true });
+  } catch (err: unknown) {
+    setError(err instanceof Error ? `Save failed: ${err.message}` : "Save failed");
+  } finally {
+    setSaving(false);
+    // clear the local file state so next edits start fresh
+    setItemImageFile(null);
+    setItemImagePreview(null);
+  }
+};
+
+
+
+  // const handleSave = async () => {
+  //   setSaving(true);
+  //   setError(null);
+  //   try {
+  //     const res = await fetch(`${API_URL}/templates/${id}`, {
+  //       method: "PATCH",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //       },
+  //       body: JSON.stringify({ config }),
+  //     });
+  //     if (!res.ok) throw new Error(await res.text());
+  //     // you could re-fetch if you like, or trust it worked
+  //     alert("Saved successfully!");
+  //     navigate(`/menus/${id}`, { replace: true });
+  //   } catch (err: unknown) {
+  //     if (err instanceof Error) {
+  //       setError("Save failed: " + err.message);
+  //     } else {
+  //       setError("Save failed: An unknown error occurred.");
+  //     }
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
   // items state
   // which section we’re managing items for
   const [selectedSectionIdx, setSelectedSectionIdx] = useState<number>(0);
@@ -265,6 +323,7 @@ const HeaderImageBuilder: React.FC = () => {
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
   const [itemImagePreview, setItemImagePreview] = useState<string | null>(null);
+const [itemImageFile,    setItemImageFile   ] = useState<File | null>(null);
 
   const handleAddItem = () => {
     if (!newItemName.trim()) return;
@@ -323,7 +382,8 @@ const HeaderImageBuilder: React.FC = () => {
         ...items[editingItemIdx],
         name: newItemName,
         price: newItemPrice,
-        // imageUrl: itemImagePreview || items[editingItemIdx].imageUrl,
+        // description: new,
+        image: itemImagePreview ?? items[editingItemIdx].image,
       };
       sec.items = items;
       secs[selectedSectionIdx] = sec;
@@ -333,15 +393,16 @@ const HeaderImageBuilder: React.FC = () => {
     setEditingItemIdx(null);
     setNewItemName("");
     setNewItemPrice("");
-    // setItemImagePreview(null);
+    setItemImagePreview(null);
   };
 
-  const handleItemImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setItemImagePreview(url);
-  };
+const handleItemImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] ?? null;
+  if (!file) return;
+  setItemImagePreview(URL.createObjectURL(file));
+  setItemImageFile(file);
+};
+
 
   if (loading) return <p>Loading…</p>;
 
@@ -375,36 +436,38 @@ const HeaderImageBuilder: React.FC = () => {
                 <fieldset>
                   <legend>Logo</legend>
                   <input
-                  type="text"
-                  value={config?.logo || ""}
-                  onChange={(e) => updateField("logo", e.target.value)}
-                  placeholder="Logo URL or name"
+                    type="text"
+                    value={config?.logo || ""}
+                    onChange={(e) => updateField("logo", e.target.value)}
+                    placeholder="Logo URL or name"
                   />
                   {config?.logo && config.logo.startsWith("http") ? (
-                  <div className="logo-image-container">
-                    {config.logo ? (
-                    <img src={config.logo} alt="Logo" />
-                    ) : (
-                    <div className="placeholder">No logo image</div>
-                    )}
-                    <input
-                    className="file-input"
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    // You need to implement handleLogoUpload if you want to support logo image upload
-                    // onChange={handleLogoUpload}
-                    onClick={(e) => {
-                      if (!config.logo || !config.logo.startsWith("http")) {
-                      e.preventDefault();
-                      }
-                    }}
-                    />
-                  </div>
+                    <div className="logo-image-container">
+                      {config.logo ? (
+                        <img src={config.logo} alt="Logo" />
+                      ) : (
+                        <div className="placeholder">No logo image</div>
+                      )}
+                      <input
+                        className="file-input"
+                        type="file"
+                        accept="image/*"
+                        disabled={uploading}
+                        // You need to implement handleLogoUpload if you want to support logo image upload
+                        // onChange={handleLogoUpload}
+                        onClick={(e) => {
+                          if (!config.logo || !config.logo.startsWith("http")) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
+                    </div>
                   ) : (
-                  <div style={{ color: "#888", fontSize: "0.9em", marginTop: 8 }}>
-                    Image upload only allowed if logo is an image URL.
-                  </div>
+                    <div
+                      style={{ color: "#888", fontSize: "0.9em", marginTop: 8 }}
+                    >
+                      Image upload only allowed if logo is an image URL.
+                    </div>
                   )}
                 </fieldset>
 
@@ -453,20 +516,20 @@ const HeaderImageBuilder: React.FC = () => {
                 <fieldset>
                   <legend>Text Block 2</legend>
                   <input
-                  type="text"
-                  value={
-                    config?.text?.[1]?.id === "footer"
-                    ? ""
-                    : config?.text?.[1]?.value || ""
-                  }
-                  onChange={(e) => {
-                    const newText = [...(config?.text || [])];
-                    // Only update if not footer
-                    if (newText[1]?.id !== "footer") {
-                    newText[1] = { ...newText[1], value: e.target.value };
-                    updateField("text", newText);
+                    type="text"
+                    value={
+                      config?.text?.[1]?.id === "footer"
+                        ? ""
+                        : config?.text?.[1]?.value || ""
                     }
-                  }}
+                    onChange={(e) => {
+                      const newText = [...(config?.text || [])];
+                      // Only update if not footer
+                      if (newText[1]?.id !== "footer") {
+                        newText[1] = { ...newText[1], value: e.target.value };
+                        updateField("text", newText);
+                      }
+                    }}
                   />
                 </fieldset>
 
@@ -476,13 +539,17 @@ const HeaderImageBuilder: React.FC = () => {
                     <input
                       type="text"
                       value={
-                        config?.text?.find((t) => t.id === "footer")?.value || ""
+                        config?.text?.find((t) => t.id === "footer")?.value ||
+                        ""
                       }
                       onChange={(e) => {
                         const newText = [...(config?.text || [])];
                         const idx = newText.findIndex((t) => t.id === "footer");
                         if (idx !== -1) {
-                          newText[idx] = { ...newText[idx], value: e.target.value };
+                          newText[idx] = {
+                            ...newText[idx],
+                            value: e.target.value,
+                          };
                           updateField("text", newText);
                         }
                       }}
@@ -495,29 +562,29 @@ const HeaderImageBuilder: React.FC = () => {
               <div className="col right">
                 {/* Header Image */}
                 <fieldset>
-                    <legend>Header Image</legend>
-                    <div className="image-container">
+                  <legend>Header Image</legend>
+                  <div className="image-container">
                     {"header_image" in (config || {}) ? (
                       config?.header_image ? (
-                      <img src={config.header_image} alt="Header" />
+                        <img src={config.header_image} alt="Header" />
                       ) : (
-                      <div className="placeholder">No image</div>
+                        <div className="placeholder">No image</div>
                       )
                     ) : (
                       <div className="placeholder">
-                      This template doesn't support header_image.
+                        This template doesn't support header_image.
                       </div>
                     )}
                     {"header_image" in (config || {}) && (
                       <input
-                      className="file-input"
-                      type="file"
-                      accept="image/*"
-                      disabled={uploading}
-                      onChange={handleHeaderUpload}
+                        className="file-input"
+                        type="file"
+                        accept="image/*"
+                        disabled={uploading}
+                        onChange={handleHeaderUpload}
                       />
                     )}
-                    </div>
+                  </div>
                 </fieldset>
 
                 {/* Footer Text */}
@@ -661,202 +728,227 @@ const HeaderImageBuilder: React.FC = () => {
                   <legend>
                     {editingItemIdx !== null ? "Edit Item" : "Add New Item"}
                   </legend>{" "}
-                    <div className="add-row two-rows">
-                      {/* First row: name + price */}
-                      <div className="row">
-                        <input
-                          type="text"
-                          placeholder="Item name"
-                          value={newItemName}
-                          onChange={(e) => setNewItemName(e.target.value)}
-                        />
-                        <input
-                          type="text"
-                          placeholder="Price"
-                          value={newItemPrice}
-                          onChange={(e) => setNewItemPrice(e.target.value)}
-                        />
-                      </div>
-                      {/* Second row: description + subtext + calories + image */}
-                      <div className="row">
-                        {/* Description */}
-                        {"description" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
-                          <input
-                            type="text"
-                            placeholder="Description"
-                            value={
-                              editingItemIdx !== null
-                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.description || ""
-                                : ""
-                            }
-                            onChange={(e) => {
-                              if (editingItemIdx !== null) {
-                                setConfig((c) => {
-                                  if (!c) return c;
-                                  const secs = [...c.sections];
-                                  const sec = { ...secs[selectedSectionIdx] };
-                                  const items = [...sec.items];
-                                  items[editingItemIdx] = {
-                                    ...items[editingItemIdx],
-                                    description: e.target.value,
-                                  };
-                                  sec.items = items;
-                                  secs[selectedSectionIdx] = sec;
-                                  return { ...c, sections: secs };
-                                });
-                              }
-                            }}
-                          />
-                        )}
-                        {/* Subtext */}
-                        {"subtext" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
-                          <input
-                            type="text"
-                            placeholder="Subtext"
-                            value={
-                              editingItemIdx !== null
-                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.subText || ""
-                                : ""
-                            }
-                            onChange={(e) => {
-                              if (editingItemIdx !== null) {
-                                setConfig((c) => {
-                                  if (!c) return c;
-                                  const secs = [...c.sections];
-                                  const sec = { ...secs[selectedSectionIdx] };
-                                  const items = [...sec.items];
-                                  items[editingItemIdx] = {
-                                    ...items[editingItemIdx],
-                                    subText: e.target.value,
-                                  };
-                                  sec.items = items;
-                                  secs[selectedSectionIdx] = sec;
-                                  return { ...c, sections: secs };
-                                });
-                              }
-                            }}
-                          />
-                        )}
-                        {/* Calories */}
-                        {"calories" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
-                          <input
-                            type="text"
-                            placeholder="Calories"
-                            value={
-                              editingItemIdx !== null
-                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.calories || ""
-                                : ""
-                            }
-                            onChange={(e) => {
-                              if (editingItemIdx !== null) {
-                                setConfig((c) => {
-                                  if (!c) return c;
-                                  const secs = [...c.sections];
-                                  const sec = { ...secs[selectedSectionIdx] };
-                                  const items = [...sec.items];
-                                  items[editingItemIdx] = {
-                                    ...items[editingItemIdx],
-                                    calories: e.target.value,
-                                  };
-                                  sec.items = items;
-                                  secs[selectedSectionIdx] = sec;
-                                  return { ...c, sections: secs };
-                                });
-                              }
-                            }}
-                          />
-                        )}
-                        {/* Image */}
-                        {"imageUrl" in (config!.sections[selectedSectionIdx].items[0] || {}) && (
-                          <input
-                            type="text"
-                            placeholder="Image URL"
-                            value={
-                              editingItemIdx !== null
-                                ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.image || ""
-                                : ""
-                            }
-                            onChange={(e) => {
-                              if (editingItemIdx !== null) {
-                                setConfig((c) => {
-                                  if (!c) return c;
-                                  const secs = [...c.sections];
-                                  const sec = { ...secs[selectedSectionIdx] };
-                                  const items = [...sec.items];
-                                  items[editingItemIdx] = {
-                                    ...items[editingItemIdx],
-                                    image: e.target.value,
-                                  };
-                                  sec.items = items;
-                                  secs[selectedSectionIdx] = sec;
-                                  return { ...c, sections: secs };
-                                });
-                              }
-                            }}
-                          />
-                        )}
-                        <button
-                          onClick={
-                            editingItemIdx !== null
-                              ? handleUpdateItem
-                              : handleAddItem
-                          }
-                        >
-                          {editingItemIdx !== null ? "Update" : "Add"}
-                        </button>
-                      </div>
+                  <div className="add-row two-rows">
+                    {/* First row: name + price */}
+                    <div className="row">
+                      <input
+                        type="text"
+                        placeholder="Item name"
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Price"
+                        value={newItemPrice}
+                        onChange={(e) => setNewItemPrice(e.target.value)}
+                      />
                     </div>
+                    {/* Second row: description + subtext + calories + image */}
+                    <div className="row">
+                      {/* Description */}
+                      {"description" in
+                        (config!.sections[selectedSectionIdx].items[0] ||
+                          {}) && (
+                        <input
+                          type="text"
+                          placeholder="Description"
+                          value={
+                            editingItemIdx !== null
+                              ? config!.sections[selectedSectionIdx].items[
+                                  editingItemIdx
+                                ]?.description || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (editingItemIdx !== null) {
+                              setConfig((c) => {
+                                if (!c) return c;
+                                const secs = [...c.sections];
+                                const sec = { ...secs[selectedSectionIdx] };
+                                const items = [...sec.items];
+                                items[editingItemIdx] = {
+                                  ...items[editingItemIdx],
+                                  description: e.target.value,
+                                };
+                                sec.items = items;
+                                secs[selectedSectionIdx] = sec;
+                                return { ...c, sections: secs };
+                              });
+                            }
+                          }}
+                        />
+                      )}
+                      {/* Subtext */}
+                      {"subtext" in
+                        (config!.sections[selectedSectionIdx].items[0] ||
+                          {}) && (
+                        <input
+                          type="text"
+                          placeholder="Subtext"
+                          value={
+                            editingItemIdx !== null
+                              ? config!.sections[selectedSectionIdx].items[
+                                  editingItemIdx
+                                ]?.subText || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (editingItemIdx !== null) {
+                              setConfig((c) => {
+                                if (!c) return c;
+                                const secs = [...c.sections];
+                                const sec = { ...secs[selectedSectionIdx] };
+                                const items = [...sec.items];
+                                items[editingItemIdx] = {
+                                  ...items[editingItemIdx],
+                                  subText: e.target.value,
+                                };
+                                sec.items = items;
+                                secs[selectedSectionIdx] = sec;
+                                return { ...c, sections: secs };
+                              });
+                            }
+                          }}
+                        />
+                      )}
+                      {/* Calories */}
+                      {"calories" in
+                        (config!.sections[selectedSectionIdx].items[0] ||
+                          {}) && (
+                        <input
+                          type="text"
+                          placeholder="Calories"
+                          value={
+                            editingItemIdx !== null
+                              ? config!.sections[selectedSectionIdx].items[
+                                  editingItemIdx
+                                ]?.calories || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (editingItemIdx !== null) {
+                              setConfig((c) => {
+                                if (!c) return c;
+                                const secs = [...c.sections];
+                                const sec = { ...secs[selectedSectionIdx] };
+                                const items = [...sec.items];
+                                items[editingItemIdx] = {
+                                  ...items[editingItemIdx],
+                                  calories: e.target.value,
+                                };
+                                sec.items = items;
+                                secs[selectedSectionIdx] = sec;
+                                return { ...c, sections: secs };
+                              });
+                            }
+                          }}
+                        />
+                      )}
+                      {/* Image */}
+                      {/* {"image" in
+                        (config!.sections[selectedSectionIdx].items[0] ||
+                          {}) && (
+                        <input
+                          type="text"
+                          placeholder="Image URL"
+                          value={
+                            editingItemIdx !== null
+                              ? config!.sections[selectedSectionIdx].items[
+                                  editingItemIdx
+                                ]?.image || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            if (editingItemIdx !== null) {
+                              setConfig((c) => {
+                                if (!c) return c;
+                                const secs = [...c.sections];
+                                const sec = { ...secs[selectedSectionIdx] };
+                                const items = [...sec.items];
+                                items[editingItemIdx] = {
+                                  ...items[editingItemIdx],
+                                  image: e.target.value,
+                                };
+                                sec.items = items;
+                                secs[selectedSectionIdx] = sec;
+                                return { ...c, sections: secs };
+                              });
+                            }
+                          }}
+                        />
+                      )} */}
+                      <button
+                        onClick={
+                          editingItemIdx !== null
+                            ? handleUpdateItem
+                            : handleAddItem
+                        }
+                      >
+                        {editingItemIdx !== null ? "Update" : "Add"}
+                      </button>
+                    </div>
+                  </div>
                 </fieldset>
 
-                {("image" in (config!.sections[selectedSectionIdx].items[0] || {})) ? (
+                {"image" in
+                (config!.sections[selectedSectionIdx].items[0] || {}) ? (
                   <fieldset>
-                  <legend>Item Image</legend>
-                  <div className="image-container">
-                    {editingItemIdx !== null && config!.sections[selectedSectionIdx].items[editingItemIdx]?.image ? (
-                    <img
-                      src={config!.sections[selectedSectionIdx].items[editingItemIdx].image}
-                      alt="Item"
-                    />
-                    ) : itemImagePreview ? (
-                    <img src={itemImagePreview} alt="Preview" />
-                    ) : null}
-                    <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleItemImageUpload}
-                    />
-                    <input
-                    type="text"
-                    placeholder="No image selected yet."
-                    value={
-                      editingItemIdx !== null
-                      ? config!.sections[selectedSectionIdx].items[editingItemIdx]?.image || ""
-                      : ""
-                    }
-                    onChange={(e) => {
-                      if (editingItemIdx !== null) {
-                      setConfig((c) => {
-                        if (!c) return c;
-                        const secs = [...c.sections];
-                        const sec = { ...secs[selectedSectionIdx] };
-                        const items = [...sec.items];
-                        items[editingItemIdx] = {
-                        ...items[editingItemIdx],
-                        image: e.target.value,
-                        };
-                        sec.items = items;
-                        secs[selectedSectionIdx] = sec;
-                        return { ...c, sections: secs };
-                      });
-                      }
-                    }}
-                    />
-                  </div>
+                    <legend>Item Image</legend>
+                    <div className="image-container">
+                      {editingItemIdx !== null &&
+                      config!.sections[selectedSectionIdx].items[editingItemIdx]
+                        ?.image ? (
+                        <img
+                          src={
+                            config!.sections[selectedSectionIdx].items[
+                              editingItemIdx
+                            ].image
+                          }
+                          alt="Item"
+                        />
+                      ) : itemImagePreview ? (
+                        <img src={itemImagePreview} alt="Preview" />
+                      ) : null}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleItemImageUpload}
+                      />
+                      <input
+                        type="text"
+                        placeholder="No image selected yet."
+                        value={
+                          editingItemIdx !== null
+                            ? config!.sections[selectedSectionIdx].items[
+                                editingItemIdx
+                              ]?.image || ""
+                            : ""
+                        }
+                        onChange={(e) => {
+                          if (editingItemIdx !== null) {
+                            setConfig((c) => {
+                              if (!c) return c;
+                              const secs = [...c.sections];
+                              const sec = { ...secs[selectedSectionIdx] };
+                              const items = [...sec.items];
+                              items[editingItemIdx] = {
+                                ...items[editingItemIdx],
+                                image: e.target.value,
+                              };
+                              sec.items = items;
+                              secs[selectedSectionIdx] = sec;
+                              return { ...c, sections: secs };
+                            });
+                          }
+                        }}
+                      />
+                    </div>
                   </fieldset>
                 ) : (
                   <fieldset>
-                  <legend>Item Image</legend>
-                  <p>This template doesn't support item images.</p>
+                    <legend>Item Image</legend>
+                    <p>This template doesn't support item images.</p>
                   </fieldset>
                 )}
               </div>
@@ -865,72 +957,78 @@ const HeaderImageBuilder: React.FC = () => {
               <div className="col right">
                 <fieldset>
                   <legend>
-                  Items in “{config!.sections[selectedSectionIdx].name}”
+                    Items in “{config!.sections[selectedSectionIdx].name}”
                   </legend>
                   <ul className="item-list">
-                  {config!.sections[selectedSectionIdx].items.map(
-                    (it, idx) => (
-                    <li key={it.id} style={{ display: "flex", alignItems: "center" }}>
-                      {/* Thumbnail */}
-                      <div
-                      style={{
-                        width: 20,
-                        height: 20,
-                        marginRight: 5,
-                        borderRadius: 2,
-                        background: "#eee",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        overflow: "hidden",
-                        border: "1px solid #ccc",
-                      }}
-                      >
-                      {it.image ? (
-                        <img
-                        src={it.image}
-                        alt={it.name}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        />
-                      ) : (
-                        <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          background: "#ccc",
-                        }}
-                        />
-                      )}
-                      </div>
-                      <span>
-                      {it.name} — SAR {it.price}
-                      </span>
-                      <div className="actions" style={{ marginLeft: "auto" }}>
-                      <button
-                        onClick={() => {
-                        setEditingItemIdx(idx);
-                        setNewItemName(it.name);
-                        setNewItemPrice(it.price);
-                        // setItemImagePreview(it.imageUrl || null);
-                        setActiveTab("items");
-                        }}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleRemoveItem(idx)}
-                      >
-                        ×
-                      </button>
-                      </div>
-                    </li>
-                    )
-                  )}
+                    {config!.sections[selectedSectionIdx].items.map(
+                      (it, idx) => (
+                        <li
+                          key={it.id}
+                          style={{ display: "flex", alignItems: "center" }}
+                        >
+                          {/* Thumbnail */}
+                          <div
+                            style={{
+                              width: 20,
+                              height: 20,
+                              marginRight: 5,
+                              borderRadius: 2,
+                              background: "#eee",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              overflow: "hidden",
+                              border: "1px solid #ccc",
+                            }}
+                          >
+                            {it.image ? (
+                              <img
+                                src={it.image}
+                                alt={it.name}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  background: "#ccc",
+                                }}
+                              />
+                            )}
+                          </div>
+                          <span>
+                            {it.name} — SAR {it.price}
+                          </span>
+                          <div
+                            className="actions"
+                            style={{ marginLeft: "auto" }}
+                          >
+                            <button
+                              onClick={() => {
+                                setEditingItemIdx(idx);
+                                setNewItemName(it.name);
+                                setNewItemPrice(it.price);
+                                // setItemImagePreview(it.imageUrl || null);
+                                setActiveTab("items");
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleRemoveItem(idx)}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </fieldset>
 

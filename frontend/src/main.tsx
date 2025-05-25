@@ -34,7 +34,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import RequireAuth from "./components/RequireAuth.tsx";
 import SettingsPage from "./pages/SettingPage.tsx";
 import TemplateQRCode from "./pages/TemplateQRCode.tsx";
-import Template2 from "./components/Templates/Template2.tsx";
+// import Template2 from "./components/Templates/Template2.tsx";
 import TemplateRenderer from "./pages/TemplateRenderer.tsx";
 
 // import Logout from './pages/Logout.tsx';
@@ -53,10 +53,10 @@ createRoot(document.getElementById("root")!).render(
               element={<Template1 />}
             /> */}
 
-                        <Route
+                        {/* <Route
               path="/menus/83c312aa-0fa5-4ea0-833c-736ceca462d9"
               element={<Template2 />}
-            />
+            /> */}
             <Route path="/menus/:id" element={<TemplateRenderer />} />
 
             <Route path="/templates/qr/:id" element={<TemplateQRCode />} />

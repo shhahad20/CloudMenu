@@ -29,6 +29,12 @@ const TemplateRenderer: React.FC = () => {
       .then(setTemplate)
       .catch(() => setError("Template not found in library or user menus."));
   }, [id]);
+ 
+    useEffect(() => {
+  if (template) {
+    console.log("🔍 fetched template:", template);
+  }
+}, [template]);
 
   if (error) return <p>{error}</p>;
   if (!template) return <LoadingSpinner />;

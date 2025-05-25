@@ -116,11 +116,11 @@ export const createTemplate = async (req, res) => {
         // const { config } = req.body as { config: any };
         const { name, preview_url, price, category, config: config, } = req.body;
         // 1) optionally upload and inject into config
-        const imageUrl = await handleUpload(req.file);
-        const finalConfig = {
-            ...config,
-            ...(imageUrl ? { headerImageUrl: imageUrl } : {}),
-        };
+        // const imageUrl = await handleUpload(req.file);
+        // const finalConfig = {
+        //   ...config,
+        //   ...(imageUrl ? { headerImageUrl: imageUrl } : {}),
+        // };
         // 2) compute byte size of the config
         // const size_bytes = byteSize(finalConfig);
         // 3) insert into DB
@@ -130,7 +130,7 @@ export const createTemplate = async (req, res) => {
             {
                 user_id: userId,
                 name,
-                config: finalConfig,
+                // config: finalConfig,
                 preview_url: preview_url ?? null,
                 price: price ?? null,
                 category: category ?? null,
@@ -186,7 +186,7 @@ export const updateTemplate = async (req, res) => {
     const { maxProjects, maxStorageMB } = planLimits[plan];
     try {
         // 1) Fetch existing template
-        const templateId = req.params.id;
+        console.log("Template id: " + templateId);
         const { data: existing, error: fetchErr } = await adminSupabase
             .from("menu_templates")
             .select("config,size_bytes")
@@ -197,10 +197,65 @@ export const updateTemplate = async (req, res) => {
             return res.status(404).json({ error: "Template not found." });
         }
         // 2) Build newConfig
-        let newConfig = { ...existing.config, ...(req.body.config || {}) };
+        // let newConfig = { ...existing.config, ...(req.body.config || {}) };
+        // if (req.file) {
+        //   const imageUrl = await handleUpload(req.file, templateId, userId);
+        //   // If config has header_image, update it
+        //   if ("header_image" in newConfig) {
+        //   newConfig.header_image = imageUrl;
+        //   }
+        //   // If config has items with image property, update those
+        //   if (Array.isArray(newConfig.items)) {
+        //   newConfig.items = newConfig.items.map((item: any) => {
+        //     if ("image" in item) {
+        //     return { ...item, image: imageUrl };
+        //     }
+        //     return item;
+        //   });
+        //   }
+        // }
+        let bodyConfig = {};
+        if (req.body.config) {
+            if (typeof req.body.config === "string") {
+                try {
+                    bodyConfig = JSON.parse(req.body.config);
+                }
+                catch {
+                    return res.status(400).json({ error: "Invalid JSON in config" });
+                }
+            }
+            else {
+                bodyConfig = req.body.config;
+            }
+        }
+        // b) Merge into existing.config
+        let newConfig = {
+            ...existing.config,
+            ...bodyConfig,
+        };
         if (req.file) {
             const imageUrl = await handleUpload(req.file, templateId, userId);
-            newConfig.header_image = imageUrl;
+            console.log("The image reserived: " + imageUrl);
+            // update header if present
+            if ("header_image" in newConfig) {
+                newConfig.header_image = imageUrl;
+            }
+            // update the one item in sections
+            if (Array.isArray(newConfig.sections)) {
+                newConfig.sections = newConfig.sections.map((sec) => {
+                    if (sec.id !== req.body.sectionId)
+                        return sec;
+                    return {
+                        ...sec,
+                        items: sec.items.map((item) => {
+                            if (item.id !== req.body.itemId)
+                                return item;
+                            // only this one gets the new URL
+                            return { ...item, image: imageUrl };
+                        }),
+                    };
+                });
+            }
         }
         // 3) Enforce plan quotas
         // a) Check project count
