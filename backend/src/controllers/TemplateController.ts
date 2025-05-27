@@ -231,6 +231,9 @@ export const updateTemplate = async (
   try {
     // 1) Fetch existing template
     console.log("Template id: " + templateId);
+    console.debug("👀 req.body:", req.body);
+    console.debug("👀 req.file:", req.file ? req.file.originalname : null);
+    
     const { data: existing, error: fetchErr } = await adminSupabase
       .from("menu_templates")
       .select("config,size_bytes")
@@ -290,17 +293,46 @@ export const updateTemplate = async (
       }
 
       // update the one item in sections
+      // if (Array.isArray(newConfig.sections)) {
+      //   newConfig.sections = newConfig.sections.map((sec: any) => {
+      //     if (sec.id !== req.body.sectionId) return sec;
+      //     return {
+      //       ...sec,
+      //       items: sec.items.map((item: any) => {
+      //         if (item.id !== req.body.itemId) return item;
+      //         // only this one gets the new URL
+      //         return { ...item, image: imageUrl };
+      //       }),
+      //     };
+      //   });
+      // }
+
       if (Array.isArray(newConfig.sections)) {
+        console.debug("🔍 sectionId to match:", req.body.sectionId);
+        console.debug("🔍 itemId to match:   ", req.body.itemId);
         newConfig.sections = newConfig.sections.map((sec: any) => {
-          if (sec.id !== req.body.sectionId) return sec;
-          return {
-            ...sec,
-            items: sec.items.map((item: any) => {
-              if (item.id !== req.body.itemId) return item;
-              // only this one gets the new URL
-              return { ...item, image: imageUrl };
-            }),
-          };
+          console.debug(`→ checking section ${sec.id}`);
+          if (sec.id !== req.body.sectionId) {
+            console.debug(`   skipping section ${sec.id}`);
+            return sec;
+          }
+
+          console.debug(`✔ matched section ${sec.id}, updating items…`);
+          const updatedItems = sec.items.map((item: any) => {
+            console.debug(`   → checking item ${item.id}`);
+            if (item.id !== req.body.itemId) {
+              console.debug(`     skipping item ${item.id}`);
+              return item;
+            }
+
+            console.debug(
+              `     ✔ matched item ${item.id}, setting image to:`,
+              imageUrl
+            );
+            return { ...item, image: imageUrl };
+          });
+
+          return { ...sec, items: updatedItems };
         });
       }
     }

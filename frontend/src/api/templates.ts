@@ -2,6 +2,7 @@ export interface Section {
   id: string;
   name: string;
   color?: string;
+  image?: string; // optional image URL for the section
   items: Array<{
     id: string;
     name: string;
