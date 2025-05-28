@@ -245,27 +245,6 @@ export const updateTemplate = async (
     }
 
     // 2) Build newConfig
-    // let newConfig = { ...existing.config, ...(req.body.config || {}) };
-
-    // if (req.file) {
-    //   const imageUrl = await handleUpload(req.file, templateId, userId);
-
-    //   // If config has header_image, update it
-    //   if ("header_image" in newConfig) {
-    //   newConfig.header_image = imageUrl;
-    //   }
-    //   // If config has items with image property, update those
-    //   if (Array.isArray(newConfig.items)) {
-    //   newConfig.items = newConfig.items.map((item: any) => {
-    //     if ("image" in item) {
-    //     return { ...item, image: imageUrl };
-    //     }
-    //     return item;
-    //   });
-    //   }
-
-    // }
-
     let bodyConfig: any = {};
     if (req.body.config) {
       if (typeof req.body.config === "string") {
@@ -284,56 +263,63 @@ export const updateTemplate = async (
       ...existing.config,
       ...bodyConfig,
     };
+
     if (req.file) {
       const imageUrl = await handleUpload(req.file, templateId, userId);
-      console.log("The image reserived: " + imageUrl);
+      console.log("The image received: " + imageUrl);
+      
+      // Debug: Log what we're looking for
+      console.debug("🔍 Looking for sectionId:", req.body.sectionId);
+      console.debug("🔍 Looking for itemId:", req.body.itemId);
+      console.debug("🔍 Available sections:", newConfig.sections?.map((s: any) => s.id));
+      
       // update header if present
       if ("header_image" in newConfig) {
         newConfig.header_image = imageUrl;
       }
 
       // update the one item in sections
-      // if (Array.isArray(newConfig.sections)) {
-      //   newConfig.sections = newConfig.sections.map((sec: any) => {
-      //     if (sec.id !== req.body.sectionId) return sec;
-      //     return {
-      //       ...sec,
-      //       items: sec.items.map((item: any) => {
-      //         if (item.id !== req.body.itemId) return item;
-      //         // only this one gets the new URL
-      //         return { ...item, image: imageUrl };
-      //       }),
-      //     };
-      //   });
-      // }
-
       if (Array.isArray(newConfig.sections)) {
-        console.debug("🔍 sectionId to match:", req.body.sectionId);
-        console.debug("🔍 itemId to match:   ", req.body.itemId);
+        let itemFound = false;
+        
         newConfig.sections = newConfig.sections.map((sec: any) => {
-          console.debug(`→ checking section ${sec.id}`);
-          if (sec.id !== req.body.sectionId) {
+          console.debug(`→ checking section ${sec.id} vs ${req.body.sectionId}`);
+          
+          // Make sure we're comparing the right types (string vs string)
+          if (String(sec.id) !== String(req.body.sectionId)) {
             console.debug(`   skipping section ${sec.id}`);
             return sec;
           }
 
-          console.debug(`✔ matched section ${sec.id}, updating items…`);
+          console.debug(`✔ matched section ${sec.id}, checking items...`);
+          console.debug(`   items in section:`, sec.items?.map((i: any) => i.id));
+          
           const updatedItems = sec.items.map((item: any) => {
-            console.debug(`   → checking item ${item.id}`);
-            if (item.id !== req.body.itemId) {
+            console.debug(`   → checking item ${item.id} vs ${req.body.itemId}`);
+            
+            // Make sure we're comparing the right types
+            if (String(item.id) !== String(req.body.itemId)) {
               console.debug(`     skipping item ${item.id}`);
               return item;
             }
 
-            console.debug(
-              `     ✔ matched item ${item.id}, setting image to:`,
-              imageUrl
-            );
+            console.debug(`     ✔ matched item ${item.id}, setting image to:`, imageUrl);
+            itemFound = true;
             return { ...item, image: imageUrl };
           });
 
           return { ...sec, items: updatedItems };
         });
+        
+        if (!itemFound) {
+          console.error("❌ Item not found! sectionId:", req.body.sectionId, "itemId:", req.body.itemId);
+          console.error("Available sections and items:");
+          newConfig.sections.forEach((sec: any) => {
+            console.error(`  Section ${sec.id}:`, sec.items?.map((i: any) => i.id));
+          });
+        } else {
+          console.log("✅ Item found and updated successfully");
+        }
       }
     }
 
@@ -353,7 +339,6 @@ export const updateTemplate = async (
     }
 
     // b) Check storage usage
-    //  • sum existing DB bytes minus this template’s old size_bytes
     const { data: allRows, error: dbErr } = await adminSupabase
       .from("menu_templates")
       .select("size_bytes")
@@ -397,8 +382,16 @@ export const updateTemplate = async (
       .select("config")
       .single<{ config: any }>();
     if (updateErr) throw updateErr;
+    
+    // Debug: Check what we're returning
+    console.log("🎯 Final response config sections:", data.config.sections?.length);
+    const targetSection = data.config.sections?.find((s: any) => String(s.id) === String(req.body.sectionId));
+    const targetItem = targetSection?.items?.find((i: any) => String(i.id) === String(req.body.itemId));
+    console.log("🎯 Target item image URL:", targetItem?.image);
+    
     return res.json({ config: data.config });
   } catch (err: any) {
+    console.error("Server error:", err);
     res.status(500).json({ error: err.message });
   }
 };

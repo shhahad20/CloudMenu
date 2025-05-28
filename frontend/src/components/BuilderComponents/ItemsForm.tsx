@@ -5,35 +5,32 @@ import { API_URL } from "../../api/api";
 // import { API_URL } from "../../api/api";
 
 type Props = {
- sectionId: string;                  
-  sectionIndex: number;         
+  sectionId: string;
+  sectionIndex: number;
   items: Section["items"];
   onChange: (newItems: Section["items"]) => void;
 };
 
-export default function ItemsForm({
-  sectionId,
-  items,
-  onChange,
-}: Props) {
+export default function ItemsForm({ sectionId, items, onChange }: Props) {
   const { id } = useParams<{ id: string }>();
-//   const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   // local form state
-  const [editingIdx, setEditingIdx]     = useState<number | null>(null);
-  const [newName, setNewName]           = useState("");
-  const [newPrice, setNewPrice]         = useState("");
+  const [editingIdx, setEditingIdx] = useState<number | null>(null);
+  const [newName, setNewName] = useState("");
+  const [newPrice, setNewPrice] = useState("");
   const [newDescription, setNewDescription] = useState("");
-  const [newSubText, setNewSubText]     = useState("");
-  const [newCalories, setNewCalories]   = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile]       = useState<File | null>(null);
+  const [newSubText, setNewSubText] = useState("");
+  const [newCalories, setNewCalories] = useState("");
+  //   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
 
   // loading/UI flags
-//   const [saving, setSaving]   = useState(false);
-//   const [deleting, setDeleting] = useState(false);
-//   const [error, setError]     = useState<string | null>(null);
-console.log("Image file: " + imageFile)
+  //   const [saving, setSaving]   = useState(false);
+  //   const [deleting, setDeleting] = useState(false);
+  //   const [error, setError]     = useState<string | null>(null);
   // reset form fields
   const resetForm = () => {
     setEditingIdx(null);
@@ -42,21 +39,22 @@ console.log("Image file: " + imageFile)
     setNewDescription("");
     setNewSubText("");
     setNewCalories("");
-    setImagePreview(null);
-    setImageFile(null);
+    setImageUrl(""); // Reset to empty string instead of undefined
+    setLocalPreview(null);
   };
 
   // add new item
   const handleAddItem = () => {
     if (!newName.trim()) return;
+    const imageValue = imageUrl;
     const next = {
-      id:          crypto.randomUUID(),
-      name:        newName,
-      price:       newPrice,
-      ...(newDescription  && { description: newDescription }),
-      ...(newSubText     && { subText: newSubText }),
-      ...(newCalories   && { calories: newCalories }),
-      ...(imagePreview   && { image: imagePreview }),
+      id: crypto.randomUUID(),
+      name: newName,
+      price: newPrice,
+      ...(newDescription && { description: newDescription }),
+      ...(newSubText && { subText: newSubText }),
+      ...(newCalories && { calories: newCalories }),
+      ...(imageValue ? { image: imageValue } : {}),
     };
     onChange([...items, next]);
     resetForm();
@@ -66,15 +64,16 @@ console.log("Image file: " + imageFile)
   const handleUpdateItem = () => {
     if (editingIdx === null) return;
     const updated = items.map((it, idx) => {
+      console.log("update image :", imageUrl);
       if (idx !== editingIdx) return it;
       return {
         ...it,
-        name:        newName,
-        price:       newPrice,
-        ...( "description" in it && { description: newDescription }),
-        ...( "subText"     in it && { subText: newSubText }),
-        ...( "calories"    in it && { calories: newCalories }),
-        image:       imagePreview ?? it.image,
+        name: newName,
+        price: newPrice,
+        ...("description" in it && { description: newDescription }),
+        ...("subText" in it && { subText: newSubText }),
+        ...("calories" in it && { calories: newCalories }),
+        image: imageUrl ?? it.image,
       };
     });
     onChange(updated);
@@ -86,104 +85,170 @@ console.log("Image file: " + imageFile)
     onChange(items.filter((_, i) => i !== idxToRemove));
   };
 
-//   // delete all
-//   const handleDeleteAllItems = async () => {
-//     if (!window.confirm("Delete ALL items? This cannot be undone.")) return;
-//     setDeleting(true);
-//     setError(null);
-//     onChange([]);
-//     try {
-//       const res = await fetch(`${API_URL}/templates/${id}`, {
-//         method: "PATCH",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization:  `Bearer ${localStorage.getItem("access_token")}`,
-//         },
-//         body: JSON.stringify({ config: { sections: [{ items: [] }] } }),
-//       });
-//       if (!res.ok) throw new Error(await res.text());
-//       alert("All items deleted");
-//       navigate(`/menus/${id}`, { replace: true });
-//     } catch (e: unknown) {
-//       const message = e instanceof Error ? e.message : String(e);
-//       setError(`Delete failed: ${message}`);
-//     } finally {
-//       setDeleting(false);
-//     }
-//   };
-
-//   // save items to server
-//   const handleSaveItems = async () => {
-//     setSaving(true);
-//     setError(null);
-//     try {
-//       const res = await fetch(`${API_URL}/templates/${id}`, {
-//         method: "PATCH",
-//         headers: {
-//           "Content-Type":  "application/json",
-//           Authorization:   `Bearer ${localStorage.getItem("access_token")}`,
-//         },
-//         body: JSON.stringify({ config: { sections: [{ items }] } }),
-//       });
-//       if (!res.ok) throw new Error(await res.text());
-//       alert("Items saved successfully!");
-//     } catch (e: unknown) {
-//       const message = e instanceof Error ? e.message : String(e);
-//       setError(`Save failed: ${message}`);
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-  // handle file input + preview
-//   const handleItemImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const file = e.target.files?.[0] ?? null;
-//     if (!file) return;
-//     setImagePreview(URL.createObjectURL(file));
-//     setImageFile(file);
-//   };
-
-const handleItemImageUpload = async (
+  const handleItemImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0] ?? null;
+    const file = e.target.files?.[0];
     if (!file || editingIdx === null) return;
 
-    // show local preview
-    setImagePreview(URL.createObjectURL(file));
+    // 1) instant UI feedback
+    const blob = URL.createObjectURL(file);
+    setLocalPreview(blob);
 
-    // build FormData for immediate upload
-    const form = new FormData();
-    form.append("image_url", file);           // matches your multer field
-    form.append("sectionId", sectionId);      // from props
-    form.append("itemId", items[editingIdx].id);
+    try {
+      // 2) upload
+      const form = new FormData();
+      form.append("image_url", file);
+      form.append("sectionId", sectionId);
+      form.append("itemId", items[editingIdx].id);
 
-    // call backend
-    const res = await fetch(`${API_URL}/templates/${id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-      body: form,
-    });
+      console.log(
+        "Uploading file:",
+        file.name,
+        "for item:",
+        items[editingIdx].id
+      );
 
-    const body = await res.json();
-    if (!res.ok) {
-      alert("Upload failed: " + (body.error || res.statusText));
-      return;
+      const res = await fetch(`${API_URL}/templates/${id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+        body: form,
+      });
+
+      const body = await res.json();
+
+      // Debug: Log the entire response
+      console.log("Full server response:", body);
+
+      if (!res.ok) {
+        alert("Upload failed: " + (body.error || res.statusText));
+        URL.revokeObjectURL(blob);
+        setLocalPreview(null);
+        return;
+      }
+
+      // Debug: Log the sections data
+      console.log("Sections from response:", body.config?.sections);
+
+      // Find the section and item
+      const section = body.config?.sections?.find(
+        (s: Section) => s.id === sectionId
+      );
+      console.log("Found section:", section);
+
+      if (!section) {
+        console.error("Section not found in response");
+        alert("Error: Section not found in server response");
+        URL.revokeObjectURL(blob);
+        setLocalPreview(null);
+        return;
+      }
+
+      const updatedItem = section.items?.[editingIdx];
+      console.log("Updated item from server:", updatedItem);
+
+      const serverImageUrl = updatedItem?.image;
+      console.log("Server image URL:", serverImageUrl);
+
+      // Check if the URL is still a blob URL (which shouldn't happen)
+      if (serverImageUrl?.startsWith("blob:")) {
+        console.error(
+          "Server returned a blob URL - this indicates a server-side issue"
+        );
+        alert("Server error: Image was not properly uploaded to storage");
+        URL.revokeObjectURL(blob);
+        setLocalPreview(null);
+        return;
+      }
+
+      if (!serverImageUrl) {
+        console.error("No image URL returned from server");
+        alert("Error: No image URL returned from server");
+        URL.revokeObjectURL(blob);
+        setLocalPreview(null);
+        return;
+      }
+
+      // Update the items array with the server URL
+      const updatedItems = items.map((item, idx) => {
+        if (idx === editingIdx) {
+          return { ...item, image: serverImageUrl };
+        }
+        return item;
+      });
+
+      // Update the parent component's items state
+      onChange(updatedItems);
+
+      // Clean up blob URL and preview first
+      URL.revokeObjectURL(blob);
+      setLocalPreview(null);
+
+      // Then set the imageUrl
+      setImageUrl(serverImageUrl);
+
+      console.log(
+        "Image upload completed successfully with URL:",
+        serverImageUrl
+      );
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Upload failed: " + error);
+      URL.revokeObjectURL(blob);
+      setLocalPreview(null);
     }
-
-    // server returns updated config, grab the new items for this section:
-    const newItems = body.config.sections
-      .find((sec: Section) => sec.id === sectionId)!
-      .items;
-
-    // clear preview & update parent state
-    setImagePreview(null);
-    onChange(newItems);
   };
 
+  //   // delete all
+  //   const handleDeleteAllItems = async () => {
+  //     if (!window.confirm("Delete ALL items? This cannot be undone.")) return;
+  //     setDeleting(true);
+  //     setError(null);
+  //     onChange([]);
+  //     try {
+  //       const res = await fetch(`${API_URL}/templates/${id}`, {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization:  `Bearer ${localStorage.getItem("access_token")}`,
+  //         },
+  //         body: JSON.stringify({ config: { sections: [{ items: [] }] } }),
+  //       });
+  //       if (!res.ok) throw new Error(await res.text());
+  //       alert("All items deleted");
+  //       navigate(`/menus/${id}`, { replace: true });
+  //     } catch (e: unknown) {
+  //       const message = e instanceof Error ? e.message : String(e);
+  //       setError(`Delete failed: ${message}`);
+  //     } finally {
+  //       setDeleting(false);
+  //     }
+  //   };
 
+  //   // save items to server
+  //   const handleSaveItems = async () => {
+  //     setSaving(true);
+  //     setError(null);
+  //     try {
+  //       const res = await fetch(`${API_URL}/templates/${id}`, {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type":  "application/json",
+  //           Authorization:   `Bearer ${localStorage.getItem("access_token")}`,
+  //         },
+  //         body: JSON.stringify({ config: { sections: [{ items }] } }),
+  //       });
+  //       if (!res.ok) throw new Error(await res.text());
+  //       alert("Items saved successfully!");
+  //     } catch (e: unknown) {
+  //       const message = e instanceof Error ? e.message : String(e);
+  //       setError(`Save failed: ${message}`);
+  //     } finally {
+  //       setSaving(false);
+  //     }
+  //   };
   return (
     <div className="tab-content two-col">
       {/* Left: Add / Edit Form */}
@@ -195,13 +260,13 @@ const handleItemImageUpload = async (
               type="text"
               placeholder="Name"
               value={newName}
-              onChange={e => setNewName(e.target.value)}
+              onChange={(e) => setNewName(e.target.value)}
             />
             <input
               type="text"
               placeholder="Price"
               value={newPrice}
-              onChange={e => setNewPrice(e.target.value)}
+              onChange={(e) => setNewPrice(e.target.value)}
             />
           </div>
 
@@ -211,7 +276,7 @@ const handleItemImageUpload = async (
                 type="text"
                 placeholder="Description"
                 value={newDescription}
-                onChange={e => setNewDescription(e.target.value)}
+                onChange={(e) => setNewDescription(e.target.value)}
               />
             )}
             {"subText" in (items[0] || {}) && (
@@ -219,7 +284,7 @@ const handleItemImageUpload = async (
                 type="text"
                 placeholder="Subtext"
                 value={newSubText}
-                onChange={e => setNewSubText(e.target.value)}
+                onChange={(e) => setNewSubText(e.target.value)}
               />
             )}
             {"calories" in (items[0] || {}) && (
@@ -227,7 +292,7 @@ const handleItemImageUpload = async (
                 type="text"
                 placeholder="Calories"
                 value={newCalories}
-                onChange={e => setNewCalories(e.target.value)}
+                onChange={(e) => setNewCalories(e.target.value)}
               />
             )}
           </div>
@@ -235,18 +300,27 @@ const handleItemImageUpload = async (
           <fieldset>
             <legend>Item Image</legend>
             <div className="image-container">
-              {editingIdx !== null && items[editingIdx]?.image ? (
-                <img src={items[editingIdx].image} alt="Item" />
-              ) : imagePreview ? (
-                <img src={imagePreview} alt="Preview" />
+              {/* show local preview if present, otherwise saved URL, otherwise existing item image, otherwise placeholder */}
+              {localPreview ? (
+                <img src={localPreview} alt="Local preview" />
+              ) : imageUrl ? (
+                <img src={imageUrl} alt="Saved" />
+              ) : editingIdx !== null && items[editingIdx]?.image ? (
+                <img src={items[editingIdx].image} alt="Existing" />
               ) : (
                 <div className="placeholder">No image selected</div>
               )}
             </div>
-            <input type="file" accept="image/*" onChange={handleItemImageUpload} />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleItemImageUpload}
+            />
           </fieldset>
 
-          <button onClick={editingIdx !== null ? handleUpdateItem : handleAddItem}>
+          <button
+            onClick={editingIdx !== null ? handleUpdateItem : handleAddItem}
+          >
             {editingIdx !== null ? "Update Item" : "Add Item"}
           </button>
         </fieldset>
@@ -277,17 +351,31 @@ const handleItemImageUpload = async (
                       <img
                         src={it.image}
                         alt={it.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
                       />
                     ) : (
-                      <div style={{ width: "100%", height: "100%", background: "#ccc" }} />
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: "#ccc",
+                        }}
+                      />
                     )}
                   </div>
                   <div>
                     <strong>{it.name}</strong> — SAR {it.price}
                     {it.subText && <div className="subtext">{it.subText}</div>}
-                    {it.description && <div className="desc">{it.description}</div>}
-                    {it.calories && <div className="cal">{it.calories} cal</div>}
+                    {it.description && (
+                      <div className="desc">{it.description}</div>
+                    )}
+                    {it.calories && (
+                      <div className="cal">{it.calories} cal</div>
+                    )}
                   </div>
                   <div className="actions" style={{ marginLeft: "auto" }}>
                     <button
@@ -298,12 +386,16 @@ const handleItemImageUpload = async (
                         setNewDescription(it.description || "");
                         setNewSubText(it.subText || "");
                         setNewCalories(it.calories || "");
-                        setImagePreview(it.image || null);
+                        setImageUrl(it.image || ""); // Set imageUrl instead of localPreview
+                        setLocalPreview(null); // Clear any local preview
                       }}
                     >
                       Edit
                     </button>
-                    <button className="delete-btn" onClick={() => handleRemoveItem(idx)}>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleRemoveItem(idx)}
+                    >
                       ×
                     </button>
                   </div>
