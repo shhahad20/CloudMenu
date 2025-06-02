@@ -485,12 +485,37 @@ const HeaderImageBuilder = ({
             //     </div>
             //   </div>
             // </div>
-            <ItemsForm
-              sectionId={config.sections[focusedSectionIdx].id}
-              sectionIndex={focusedSectionIdx}
-              items={config.sections[focusedSectionIdx].items}
-              onChange={handleItemsChange}
-            />
+            // <ItemsForm
+            //   sectionId={config.sections[focusedSectionIdx].id}
+            //   sectionIndex={focusedSectionIdx}
+            //   items={config.sections[focusedSectionIdx].items}
+            //   onChange={handleItemsChange}
+            // />
+
+            <>
+              {/* ==== SECTION PICKER ==== */}
+              <fieldset style={{ marginBottom: "1rem" }}>
+                <legend>Select Section</legend>
+                <select
+                  value={focusedSectionIdx}
+                  onChange={(e) => setFocusedSectionIdx(Number(e.target.value))}
+                >
+                  {config.sections.map((sec, idx) => (
+                    <option key={sec.id} value={idx}>
+                      {sec.name || `Section ${idx + 1}`}
+                    </option>
+                  ))}
+                </select>
+              </fieldset>
+
+              {/* ==== ITEMS FORM FOR THE SELECTED SECTION ==== */}
+              <ItemsForm
+                sectionId={config.sections[focusedSectionIdx].id}
+                sectionIndex={focusedSectionIdx}
+                items={config.sections[focusedSectionIdx].items}
+                onChange={handleItemsChange}
+              />
+            </>
           )}
         </div>
         <div className="actions-bottom">
