@@ -23,10 +23,6 @@ export default function SectionsForm({
   const [newName, setNewName] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // const [saving, setSaving] = useState(false);
-  // const [deleting, setDeleting] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
-
   const handleUpdate = () => {
     if (editingIdx === null) return;
     const updated = sections.map((sec, idx) =>
@@ -53,12 +49,6 @@ export default function SectionsForm({
     setNewName("");
     setImagePreview(null);
   };
-  // const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
-  //   setImagePreview(URL.createObjectURL(file));
-  //   // you’ll include this file in your save FormData at builder level
-  // };
 
   // inside SectionsForm
 const handleSectionImageUpload = async (
@@ -101,57 +91,6 @@ const handleSectionImageUpload = async (
       onFocusChange(focusedIndex - 1);
     }
   };
-
-  // const handleSaveSections = async () => {
-  //   setSaving(true);
-  //   setError(null);
-  //   try {
-  //     const res = await fetch(`${API_URL}/templates/${id}`, {
-  //       method: "PATCH",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-  //       },
-  //       body: JSON.stringify({ config: { sections } }),
-  //     });
-  //     if (!res.ok) throw new Error(await res.text());
-  //     alert("Sections saved successfully!");
-  //     //   navigate(`/menus/${id}`, { replace: true });
-  //   } catch (err: unknown) {
-  //     setError(
-  //       err instanceof Error ? `Save failed: ${err.message}` : "Save failed"
-  //     );
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
-
-  // const handleDeleteAllSections = async () => {
-  //   if (!window.confirm("Delete ALL sections? This cannot be undone.")) return;
-  //   setDeleting(true);
-  //   setError(null);
-  //   try {
-  //     // wipe locally first
-  //     onChange([]);
-  //     const res = await fetch(`${API_URL}/templates/${id}`, {
-  //       method: "PATCH",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-  //       },
-  //       body: JSON.stringify({ config: { sections: [] } }),
-  //     });
-  //     if (!res.ok) throw new Error(await res.text());
-  //     alert("All sections deleted.");
-  //     //   navigate(`/menus/${id}`, { replace: true });
-  //   } catch (err: unknown) {
-  //     setError(
-  //       err instanceof Error ? `Delete failed: ${err.message}` : "Delete failed"
-  //     );
-  //   } finally {
-  //     setDeleting(false);
-  //   }
-  // };
 
   return (
     <div className="tab-content two-col">
@@ -226,23 +165,6 @@ const handleSectionImageUpload = async (
             ))}
           </ul>
         </fieldset>
-        {/* <div className="actions-bottom">
-          <button
-            className="btn save"
-            onClick={handleSaveSections}
-            disabled={saving}
-          >
-            {saving ? "Saving…" : "Save Sections"}
-          </button>
-          <button
-            className="btn delete"
-            onClick={handleDeleteAllSections}
-            disabled={deleting}
-          >
-            {deleting ? "Deleting…" : "Delete All Sections"}
-          </button>
-        </div> */}
-        {/* {error && <p className="error">{error}</p>} */}
       </div>
     </div>
   );

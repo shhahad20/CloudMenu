@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Section } from "../../api/templates";
 import { API_URL } from "../../api/api";
 // import { API_URL } from "../../api/api";
+import "../../styles/templateBuilder.scss";
 
 type Props = {
   sectionId: string;
@@ -201,54 +202,6 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
     }
   };
 
-  //   // delete all
-  //   const handleDeleteAllItems = async () => {
-  //     if (!window.confirm("Delete ALL items? This cannot be undone.")) return;
-  //     setDeleting(true);
-  //     setError(null);
-  //     onChange([]);
-  //     try {
-  //       const res = await fetch(`${API_URL}/templates/${id}`, {
-  //         method: "PATCH",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization:  `Bearer ${localStorage.getItem("access_token")}`,
-  //         },
-  //         body: JSON.stringify({ config: { sections: [{ items: [] }] } }),
-  //       });
-  //       if (!res.ok) throw new Error(await res.text());
-  //       alert("All items deleted");
-  //       navigate(`/menus/${id}`, { replace: true });
-  //     } catch (e: unknown) {
-  //       const message = e instanceof Error ? e.message : String(e);
-  //       setError(`Delete failed: ${message}`);
-  //     } finally {
-  //       setDeleting(false);
-  //     }
-  //   };
-
-  //   // save items to server
-  //   const handleSaveItems = async () => {
-  //     setSaving(true);
-  //     setError(null);
-  //     try {
-  //       const res = await fetch(`${API_URL}/templates/${id}`, {
-  //         method: "PATCH",
-  //         headers: {
-  //           "Content-Type":  "application/json",
-  //           Authorization:   `Bearer ${localStorage.getItem("access_token")}`,
-  //         },
-  //         body: JSON.stringify({ config: { sections: [{ items }] } }),
-  //       });
-  //       if (!res.ok) throw new Error(await res.text());
-  //       alert("Items saved successfully!");
-  //     } catch (e: unknown) {
-  //       const message = e instanceof Error ? e.message : String(e);
-  //       setError(`Save failed: ${message}`);
-  //     } finally {
-  //       setSaving(false);
-  //     }
-  //   };
   return (
     <div className="tab-content two-col">
       {/* Left: Add / Edit Form */}
@@ -310,15 +263,16 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
               ) : (
                 <div className="placeholder">No image selected</div>
               )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleItemImageUpload}
+              />
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleItemImageUpload}
-            />
           </fieldset>
 
           <button
+            className="item-add-btn"
             onClick={editingIdx !== null ? handleUpdateItem : handleAddItem}
           >
             {editingIdx !== null ? "Update Item" : "Add Item"}
@@ -335,9 +289,10 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
               <li key={it.id}>
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <div
+                    className="thumbnail"
                     style={{
-                      width: 32,
-                      height: 32,
+                      width: 60,
+                      height: 40,
                       marginRight: 8,
                       borderRadius: 4,
                       overflow: "hidden",
@@ -351,6 +306,7 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
                       <img
                         src={it.image}
                         alt={it.name}
+                        className="thumbnail-image"
                         style={{
                           width: "100%",
                           height: "100%",
@@ -403,17 +359,6 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
               </li>
             ))}
           </ul>
-
-          {/* <div className="actions-bottom">
-            <button className="btn save" onClick={handleSaveItems} disabled={saving}>
-              {saving ? "Saving…" : "Save All Items"}
-            </button>
-            <button className="btn delete" onClick={handleDeleteAllItems} disabled={deleting}>
-              {deleting ? "Deleting…" : "Delete All Items"}
-            </button>
-          </div>
-
-          {error && <p className="error">{error}</p>} */}
         </fieldset>
       </div>
     </div>

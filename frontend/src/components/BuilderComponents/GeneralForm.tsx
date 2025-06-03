@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TemplateConfig } from "../../api/templates";
 import { API_URL } from "../../api/api";
-import {  useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import "../../styles/templateBuilder.scss";
 
 type Props = {
@@ -11,34 +11,17 @@ type Props = {
 
 export default function GeneralForm({ general, onChange }: Props) {
   const { id } = useParams<{ id: string }>();
-  // const navigate = useNavigate();
 
-  //   const [config, setConfig] = useState<TemplateConfig | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // const [deleting, setDeleting] = useState(false);
-  // const [saving, setSaving] = useState(false);
 
-  //   const updateField = <K extends keyof TemplateConfig>(
-  //     key: K,
-  //     value: TemplateConfig[K]
-  //   ) => {
-  //     setConfig((c) => (c ? { ...c, [key]: value } : c));
-  //   };
   const updateField = <K extends keyof TemplateConfig>(
     key: K,
     value: TemplateConfig[K]
   ) => {
     onChange({ [key]: value } as Partial<TemplateConfig>);
   };
-  //   const updateColor = (
-  //     colorKey: keyof TemplateConfig["colors"],
-  //     value: string
-  //   ) => {
-  //     if (config && config.colors) {
-  //       updateField("colors", { ...config.colors, [colorKey]: value });
-  //     }
-  //   };
+
   const updateColor = (
     colorKey: keyof TemplateConfig["colors"],
     value: string
@@ -101,244 +84,189 @@ export default function GeneralForm({ general, onChange }: Props) {
     }
   };
 
-  // const handleSave = async () => {
-  //   setSaving(true);
-  //   setError(null);
-
-  //   try {
-  //     const res = await fetch(`${API_URL}/templates/${id}`, {
-  //       method: "PATCH",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-  //       },
-  //       body: JSON.stringify({ config: general }),
-  //     });
-  //     if (!res.ok) {
-  //       const text = await res.text();
-  //       throw new Error(text || `HTTP ${res.status}`);
-  //     }
-  //     // Optionally re-fetch or just navigate
-  //     alert("Template saved successfully!");
-  //     navigate(`/menus/${id}`, { replace: true });
-  //   } catch (err: unknown) {
-  //     setError(
-  //       err instanceof Error ? `Save failed: ${err.message}` : "Save failed"
-  //     );
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // };
-
-  // const handleDelete = async () => {
-  //   if (!window.confirm("Are you sure you want to delete this template?")) {
-  //     return;
-  //   }
-  //   setDeleting(true);
-  //   setError(null);
-
-  //   try {
-  //     const res = await fetch(`${API_URL}/templates/${id}`, {
-  //       method: "DELETE",
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-  //       },
-  //     });
-  //     if (!res.ok) {
-  //       const text = await res.text();
-  //       throw new Error(text || `HTTP ${res.status}`);
-  //     }
-  //     alert("Template deleted.");
-  //     navigate("/dashboard", { replace: true }); // or wherever makes sense
-  //   } catch (err: unknown) {
-  //     setError(
-  //       err instanceof Error ? `Delete failed: ${err.message}` : "Delete failed"
-  //     );
-  //   } finally {
-  //     setDeleting(false);
-  //   }
-  // };
-
   return (
     <div className="tab-content general">
-      {/* Left Column */}
-      <div className="col left">
-        {/* Logo */}
-        <fieldset>
-          <legend>Logo</legend>
-          <input
-            type="text"
-            value={general?.logo || ""}
-            onChange={(e) => updateField("logo", e.target.value)}
-            placeholder="Logo URL or name"
-          />
-          {general?.logo && general.logo.startsWith("http") ? (
-            <div className="logo-image-container">
-              {general.logo ? (
-                <img src={general.logo} alt="Logo" />
-              ) : (
-                <div className="placeholder">No logo image</div>
-              )}
-              <input
-                className="file-input"
-                type="file"
-                accept="image/*"
-                disabled={uploading}
-                // You need to implement handleLogoUpload if you want to support logo image upload
-                // onChange={handleLogoUpload}
-                onClick={(e) => {
-                  if (!general.logo || !general.logo.startsWith("http")) {
-                    e.preventDefault();
-                  }
-                }}
-              />
-            </div>
-          ) : (
-            <div style={{ color: "#888", fontSize: "0.9em", marginTop: 8 }}>
-              Image upload only allowed if logo is an image URL.
-            </div>
-          )}
-        </fieldset>
-
-        {/* Colors */}
-        <fieldset>
-          <legend>Color Palette</legend>
-          <div className="color-row">
-            {(["primary", "secondary", "background"] as const).map((key) => (
-              <div key={key} className="color-picker">
-                <label className="swatch-input" title={key}>
-                  <input
-                    type="color"
-                    className="swatch"
-                    value={general?.colors[key] || "#000000"}
-                    onChange={(e) => updateColor(key, e.target.value)}
-                  />
-                  <input
-                    className="color-input-text"
-                    type="text"
-                    value={general?.colors?.[key] || ""}
-                    onChange={(e) => updateColor(key, e.target.value)}
-                  />
-                </label>
-                <div className="label">{key}</div>
-              </div>
-            ))}
-          </div>
-        </fieldset>
-
-        {/* Text Blocks */}
-        <fieldset>
-          <legend>Text Block 1</legend>
-          <input
-            type="text"
-            value={general?.text?.[0]?.value || ""}
-            onChange={(e) => {
-              const newText = [...(general?.text || [])];
-              newText[0] = { ...newText[0], value: e.target.value };
-              updateField("text", newText);
-            }}
-          />
-        </fieldset>
-
-        <fieldset>
-          <legend>Text Block 2</legend>
-          <input
-            type="text"
-            value={
-              general?.text?.[1]?.id === "footer"
-                ? ""
-                : general?.text?.[1]?.value || ""
-            }
-            onChange={(e) => {
-              const newText = [...(general?.text || [])];
-              // Only update if not footer
-              if (newText[1]?.id !== "footer") {
-                newText[1] = { ...newText[1], value: e.target.value };
-                updateField("text", newText);
-              }
-            }}
-          />
-        </fieldset>
-
-        {general?.text?.some((t) => t.id === "footer") && (
-          <fieldset>
-            <legend>Footer Text</legend>
+      <div className="general-form">
+        {/* Left Column */}
+        <div className="col left">
+          {/* Logo */}
+          <fieldset className="form-fieldset">
+            <legend>Logo</legend>
             <input
               type="text"
-              value={general?.text?.find((t) => t.id === "footer")?.value || ""}
+              value={general?.logo || ""}
+              onChange={(e) => updateField("logo", e.target.value)}
+              placeholder="Logo URL or name"
+              className="form-input"
+            />
+            {general?.logo && general.logo.startsWith("http") ? (
+              <div className="logo-image-container">
+                {general.logo ? (
+                  <img src={general.logo} alt="Logo" className="logo-preview" />
+                ) : (
+                  <div className="placeholder">No logo image</div>
+                )}
+                <input
+                  className="file-input"
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onClick={(e) => {
+                    if (!general.logo || !general.logo.startsWith("http")) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="warning-message">
+                ⚠️ Image upload only allowed if logo is an image URL.
+              </div>
+            )}
+          </fieldset>
+
+          {/* Colors */}
+          <fieldset className="form-fieldset">
+            <legend>Color Palette</legend>
+            <div className="color-row">
+              {(["primary", "secondary", "background"] as const).map((key) => (
+                <div key={key} className="color-picker">
+                  <label className="swatch-input" title={key}>
+                    <input
+                      type="color"
+                      className="swatch"
+                      value={general?.colors[key] || "#000000"}
+                      onChange={(e) => updateColor(key, e.target.value)}
+                    />
+                    <input
+                      className="color-input-text"
+                      type="text"
+                      value={general?.colors?.[key] || ""}
+                      onChange={(e) => updateColor(key, e.target.value)}
+                      placeholder="#000000"
+                    />
+                  </label>
+                  <div className="label">{key}</div>
+                </div>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* Text Blocks */}
+          <fieldset className="form-fieldset">
+            <legend>Text Block 1</legend>
+            <input
+              type="text"
+              value={general?.text?.[0]?.value || ""}
               onChange={(e) => {
                 const newText = [...(general?.text || [])];
-                const idx = newText.findIndex((t) => t.id === "footer");
-                if (idx !== -1) {
-                  newText[idx] = {
-                    ...newText[idx],
-                    value: e.target.value,
-                  };
+                newText[0] = { ...newText[0], value: e.target.value };
+                updateField("text", newText);
+              }}
+              placeholder="Enter text for block 1"
+              className="form-input"
+            />
+          </fieldset>
+
+          <fieldset className="form-fieldset">
+            <legend>Text Block 2</legend>
+            <input
+              type="text"
+              value={
+                general?.text?.[1]?.id === "footer"
+                  ? ""
+                  : general?.text?.[1]?.value || ""
+              }
+              onChange={(e) => {
+                const newText = [...(general?.text || [])];
+                // Only update if not footer
+                if (newText[1]?.id !== "footer") {
+                  newText[1] = { ...newText[1], value: e.target.value };
                   updateField("text", newText);
                 }
               }}
+              placeholder="Enter text for block 2"
+              disabled={general?.text?.[1]?.id === "footer"}
+              className={`form-input ${
+                general?.text?.[1]?.id === "footer" ? "disabled" : ""
+              }`}
             />
           </fieldset>
-        )}
-      </div>
 
-      {/* Right Column */}
-      <div className="col right">
-        {/* Header Image */}
-        <fieldset>
-          <legend>Header Image</legend>
-          <div className="image-container">
-            {"header_image" in (general || {}) ? (
-              general?.header_image ? (
-                <img src={general.header_image} alt="Header" />
-              ) : (
-                <div className="placeholder">No image</div>
-              )
-            ) : (
-              <div className="placeholder">
-                This template doesn't support header_image.
-              </div>
-            )}
-            {"header_image" in (general || {}) && (
+          {general?.text?.some((t) => t.id === "footer") && (
+            <fieldset className="form-fieldset">
+              <legend>Footer Text</legend>
               <input
-                className="file-input"
-                type="file"
-                accept="image/*"
-                disabled={uploading}
-                onChange={handleHeaderUpload}
+                type="text"
+                value={
+                  general?.text?.find((t) => t.id === "footer")?.value || ""
+                }
+                onChange={(e) => {
+                  const newText = [...(general?.text || [])];
+                  const idx = newText.findIndex((t) => t.id === "footer");
+                  if (idx !== -1) {
+                    newText[idx] = {
+                      ...newText[idx],
+                      value: e.target.value,
+                    };
+                    updateField("text", newText);
+                  }
+                }}
+                placeholder="Enter footer text"
+                className="form-input"
               />
-            )}
-          </div>
-        </fieldset>
+            </fieldset>
+          )}
+        </div>
 
-        {/* Footer Text */}
-        {/* <fieldset>
-                <legend>Footer Text</legend>
-                <input
-                  type="text"
-                  value={config?.footer || ""}
-                  onChange={(e) => updateField("footer", e.target.value)}
-                />
-              </fieldset> */}
-
-        {/* Actions */}
-        {/* <div className="actions">
-          <button
-            className="btn save"
-            onClick={handleSave}
-            disabled={saving || uploading}
-          >
-            {saving ? "Saving…" : "Save All Changes"}
-          </button>
-
-          <button
-            className="btn delete"
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            {deleting ? "Deleting…" : "Delete Template"}
-          </button>
-        </div> */}
+        {/* Right Column */}
+        <div className="col right">
+          {/* Header Image */}
+          <fieldset className="form-fieldset">
+            <legend>Header Image</legend>
+            <div className="image-container">
+              {"header_image" in (general || {}) ? (
+                <div className="header-image-section">
+                  <div className="image-preview">
+                    {general?.header_image ? (
+                      <img
+                        src={general.header_image}
+                        alt="Header"
+                        className="header-preview"
+                      />
+                    ) : (
+                      <div className="placeholder">
+                        <div className="placeholder-icon">📸</div>
+                        No image uploaded
+                      </div>
+                    )}
+                  </div>
+                  <div className="upload-section">
+                    <input
+                      className="file-input"
+                      type="file"
+                      accept="image/*"
+                      disabled={uploading}
+                      onChange={handleHeaderUpload}
+                    />
+                    {uploading && (
+                      <div className="upload-status">
+                        <div className="spinner"></div>
+                        <span>Uploading...</span>
+                      </div>
+                    )}
+                    {error && <div className="error-message">{error}</div>}
+                  </div>
+                </div>
+              ) : (
+                <div className="placeholder not-supported">
+                  <div className="placeholder-icon">🚫</div>
+                  This template doesn't support header_image.
+                </div>
+              )}
+            </div>
+          </fieldset>
+        </div>
       </div>
     </div>
   );
