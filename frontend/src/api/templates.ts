@@ -6,7 +6,7 @@ export interface Section {
   items: Array<{
     id: string;
     name: string;
-    price: string;
+    price: number;
     image?: string;
     subText?: string;
     description?: string;

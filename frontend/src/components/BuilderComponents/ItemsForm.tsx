@@ -51,7 +51,7 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
     const next = {
       id: crypto.randomUUID(),
       name: newName,
-      price: newPrice,
+      price: Number(newPrice),
       ...(newDescription && { description: newDescription }),
       ...(newSubText && { subText: newSubText }),
       ...(newCalories && { calories: newCalories }),
@@ -70,7 +70,7 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
       return {
         ...it,
         name: newName,
-        price: newPrice,
+        price: Number(newPrice),
         ...("description" in it && { description: newDescription }),
         ...("subText" in it && { subText: newSubText }),
         ...("calories" in it && { calories: newCalories }),
@@ -216,7 +216,7 @@ export default function ItemsForm({ sectionId, items, onChange }: Props) {
               onChange={(e) => setNewName(e.target.value)}
             />
             <input
-              type="text"
+              type="number"
               placeholder="Price"
               value={newPrice}
               onChange={(e) => setNewPrice(e.target.value)}
