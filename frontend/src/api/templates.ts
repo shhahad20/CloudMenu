@@ -28,6 +28,9 @@ export interface TemplateConfig {
     primary: string;
     secondary: string;
     background: string;
+    text: string;
+    textSecondary: string;
+    accent: string;
   };
   sections: Section[];
   text: TextBlock[];

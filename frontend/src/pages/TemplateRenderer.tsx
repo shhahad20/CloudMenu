@@ -9,12 +9,13 @@ import Template2 from "../components/Templates/Template2.tsx";
 // import Template3Renderer from "../components/menus/Template3Renderer";
 import { fetchAnyTemplate, Template } from "../api/templates";
 import LoadingSpinner from "../components/UI/LoadingSpinner.tsx";
+import GildedPlateMenu from "../components/Templates/TheGildedPlate.tsx";
 
 // map template “type” (or name) → component
 const renderers: Record<string, React.FC<{ template: Template }>> = {
   template1: Template1,
   template2: Template2,
-//   template3: Template3Renderer,
+  template3: GildedPlateMenu,
   // …add more as you add more originals…
 };
 

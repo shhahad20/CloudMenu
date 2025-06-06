@@ -1,0 +1,257 @@
+// Variables
+@import url("https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;500;700&display=swap");
+
+// $primary-bg: #1a2f1a;
+$primary-bg: #0f190f;
+$text-primary: #f8f6f0;
+$text-secondary: #d4d0c4;
+$text-muted: #a8a496;
+$accent-color: #8b9a6b;
+$border-color: rgba(248, 246, 240, 0.1);
+
+// Fonts
+$font-primary: "Kaisei Decol", serif;
+$font-secondary: "Montserrat", sans-serif;
+
+.gilded-background {
+  background: #0f190f;
+}
+.gilded-plate-menu {
+  background: linear-gradient(135deg, var(--color-background) 0%, color-mix(in srgb, var(--color-background) 97%, black) 100%);
+  color: var(--color-text);
+  padding: 4rem 3rem;
+  min-height: 100vh;
+  font-family: $font-secondary;
+  line-height: 1.6;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+
+  .gilded-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    p {
+      font-size: 10px;
+              color: var(--color-secondary);
+    }
+  }
+  // Background texture
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+background-image: 
+      radial-gradient(circle at 25% 25%, color-mix(in srgb, var(--color-text) 2%, transparent) 0%, transparent 25%),
+      radial-gradient(circle at 75% 75%, color-mix(in srgb, var(--color-text) 2%, transparent) 0%, transparent 25%);
+    pointer-events: none;
+  }
+
+  .menu-header {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    .restaurant-name {
+      font-family: $font-primary;
+      font-size: 3rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.5rem 0;
+      color: var(--color-text);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-subtitle {
+      font-family: $font-primary;
+      font-size: 2.2rem;
+      font-weight: 300;
+      font-style: italic;
+      letter-spacing: 0.05em;
+      margin: -2rem 0 2rem 0;
+      color: var(--color-text-secondary);
+      opacity: 0.9;
+    }
+
+    .decorative-element {
+      display: flex;
+      justify-content: center;
+      //   margin-top: -2rem;
+    }
+  }
+
+  .menu-content {
+    position: relative;
+    z-index: 1;
+
+    .menu-section {
+      margin-bottom: 3.5rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        font-family: $font-primary;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-text);
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.5rem;
+        // border-bottom: 1px solid $border-color;
+        letter-spacing: 0.02em;
+      }
+
+      .menu-item {
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+
+        // &:not(:last-child) {
+        //   border-bottom: 1px solid rgba(248, 246, 240, 0.05);
+        // }
+
+        .item-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 0.8rem;
+          gap: 1rem;
+
+          .item-name {
+            font-family: $font-primary;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin: 0;
+            letter-spacing: 0.01em;
+            flex: 1;
+
+            // Add bullet point
+            &::before {
+              content: "•";
+              color: var(--color-secondary);
+              margin-right: 0.8rem;
+              font-size: 1.2em;
+            }
+          }
+
+          .item-price {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            // font-family: $font-secondary;
+            font-family: $font-primary;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+          }
+        }
+
+        .item-description {
+          font-family: $font-secondary;
+          font-size: 0.95rem;
+          color: var(--color-text-secondary);
+          line-height: 1.6;
+          margin: 0;
+          padding-left: 1.6rem;
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;
+
+    .menu-header {
+      margin-bottom: 3rem;
+
+      .restaurant-name {
+        font-size: 2.8rem;
+      }
+
+      .menu-subtitle {
+        font-size: 1.8rem;
+      }
+
+      .decorative-element .leaf-icon {
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .menu-content {
+      .menu-section {
+        margin-bottom: 2rem;
+
+        .section-title {
+          font-size: 1.5rem;
+        }
+
+        .menu-item {
+          .item-header {
+            // flex-direction: column;
+            // align-items: flex-start;
+            // gap: 0.5rem;
+
+            .item-name {
+              font-size: 1rem;
+            }
+
+            .item-price {
+              font-size: 1rem;
+              align-self: flex-end;
+            }
+          }
+
+          .item-description {
+            font-size: 0.9rem;
+            padding-left: 1.6rem;
+          }
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 1.5rem 1rem;
+
+    .menu-header {
+      .restaurant-name {
+        font-size: 2.2rem;
+      }
+
+      .menu-subtitle {
+        font-size: 1.5rem;
+      }
+    }
+
+    .menu-content {
+      .menu-section {
+        .menu-item {
+          .item-description {
+            padding-left: 1.2rem;
+          }
+        }
+      }
+    }
+  }
+}

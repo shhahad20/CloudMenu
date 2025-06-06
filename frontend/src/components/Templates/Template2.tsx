@@ -11,26 +11,10 @@ interface Props {
 
 const Template2: React.FC<Props> = ({ template }) => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  // const [template, setTemplate] = useState<Template | null>(null);
 
   const navRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  // useEffect(() => {
-  //   fetchLibraryTemplate("83c312aa-0fa5-4ea0-833c-736ceca462d9").then(
-  //     (data: Template) => {
-  //       setTemplate(data);
-
-  //       // find the "New" section (case-insensitive)
-  //       const newIndex = data.config.sections.findIndex(
-  //         (sec) => sec.name.trim().toLowerCase() === "new"
-  //       );
-
-  //       // if we found it, use that index; otherwise default to 0
-  //       setCurrentSectionIndex(newIndex >= 0 ? newIndex : 0);
-  //     }
-  //   );
-  // }, []);
   useEffect(() => {
     const idx = template?.config.sections.findIndex(
       (sec) => sec.name.trim().toLowerCase() === "new"
@@ -54,17 +38,6 @@ const Template2: React.FC<Props> = ({ template }) => {
 
   const templateSections = template?.config.sections || [];
 
-  //   const handlePrevious = () => {
-  //     setCurrentSectionIndex((prevIndex) =>
-  //       prevIndex > 0 ? prevIndex - 1 : templateSections.length - 1
-  //     );
-  //   };
-
-  //   const handleNext = () => {
-  //     setCurrentSectionIndex((prevIndex) =>
-  //       prevIndex < templateSections.length - 1 ? prevIndex + 1 : 0
-  //     );
-  //   };
   const { primary, secondary, background } = template?.config.colors || {
     primary: "#121212",
     secondary: "#2b3642",

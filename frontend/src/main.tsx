@@ -49,8 +49,8 @@ createRoot(document.getElementById("root")!).render(
             <Route path="/home" element={<Home />} />
             <Route path="/menus" element={<MenuTemplates />} />
             {/* <Route
-              path="/menus/15e74dd9-c765-477a-afc2-3b5b3b2e66c6"
-              element={<Template1 />}
+              path="/gilded-plate"
+              element={<GildedPlateMenu />}
             /> */}
 
                         {/* <Route
