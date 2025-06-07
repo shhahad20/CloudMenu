@@ -1,0 +1,245 @@
+// Variables
+@import url("https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@400;500;700&display=swap");
+
+$primary-bg: #fff8e1;
+$hero-image-bg: linear-gradient(135deg, #fed7aa 0%, #fbbf24 100%);
+$hero-content-bg: linear-gradient(135deg, #fffbeb 0%, #fed7aa 100%);
+$dish-bg: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
+$amber-900: #371402;
+$amber-800: #92400e;
+$amber-700: #b45309;
+$amber-200: #fde68a;
+$gray-800: #1f2937;
+$gray-600: #4b5563;
+$white: #ffffff;
+
+// Fonts
+$font-primary: "Kaisei Decol", serif;
+$font-secondary: "Montserrat", sans-serif;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+// Main Styles
+.breakfast-menu {
+  min-height: 100vh;
+  background: $primary-bg;
+  font-family: $font-primary;
+
+  .menu-footer {
+    margin-top: 2rem;
+    padding-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    p {
+      font-size: 10px;
+    }
+  }
+  .menu-container {
+    max-width: 64rem; // 4xl equivalent (1024px)
+    margin: 0 auto;
+    padding: 0 1.5rem;
+
+    .hero-section {
+      height: 500px;
+      display: flex;
+      margin-bottom: 2rem;
+
+      .hero-image {
+        width: 100%;
+        // background: $hero-image-bg;
+        // @include flex-center;
+        .dish-card {
+          //   width: 20rem;
+          //   height: 16rem;
+          width: 100%;
+          height: 100%;
+          //   width: 800px;
+          //   height: 500px;
+          //   background: $white;
+          //   border-radius: 1rem;
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+      }
+
+      .hero-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        height: 100%;
+
+        .main-title {
+          font-size: 3rem;
+          font-weight: 700;
+          color: $amber-900;
+          transform: rotate(-90deg);
+          line-height: 1.1;
+          white-space: nowrap;
+          margin-bottom: 0; // Remove margin to help with centering
+        }
+
+        .timezone {
+          width: 100%;
+          color: $amber-900;
+          font-size: 1rem;
+          font-weight: 500;
+          position: absolute;
+          text-align: center;
+          bottom: 0;
+          left: 50%;
+          transform: translateX(-50%);
+        }
+      }
+    }
+
+    .menu-content-container {
+      .breakfast-title {
+        font-size: 2.25rem;
+        font-weight: 500;
+        color: $amber-900;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+      }
+
+      .menu-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+
+        @media (max-width: 768px) {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+
+        .menu-section {
+          margin-bottom: 2.5rem;
+
+          .section-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: $amber-900;
+            margin-bottom: 1.5rem;
+          }
+
+          .menu-items {
+            .menu-item {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              margin-bottom: 1.5rem;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+
+              .item-content {
+                flex: 1;
+
+                .item-name {
+                  font-weight: 700;
+                  color: $amber-900;
+                  margin-bottom: 0.5rem;
+                  font-size: 1rem;
+                  display: flex;
+                  justify-content: space-between;
+                  .item-price {
+                    @include flex-center;
+                    gap: 0.5rem;
+                    color: $amber-900;
+                    font-weight: 700;
+                    margin-left: 1rem;
+                    flex-shrink: 0;
+                  }
+                }
+
+                .item-description,
+                .item-calories {
+                  font-size: 0.875rem;
+                  color: $gray-600;
+                  line-height: 1.6;
+                  margin: 0;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .breakfast-menu {
+    .menu-container {
+      .hero-section {
+        .hero-content {
+          .main-title {
+            font-size: 2.5rem;
+            // transform: rotate(0deg);
+
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .breakfast-menu {
+    .menu-container {
+      padding: 0 1rem;
+
+      .hero-section {
+        flex-direction: column;
+        height: auto;
+
+        .hero-image,
+        .hero-content {
+          width: 100%;
+          padding: 2rem 0;
+        }
+
+        .hero-content {
+          .main-title {
+            font-size: 2.5rem;
+            transform: rotate(0deg);
+          }
+        }
+
+      }
+                  .menu-content-container {
+      .breakfast-title {
+        font-size: 1.8rem;
+        margin-bottom:0;
+      }
+    .menu-grid{
+       .menu-section{
+                  .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: $amber-900;
+            margin-bottom: 1rem;
+          }
+       } 
+    }
+    }
+    }
+  }
+}

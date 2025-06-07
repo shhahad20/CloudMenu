@@ -12,6 +12,7 @@ export interface Section {
     description?: string;
     calories?: string;
   }>;
+  subSections?: Section[]; // optional nested sections
 }
 export type TextBlock = {
   id: string;
