@@ -56,16 +56,16 @@ export const stripeWebhook = async (req, res) => {
     }
     if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        try {
-            await handleCheckoutSessionCompleted(session);
-        }
-        catch (err) {
-            console.error('❌  Error in fulfillment logic:', err);
+        // Verify payment is successful
+        if (session.payment_status === 'paid') {
+            // Retrieve metadata
+            if (session.metadata && session.metadata.userId && session.metadata.cart) {
+                const userId = session.metadata?.userId;
+                const cartItems = JSON.parse(session.metadata.cart);
+                // TODO: Save order to database
+                // TODO: Send confirmation email
+            }
         }
     }
-    else {
-        console.log('⏭  Event type not handled:', event.type);
-    }
-    // Acknowledge receipt immediately
-    res.json({ received: true });
+    res.status(200).end();
 };

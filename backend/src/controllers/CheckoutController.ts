@@ -1,52 +1,83 @@
-import { Response, Request } from 'express';
-import { AuthRequest } from '../middleware/verifyAuth.js';
-import { stripe } from '../config/stripe.js';
+import { Response, Request } from "express";
+import { AuthRequest } from "../middleware/verifyAuth.js";
+import { stripe } from "../config/stripe.js";
+import Stripe from "stripe";
 
 interface CartItem {
   id: string;
   name: string;
-  price: number;    // whole units
+  price: number; // whole units
   quantity: number;
 }
 
 export async function createCheckoutSession(
-  req: AuthRequest<{ items: CartItem[]; currency: 'USD' | 'SAR' }>,
+  req: AuthRequest<{ items: CartItem[]; currency: "USD" | "SAR" }>,
   res: Response
 ) {
   const { items, currency } = req.body;
-  const userId = req.user!.id;    // from verifyAuth
+  const userId = req.user!.id; // from verifyAuth
 
   if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: 'Cart is empty' });
+    return res.status(400).json({ error: "Cart is empty" });
   }
 
   try {
-    const line_items = items.map(item => ({
+    const line_items = items.map((item) => ({
+      // price_data: {
+      //   currency: currency.toLowerCase(),
+      //   product_data: { name: item.name },
+      //   unit_amount: item.price * 100, // still in cents for Stripe
+      // },
+      // quantity: item.quantity,
+
       price_data: {
         currency: currency.toLowerCase(),
-        product_data: { name: item.name },
-        unit_amount: item.price * 100, // still in cents for Stripe
+        product_data: {
+          name: item.name,
+          // description: item.description || '',
+          metadata: { your_product_id: item.id }, // Internal reference
+        },
+        unit_amount: Math.round(item.price), // Ensure integer i remove * 100
+        tax_behavior: 'unspecified' as Stripe.Price.TaxBehavior, // Required for some countries
       },
       quantity: item.quantity,
+      adjustable_quantity: {
+        enabled: false, // Set true if allowing quantity changes
+      },
     }));
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
+      payment_method_types: ["card"],
+      mode: "payment",
       line_items,
       success_url: `${process.env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
-      metadata: { userId },
+      metadata: {
+        userId,
+        cart: JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity }))),
+      },
+      payment_intent_data: {
+        metadata: {
+          userId, // Duplicate for easier webhook access
+        },
+      },
     });
 
+    // Return session URL for redirect
     res.json({ url: session.url });
   } catch (err: any) {
-    console.error('Error creating Stripe session:', err);
-    res.status(500).json({ error: err.message });
+    console.error("Stripe session error:", {
+      message: err.message,
+      stack: err.stack,
+      raw: err.raw, // Stripe-specific errors
+    });
+
+    res.status(500).json({
+      error: "Payment system error",
+      code: err.code || "STRIPE_UNHANDLED",
+    });
   }
 }
-
-
 
 export async function getSession(req: Request, res: Response) {
   const { id } = req.params;

@@ -3,8 +3,8 @@ import Stripe from 'stripe';
 import { stripe } from '../config/stripe.js';
 import { adminSupabase } from '../config/supabaseClient.js';
 import 'dotenv/config'
-
-
+ 
+ 
 // This is your fulfillment logic
 export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   console.log('   ➡️  handleCheckoutSessionCompleted start');
@@ -55,7 +55,7 @@ export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Se
 export const stripeWebhook = async (req: Request, res: Response) => {
   console.log('🔥  Webhook received at', new Date().toISOString());
   const sig = req.headers['stripe-signature'] as string;
-  let event: Stripe.Event;
+  let event;
 
   try {
     event = stripe.webhooks.constructEvent(
@@ -69,18 +69,21 @@ export const stripeWebhook = async (req: Request, res: Response) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
-    try {
-      await handleCheckoutSessionCompleted(session);
-    } catch (err) {
-      console.error('❌  Error in fulfillment logic:', err);
-    }
-  } else {
-    console.log('⏭  Event type not handled:', event.type);
+if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    
+    // Verify payment is successful
+    if (session.payment_status === 'paid') {
+      // Retrieve metadata
+      if (session.metadata && session.metadata.userId && session.metadata.cart) {
+      const userId = session.metadata?.userId;
+      const cartItems = JSON.parse(session.metadata.cart);
+      
+      // TODO: Save order to database
+      // TODO: Send confirmation email
+    }}
   }
 
-  // Acknowledge receipt immediately
-  res.json({ received: true });
+  res.status(200).end();
 };
 
