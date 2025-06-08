@@ -8,3 +8,4 @@ myNotes.txt
 
 src/config/stripe.ts
 dist/src/config/stripe.js
+.vercel

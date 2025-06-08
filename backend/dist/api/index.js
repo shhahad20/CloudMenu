@@ -65,3 +65,4 @@ app.get('/profiles/me', verifyAuth, async (req, res) => {
 app.listen(PORT, async () => {
     console.log("Server running http://localhost:" + PORT);
 });
+export default app;
