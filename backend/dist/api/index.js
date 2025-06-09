@@ -35,7 +35,7 @@ app.use(rateLimit({
     message: 'Too many requests, please try again later.'
 }));
 app.get("/", (req, res) => {
-    res.send("Hi there! Welcome to the Cloud Menu API 👋🏼");
+    res.send("Hi there! Welcome to the Cloud Menu API 👋🏼.");
 });
 app.use('/auth', express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
