@@ -48,9 +48,9 @@ app.use(rateLimit({
 }));
 
 
-// app.use("/", (req, res) => {
-//   res.send("Hello World!");
-// });
+app.get("/", (req, res) => {
+  res.send("Hi there! Welcome to the Cloud Menu API.");
+});
 
 app.use('/auth',express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);

@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "ts-watch": "tsc -w",
-    "start": "nodemon dist/api/index.js",
+    "start": "node dist/api/index.js",
     "build": "rimraf dist && tsc && npm run copy-sql",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
