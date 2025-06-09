@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/api/index.js",
   "type": "module",
+    "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "ts-watch": "tsc -w",
     "start": "node dist/api/index.js",
