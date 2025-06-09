@@ -49,7 +49,7 @@ app.use(rateLimit({
 
 
 app.get("/", (req, res) => {
-  res.send("Hi there! Welcome to the Cloud Menu API 👋🏼. testing");
+  res.send("Hi there! Welcome to the Cloud Menu API 👋🏼. testing v2");
 });
 
 app.use('/auth',express.json(), AuthRouter);
