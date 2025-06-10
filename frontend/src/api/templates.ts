@@ -1,3 +1,4 @@
+import { API_URL } from "./api";
 export interface Section {
   id: string;
   name: string;
@@ -74,7 +75,7 @@ export interface PaginatedResult<T> {
   };
 }
 
-const API = "http://localhost:4000";
+// const API_URL = "http://localhost:4000";
 
 const getHeaders = () => {
   const token = localStorage.getItem("access_token");
@@ -85,13 +86,13 @@ const getHeaders = () => {
 };
 
 // export const fetchUserTemplates = (): Promise<Template[]> =>
-//   fetch(`${API}/templates`, { headers: getHeaders() }).then((res) => {
+//   fetch(`${API_URL}/templates`, { headers: getHeaders() }).then((res) => {
 //     if (!res.ok) throw new Error("Failed to fetch templates");
 //     return res.json();
 //   });
 
 // export function fetchLibraryTemplates() {
-//   return fetch(`${API}/templates/lib`).then((r) => r.json());
+//   return fetch(`${API_URL}/templates/lib`).then((r) => r.json());
 // }
 
 export async function fetchUserTemplates(
@@ -119,7 +120,7 @@ export async function fetchUserTemplates(
   if (q) params.append("q", q);
 
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API}/templates?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/templates?${params.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to fetch your menus");
@@ -149,7 +150,7 @@ export async function fetchLibraryTemplates(
   params.append("order", order);
   if (q) params.append("q", q);
 
-  const res = await fetch(`${API}/templates/lib?${params.toString()}`, {
+  const res = await fetch(`${API_URL}/templates/lib?${params.toString()}`, {
     headers: {
       "Content-Type": "application/json",
       // assume you add auth here if needed
@@ -160,13 +161,13 @@ export async function fetchLibraryTemplates(
 }
 
 export const fetchLibraryTemplate = (id: string): Promise<Template> =>
-  fetch(`${API}/templates/lib/${id}`).then((res) => {
+  fetch(`${API_URL}/templates/lib/${id}`).then((res) => {
     if (!res.ok) throw new Error("Failed to load template");
     return res.json();
   });
 
 export function getTemplate(id: string): Promise<Template> {
-  return fetch(`${API}/templates/${id}`, {
+  return fetch(`${API_URL}/templates/${id}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -181,7 +182,7 @@ export function fetchAnyTemplate(id: string): Promise<Template> {
 }
 
 export const createTemplate = (config: TemplateConfig): Promise<Template> =>
-  fetch(`${API}/templates`, {
+  fetch(`${API_URL}/templates`, {
     method: "POST",
     headers: getHeaders(),
     body: JSON.stringify({ config }),
@@ -194,7 +195,7 @@ export const updateTemplate = (
   id: string,
   url: TemplateConfig
 ): Promise<Template> =>
-  fetch(`${API}/templates/${id}`, {
+  fetch(`${API_URL}/templates/${id}`, {
     method: "PATCH",
     headers: getHeaders(),
     body: JSON.stringify({
@@ -210,7 +211,7 @@ export const updateTemplate = (
 //   if (!token) {
 //     throw new Error("You need to be logged in to clone a template.");
 //   }
-//   const res = await fetch(`${API}/templates/clone/${id}`, {
+//   const res = await fetch(`${API_URL}/templates/clone/${id}`, {
 //     method: "POST",
 //     headers: getHeaders(),
 //   });
@@ -231,7 +232,7 @@ export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
     throw new Error("You need to be logged in to clone a template.");
   }
 
-  const res = await fetch(`${API}/templates/clone/${id}`, {
+  const res = await fetch(`${API_URL}/templates/clone/${id}`, {
     method: "POST",
     headers: getHeaders(),
   });
@@ -276,7 +277,7 @@ export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
 
 
 export const plans = () =>
-  fetch(`${API}/plans`, {
+  fetch(`${API_URL}/plans`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -288,7 +289,7 @@ export const plans = () =>
   });
 
 // export const userInvoices = () =>
-//   fetch(`${API}/invoices`, {
+//   fetch(`${API_URL}/invoices`, {
 //     method: "GET",
 //     headers: {
 //       "Content-Type": "application/json",
@@ -326,7 +327,7 @@ export async function fetchUserInvoices(
     if (q) params.append("q", q);
   if (status) params.append("status", status);
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API}/invoices?${params}`, {
+  const res = await fetch(`${API_URL}/invoices?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Failed to fetch invoices");
@@ -334,7 +335,7 @@ export async function fetchUserInvoices(
 }
 
 export const fetchTemplateQR = (id: string) =>
-  fetch(`${API}/templates/${id}/qrcode`, {
+  fetch(`${API_URL}/templates/${id}/qrcode`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
