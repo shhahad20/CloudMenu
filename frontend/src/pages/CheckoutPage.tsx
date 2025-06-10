@@ -33,12 +33,11 @@ const CheckoutPage: React.FC = () => {
       setProcessing(false);
       return;
     }
-
+ 
     try {
       // 1) (Optional) call your backend /api/checkout if using Stripe
-      // await fetch('/api/checkout', ...);
-      // const { url } = await fetch(`${API_URL}/checkout`).then((r) => r.json());
-      // window.location = url;
+
+      
       // 2) For each item, do the right thing
       await Promise.all(
         items.map(async (i) => {

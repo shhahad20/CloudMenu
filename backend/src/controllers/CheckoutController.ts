@@ -3,7 +3,7 @@ import { AuthRequest } from "../middleware/verifyAuth.js";
 import { stripe } from "../config/stripe.js";
 import Stripe from "stripe";
 
-interface CartItem {
+export interface CartItem {
   id: string;
   name: string;
   price: number; // whole units

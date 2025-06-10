@@ -14,6 +14,7 @@ import CheckoutRouter from '../src/routes/ChecoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
 import ContactRouter from '../src/routes/ContactRouter.js';
 import InvoicesRouter from '../src/routes/InvoiceRouter.js';
+import PaymentRouter from '../src/routes/PaymentRouter.js';
 import { getAnalytics } from "../src/controllers/UsgaeController.js";
 config();
 const app = express();
@@ -35,7 +36,7 @@ app.use(rateLimit({
     message: 'Too many requests, please try again later.'
 }));
 app.get("/", (req, res) => {
-    res.send("Hi there! Welcome to the Cloud Menu API 👋🏼. testing v6");
+    res.send("Hi there! Welcome to the Cloud Menu API 👋🏼.");
 });
 app.use('/auth', express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
@@ -43,6 +44,7 @@ app.use('/plans', PlansRouter);
 app.use('/checkout', CheckoutRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
+app.use('/payments', PaymentRouter);
 // in your routes file
 // app.get('/usage/total', verifyAuth, getTotalUsage);
 app.get('/usage/analytics', verifyAuth, getAnalytics);

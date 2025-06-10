@@ -1,22 +1,7 @@
-// src/routes/checkout.ts
-import express from 'express';
-import { createCheckoutSession, getSession } from '../controllers/CheckoutController.js';
-import { verifyAuth } from '../middleware/verifyAuth.js';
+import express from "express";
+import { createCheckoutSession, getSession, } from "../controllers/CheckoutController.js";
+import { verifyAuth } from "../middleware/verifyAuth.js";
 const router = express.Router();
-/**
- * POST /api/checkout
- * Body:
- *   {
- *     items: [{ id, name, price, quantity }],
- *     currency: 'USD' | 'SAR'
- *   }
- * Returns:
- *   { url: string } – redirect the user to this Stripe Checkout page
- */
-router.post("/", verifyAuth, // ← use your verifyAuth middleware
-async (req, res) => {
-    // now req.user is guaranteed
-    return createCheckoutSession(req, res);
-});
-router.get('/session/:id', getSession);
+router.post("/session", verifyAuth, createCheckoutSession);
+router.get("/session/:id", getSession);
 export default router;

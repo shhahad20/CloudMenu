@@ -25,7 +25,7 @@ import DashboardMenus from "./pages/DashboardMenus.tsx";
 // import Upgrade from "./pages/Upgarde.tsx";
 import PricingPage from "./pages/PricingPage.tsx";
 import CartPage from "./pages/CartPage.tsx";
-import CheckoutPage from "./pages/CheckoutPage.tsx";
+// import CheckoutPage from "./pages/CheckoutPage.tsx";
 import { CartProvider } from "./context/CartContext.tsx";
 import LetsTalk from "./pages/LetsTalk.tsx";
 import InvoicesPage from "./pages/InvoicesPage.tsx";
@@ -36,6 +36,7 @@ import SettingsPage from "./pages/SettingPage.tsx";
 import TemplateQRCode from "./pages/TemplateQRCode.tsx";
 // import Template2 from "./components/Templates/Template2.tsx";
 import TemplateRenderer from "./pages/TemplateRenderer.tsx";
+import CheckoutPage2 from "./pages/CheckoutPage2.tsx";
 
 
 createRoot(document.getElementById("root")!).render(
@@ -100,7 +101,7 @@ createRoot(document.getElementById("root")!).render(
               />
               <Route path="/dashboard/invoices" element={<InvoicesPage />} />
               <Route path="/cart" element={<CartPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout" element={<CheckoutPage2 />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route
                 path="/checkout/cancel"
