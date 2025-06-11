@@ -19,7 +19,7 @@ const CheckoutSuccess: React.FC = () => {
 
     // Optionally fetch your backend to confirm the session,
     // retrieve customer email or order details if you saved them.
-    fetch(`${API_URL}/checkout/session/${sessionId}`, {
+    fetch(`${API_URL}/api/checkout/session/${sessionId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       }

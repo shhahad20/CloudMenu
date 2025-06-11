@@ -1,62 +1,21 @@
-import { stripe } from "../config/stripe";
-import { createInvoice } from "./InvoiceController";
-import { updateMyPlan } from "./ProfileController";
-import { cloneTemplate } from "./TemplateController";
-// controllers/paymentController.ts
 export async function verifyPayment(req, res) {
-    const { session_id } = req.query;
-    const userId = req.user.id;
+    const stripe = req.app.get('stripe');
+    const sessionId = req.query.session_id;
+    if (!sessionId) {
+        return res.status(400).json({ error: 'Missing session_id' });
+    }
     try {
-        // Retrieve Stripe session
-        const session = await stripe.checkout.sessions.retrieve(session_id);
-        if (!session || session.payment_status !== 'paid') {
-            return res.status(402).json({ error: "Payment not completed" });
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        if (session.payment_status === 'paid') {
+            // TODO: save order to DB, send confirmation email…
+            return res.json({ paid: true });
         }
-        // Get items from metadata
-        if (!session.metadata || !session.metadata.items) {
-            return res.status(400).json({ error: "No items found in session metadata" });
+        else {
+            return res.status(402).json({ paid: false });
         }
-        const items = JSON.parse(session.metadata.items);
-        // Process items (plans/templates)
-        await Promise.all(items.map(async (item) => {
-            if (item.id.startsWith("plan-")) {
-                // Handle plan upgrade
-                const key = item.id.slice("plan-".length);
-                const planName = (key.charAt(0).toUpperCase() + key.slice(1));
-                // Create a mock req/res for updateMyPlan
-                const planReq = {
-                    ...req,
-                    body: { plan: planName }
-                };
-                await updateMyPlan(planReq, res);
-            }
-            else {
-                // Handle template cloning
-                const cloneReq = {
-                    ...req,
-                    params: { libraryId: item.id }
-                };
-                await cloneTemplate(cloneReq, res);
-            }
-        }));
-        // Create invoice
-        if (session.amount_total == null || session.currency == null) {
-            return res.status(400).json({ error: "Missing amount or currency in session" });
-        }
-        // Create a mock req/res for createInvoice
-        const invoiceReq = {
-            ...req,
-            body: {
-                items: items,
-                amount: session.amount_total / 100,
-                currency: session.currency,
-                stripeSessionId: session.id
-            }
-        };
-        await createInvoice(invoiceReq, res);
-        // createInvoice will handle the response
     }
     catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Verify payment error', err);
+        return res.status(500).json({ error: 'Verification failed' });
     }
 }

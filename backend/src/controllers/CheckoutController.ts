@@ -1,5 +1,4 @@
-import { Response, Request } from "express";
-import { AuthRequest } from "../middleware/verifyAuth.js";
+import { Response, Request, RequestHandler } from "express";
 import { stripe } from "../config/stripe.js";
 import Stripe from "stripe";
 
@@ -9,75 +8,56 @@ export interface CartItem {
   price: number; // whole units
   quantity: number;
 }
+interface CheckoutRequestBody {
+  items: CartItem[];
+  currency: 'USD' | 'SAR';
+}
 
-export async function createCheckoutSession(
-  req: AuthRequest<{ items: CartItem[]; currency: "USD" | "SAR" }>,
-  res: Response
-) {
+export const createCheckoutSession: RequestHandler<
+  {},                // no URL params
+  { url?: string; error?: string; code?: string },   // response body shape (optional)
+  CheckoutRequestBody // request body shape
+> = async (req, res) => {
   const { items, currency } = req.body;
-  const userId = req.user!.id; // from verifyAuth
+  const userId = (req as any).user.id;
 
-  if (!Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: "Cart is empty" });
+  if (!items?.length) {
+    return res.status(400).json({ error: 'Cart is empty' });
   }
 
   try {
-    const line_items = items.map((item) => ({
-      // price_data: {
-      //   currency: currency.toLowerCase(),
-      //   product_data: { name: item.name },
-      //   unit_amount: item.price * 100, // still in cents for Stripe
-      // },
-      // quantity: item.quantity,
-
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(item => ({
       price_data: {
         currency: currency.toLowerCase(),
-        product_data: {
-          name: item.name,
-          // description: item.description || '',
-          metadata: { your_product_id: item.id }, // Internal reference
-        },
-        unit_amount: Math.round(item.price), // Ensure integer i remove * 100
-        tax_behavior: 'unspecified' as Stripe.Price.TaxBehavior, // Required for some countries
+        product_data: { name: item.name },
+        unit_amount: Math.round(item.price * 100),
+        tax_behavior: 'unspecified',
       },
       quantity: item.quantity,
-      adjustable_quantity: {
-        enabled: false, // Set true if allowing quantity changes
-      },
+      adjustable_quantity: { enabled: false },
     }));
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
+      payment_method_types: ['card'],
+      mode: 'payment',
       line_items,
       success_url: `${process.env.FRONTEND_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/checkout/cancel`,
       metadata: {
         userId,
-        cart: JSON.stringify(items.map((i) => ({ id: i.id, qty: i.quantity }))),
-      },
-      payment_intent_data: {
-        metadata: {
-          userId, // Duplicate for easier webhook access
-        },
+        cart: JSON.stringify(items),
       },
     });
 
-    // Return session URL for redirect
-    res.json({ url: session.url });
+    return res.json({ url: session.url! });
   } catch (err: any) {
-    console.error("Stripe session error:", {
-      message: err.message,
-      stack: err.stack,
-      raw: err.raw, // Stripe-specific errors
-    });
-
-    res.status(500).json({
-      error: "Payment system error",
-      code: err.code || "STRIPE_UNHANDLED",
+    console.error('Stripe session error:', err);
+    return res.status(500).json({
+      error: 'Payment system error',
+      code: err.code || 'STRIPE_UNHANDLED',
     });
   }
-}
+};
 
 export async function getSession(req: Request, res: Response) {
   const { id } = req.params;

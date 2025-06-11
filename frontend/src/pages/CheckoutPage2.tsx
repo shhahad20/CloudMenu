@@ -16,8 +16,8 @@ const CheckoutPage2: React.FC = () => {
   // Handle payment completion after redirect from Stripe
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    const sessionId = query.get('session_id');
-    
+    const sessionId = query.get("session_id");
+
     if (sessionId) {
       // Verify payment success with backend
       verifyPayment(sessionId);
@@ -26,28 +26,36 @@ const CheckoutPage2: React.FC = () => {
 
   const verifyPayment = async (sessionId: string) => {
     try {
-      const response = await fetch(`${API_URL}/payments/verify?session_id=${sessionId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` }
-      });
+      const response = await fetch(
+        `${API_URL}/api/payments/verify?session_id=${sessionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Payment verification failed");
-      
+
       clearCart();
-      navigate("/dashboard", { replace: true, state: { paymentSuccess: true } });
+      navigate("/dashboard", {
+        replace: true,
+        state: { paymentSuccess: true },
+      });
     } catch (err) {
       setError("Payment verification failed. Please check your orders.");
       console.error(err);
     }
   };
 
+  // in CheckoutPage2
   const handlePay = async () => {
     setProcessing(true);
     setError("");
 
     try {
-      // 1. Create Stripe Checkout Session via your backend
-      const response = await fetch(`${API_URL}/checkout/session`, {
-        method: "POST",
+      const response = await fetch(`${API_URL}/api/checkout/session`, {
+        method: "POST", // <-- must be POST
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -55,25 +63,29 @@ const CheckoutPage2: React.FC = () => {
         body: JSON.stringify({
           items,
           currency: "SAR",
-        }),
+        }), // <-- send your cart & currency
       });
-
+      // 2) If the status isn’t OK, parse JSON (or text) for a real error
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Payment setup failed");
+        let msg = `HTTP ${response.status}`;
+        try {
+          const errJson = await response.json();
+          msg = errJson.error || JSON.stringify(errJson);
+        } catch {
+          msg = await response.text();
+        }
+        throw new Error(msg);
       }
 
-      // 2. Redirect to Stripe Checkout
+      // 3) Pull the session URL and redirect
       const { url } = await response.json();
       window.location.href = url;
 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Payment initialization failed");
-        console.error(err);
       } else {
         setError("Payment initialization failed");
-        console.error(err);
       }
     } finally {
       setProcessing(false);
@@ -94,7 +106,7 @@ const CheckoutPage2: React.FC = () => {
   return (
     <div className="checkout-page">
       <h1>Checkout</h1>
-      
+
       {/* Cart Summary */}
       <div className="cart-summary">
         <h2>Order Summary</h2>
@@ -102,7 +114,9 @@ const CheckoutPage2: React.FC = () => {
           {items.map((item) => (
             <li key={item.id}>
               <span>{item.name}</span>
-              <span>{item.quantity} x SAR {item.price.toFixed(2)}</span>
+              <span>
+                {item.quantity} x SAR {item.price.toFixed(2)}
+              </span>
             </li>
           ))}
         </ul>
@@ -116,9 +130,9 @@ const CheckoutPage2: React.FC = () => {
       <div className="payment-section">
         <h2>Payment</h2>
         <p>You'll be redirected to Stripe for secure payment processing</p>
-        
+
         {error && <div className="error">{error}</div>}
-        
+
         <button
           className="btn primary"
           onClick={handlePay}

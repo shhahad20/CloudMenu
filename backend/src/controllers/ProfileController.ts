@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/verifyAuth.js';
 
 // PATCH /api/profiles/me/plan
 export async function updateMyPlan(
-  req: AuthRequest<{ plan: 'Free'|'Pro'|'Enterprise' }>,
+  req: AuthRequest,
   res: Response
 ) {
   const { plan } = req.body;

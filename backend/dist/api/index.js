@@ -10,7 +10,7 @@ import cookieParser from "cookie-parser";
 import { verifyAuth } from '../src/middleware/verifyAuth.js';
 import TemplateRouter from '../src/routes/TemplateRouter.js';
 import PlansRouter from '../src/routes/PlansRouter.js';
-import CheckoutRouter from '../src/routes/ChecoutRouter.js';
+import CheckoutRouter from '../src/routes/CheckoutRouter.js';
 import WebhookRouter from '../src/routes/WebhookRouter.js';
 import ContactRouter from '../src/routes/ContactRouter.js';
 import InvoicesRouter from '../src/routes/InvoiceRouter.js';
@@ -41,10 +41,10 @@ app.get("/", (req, res) => {
 app.use('/auth', express.json(), AuthRouter);
 app.use('/templates', TemplateRouter);
 app.use('/plans', PlansRouter);
-app.use('/checkout', CheckoutRouter);
+app.use('/api/checkout', CheckoutRouter);
 app.use('/contact', ContactRouter);
 app.use('/invoices', InvoicesRouter);
-app.use('/payments', PaymentRouter);
+app.use('/api/payments', PaymentRouter);
 // in your routes file
 // app.get('/usage/total', verifyAuth, getTotalUsage);
 app.get('/usage/analytics', verifyAuth, getAnalytics);
