@@ -7,12 +7,27 @@ import { updateUserPlan } from './PlansController.js';
 import { cloneTemplate } from './TemplateController.js';
 import { createInvoice } from './InvoiceController.js';
 import { cloneTemplateService } from '../services/templateService.js';
-import { buffer } from 'micro';
  
 export const config = {
   api: { bodyParser: false },  // raw body needed for signature verification
 };
- 
+const getRawBody = (req: Request): Promise<Buffer> => {
+  return new Promise((resolve, reject) => {
+    const chunks: any[] = [];
+    
+    req.on('data', (chunk: any) => {
+      chunks.push(chunk);
+    });
+    
+    req.on('end', () => {
+      resolve(Buffer.concat(chunks));
+    });
+    
+    req.on('error', (error) => {
+      reject(error);
+    });
+  });
+};
 // This is your fulfillment logic
 export async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
   console.log('   ➡️  handleCheckoutSessionCompleted start');
@@ -119,7 +134,7 @@ export const stripeWebhook = async (req: Request, res: Response) => {
 
   console.log('🔥  Webhook received at', new Date().toISOString());
   const sig = req.headers['stripe-signature'] as string;
-  const rawBody = await buffer(req);
+  const rawBody = await getRawBody(req);
   let event;
 
   try {

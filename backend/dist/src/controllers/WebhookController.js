@@ -3,9 +3,22 @@ import { adminSupabase } from '../config/supabaseClient.js';
 import 'dotenv/config';
 import { updateUserPlan } from './PlansController.js';
 import { cloneTemplateService } from '../services/templateService.js';
-import { buffer } from 'micro';
 export const config = {
     api: { bodyParser: false }, // raw body needed for signature verification
+};
+const getRawBody = (req) => {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        req.on('end', () => {
+            resolve(Buffer.concat(chunks));
+        });
+        req.on('error', (error) => {
+            reject(error);
+        });
+    });
 };
 // This is your fulfillment logic
 export async function handleCheckoutSessionCompleted(session) {
@@ -94,7 +107,7 @@ export const stripeWebhook = async (req, res) => {
     }
     console.log('🔥  Webhook received at', new Date().toISOString());
     const sig = req.headers['stripe-signature'];
-    const rawBody = await buffer(req);
+    const rawBody = await getRawBody(req);
     let event;
     try {
         event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
