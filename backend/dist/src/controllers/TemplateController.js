@@ -9,7 +9,7 @@ export function byteSize(obj) {
 }
 export const planLimits = {
     Free: { maxProjects: 2, maxStorageMB: 50 },
-    Pro: { maxProjects: 10, maxStorageMB: 50 * 1024 }, // 50 GB
+    Pro: { maxProjects: 10, maxStorageMB: 50 * 1024 },
     Enterprise: { maxProjects: Infinity, maxStorageMB: 100 * 1024 }, // 100 GB
 };
 function bytesToMB(bytes) {

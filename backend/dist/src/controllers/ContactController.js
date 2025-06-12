@@ -33,7 +33,7 @@ export async function sendContact(req, res) {
     }
     const mailOptions = {
         from: `"${name}" <${email}>`,
-        to: receiver, // must be non-empty
+        to: receiver,
         subject: `New message: ${tag}`,
         text: `
   Tag: ${tag}
