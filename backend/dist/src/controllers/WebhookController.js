@@ -58,7 +58,7 @@ async function createInvoiceRecord(params) {
         user_id: userId,
         subtotal: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
         tax: 0,
-        total: amountTotal / 100,
+        total: amountTotal / 100, // assuming amountTotal is in cents
         status: 'paid',
         stripe_txn_id: stripeSessionId,
         currency,

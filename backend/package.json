@@ -10,7 +10,7 @@
   "scripts": {
     "ts-watch": "tsc -w",
     "start": "node dist/api/index.js",
-    "build": "rm -rf dist && tsc && npm run copy-sql",
+    "build": "rimraf dist && tsc && npm run copy-sql",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
     "test": "echo \"Error: no test specified\" && exit 1",
