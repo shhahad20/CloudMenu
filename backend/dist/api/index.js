@@ -27,7 +27,7 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
 }));
-app.use('/webhook', WebhookRouter);
+app.use('/api/webhook', WebhookRouter);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(rateLimit({
@@ -64,7 +64,7 @@ app.get('/profiles/me', verifyAuth, async (req, res) => {
         return res.status(400).json({ error: error.message });
     res.json(data);
 });
-app.listen(PORT, async () => {
-    console.log("Server running http://localhost:" + PORT);
-});
+// app.listen(PORT, async () => {
+//   console.log("Server running http://localhost:" + PORT);
+// });
 export default app;

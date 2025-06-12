@@ -25,6 +25,7 @@ export const createCheckoutSession = async (req, res) => {
             metadata: {
                 userId,
                 cart: JSON.stringify(items),
+                plans: JSON.stringify(items.filter(i => i.id.startsWith('plan-'))),
             },
         });
         return res.json({ url: session.url });

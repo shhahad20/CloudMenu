@@ -36,7 +36,7 @@ app.use(
   })
 );
 
-app.use('/webhook', WebhookRouter);
+app.use('/api/webhook', WebhookRouter);
 
 
 app.use(express.urlencoded({ extended: true }));
@@ -83,8 +83,8 @@ app.get('/profiles/me', verifyAuth, async (req, res) => {
   res.json(data);
 });
 
-app.listen(PORT, async () => {
-  console.log("Server running http://localhost:" + PORT);
-});
+// app.listen(PORT, async () => {
+//   console.log("Server running http://localhost:" + PORT);
+// });
 
 export default app;

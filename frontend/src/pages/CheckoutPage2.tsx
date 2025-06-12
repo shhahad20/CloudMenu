@@ -130,7 +130,7 @@ const CheckoutPage2: React.FC = () => {
       <div className="payment-section">
         <h2>Payment</h2>
         <p>You'll be redirected to Stripe for secure payment processing</p>
-
+ 
         {error && <div className="error">{error}</div>}
 
         <button

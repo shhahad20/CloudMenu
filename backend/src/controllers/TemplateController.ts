@@ -4,12 +4,13 @@ import { AuthRequest } from "../middleware/verifyAuth.js";
 import { handleUpload } from "../helper/helper.js";
 import { ListOptions, listService } from "../services/listService.js";
 import QRCode from "qrcode";
+import { cloneTemplateService } from "../services/templateService.js";
 
 // Helper to compute size of a JS object when serialized
-function byteSize(obj: any) {
+export function byteSize(obj: any) {
   return Buffer.byteLength(JSON.stringify(obj), "utf8");
 }
-const planLimits: Record<
+export const planLimits: Record<
   string,
   { maxProjects: number; maxStorageMB: number }
 > = {
@@ -423,6 +424,106 @@ export const deleteTemplate = async (req: AuthRequest, res: Response) => {
   res.json({ ok: true });
 };
 // POST /templates/clone/:id
+// export const cloneTemplate = async (req: AuthRequest, res: Response) => {
+//   const userId = req.user!.id;
+//   const plan = req.user!.plan;
+//   if (!plan || !planLimits[plan]) {
+//     return res.status(400).json({ error: `Invalid or missing plan.` });
+//   }
+
+//   const libraryId = req.params.libraryId;
+//   const { maxProjects, maxStorageMB } = planLimits[plan];
+
+//   try {
+//     // 1) Fetch library template
+//     const { data: lib, error: libErr } = await supabase
+//       .from("library_templates")
+//       .select("config,name,preview_url")
+//       .eq("id", libraryId)
+//       .single();
+//     if (libErr || !lib) {
+//       return res.status(404).json({ error: "Library template not found." });
+//     }
+
+//     // 2) Enforce plan quotas
+//     // a) project count
+//     if (plan !== "Enterprise") {
+//       const { count: cnt, error: cntErr } = await adminSupabase
+//         .from("menu_templates")
+//         .select("id", { head: true, count: "exact" })
+//         .eq("user_id", userId);
+//       if (cntErr) throw cntErr;
+//       if ((cnt || 0) >= maxProjects) {
+//         return res.status(403).json({
+//           error: `${plan} plan allows up to ${maxProjects} projects.`,
+//         });
+//       }
+//     }
+
+//     // b) storage usage
+//     const { data: dbRows, error: dbErr } = await adminSupabase
+//       .from("menu_templates")
+//       .select("size_bytes")
+//       .eq("user_id", userId);
+//     if (dbErr) throw dbErr;
+//     const dbBytes = dbRows!.reduce((sum, r) => sum + (r.size_bytes || 0), 0);
+
+//     const { data: files, error: filesErr } = await adminSupabase.storage
+//       .from("users-menu-images")
+//       .list(userId, { limit: 1000 });
+//     if (filesErr) throw filesErr;
+//     const fileBytes = files!.reduce(
+//       (sum, f) => sum + (f.metadata?.size || 0),
+//       0
+//     );
+
+//     const newBytes = byteSize(lib.config);
+//     const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
+//     if (projectedMB > maxStorageMB) {
+//       return res.status(403).json({
+//         error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(
+//           2
+//         )} / ${maxStorageMB} MB`,
+//       });
+//     }
+
+//     // 3) Insert clone
+//     const { data, error } = await adminSupabase
+//       .from("menu_templates")
+//       .insert([
+//         {
+//           user_id: userId,
+//           library_id: libraryId,
+//           name: lib.name,
+//           preview_url: lib.preview_url,
+//           config: lib.config,
+//           size_bytes: newBytes,
+//         },
+//       ])
+//       .select("id, name, preview_url, config, size_bytes")
+//       .single();
+//     // .single<{
+//     //   id: string;
+//     //   name: string;
+//     //   preview_url: string;
+//     //   config: any;
+//     //   size_bytes: number;
+//     // }>();
+//     if (error) throw error;
+//     const clonedId = data.id;
+//     // 4) Generate QR right away
+//     const url = `${process.env.FRONTEND_URL}/templates/qr/${clonedId}`;
+//     const qrDataUrl = await QRCode.toDataURL(url);
+
+//     res.json({
+//       ...data,
+//       qr: qrDataUrl,
+//     });
+//   } catch (err: any) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 export const cloneTemplate = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
   const plan = req.user!.plan;
@@ -434,95 +535,25 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
   const { maxProjects, maxStorageMB } = planLimits[plan];
 
   try {
-    // 1) Fetch library template
-    const { data: lib, error: libErr } = await supabase
-      .from("library_templates")
-      .select("config,name,preview_url")
-      .eq("id", libraryId)
-      .single();
-    if (libErr || !lib) {
-      return res.status(404).json({ error: "Library template not found." });
-    }
-
-    // 2) Enforce plan quotas
-    // a) project count
-    if (plan !== "Enterprise") {
-      const { count: cnt, error: cntErr } = await adminSupabase
-        .from("menu_templates")
-        .select("id", { head: true, count: "exact" })
-        .eq("user_id", userId);
-      if (cntErr) throw cntErr;
-      if ((cnt || 0) >= maxProjects) {
-        return res.status(403).json({
-          error: `${plan} plan allows up to ${maxProjects} projects.`,
-        });
-      }
-    }
-
-    // b) storage usage
-    const { data: dbRows, error: dbErr } = await adminSupabase
-      .from("menu_templates")
-      .select("size_bytes")
-      .eq("user_id", userId);
-    if (dbErr) throw dbErr;
-    const dbBytes = dbRows!.reduce((sum, r) => sum + (r.size_bytes || 0), 0);
-
-    const { data: files, error: filesErr } = await adminSupabase.storage
-      .from("users-menu-images")
-      .list(userId, { limit: 1000 });
-    if (filesErr) throw filesErr;
-    const fileBytes = files!.reduce(
-      (sum, f) => sum + (f.metadata?.size || 0),
-      0
+   const inserted = await cloneTemplateService(
+      req.params.libraryId,
+      req.user!.id,
+      req.user!.plan! as 'Free' | 'Pro' | 'Enterprise'
     );
 
-    const newBytes = byteSize(lib.config);
-    const projectedMB = bytesToMB(dbBytes + fileBytes + newBytes);
-    if (projectedMB > maxStorageMB) {
-      return res.status(403).json({
-        error: `${plan} plan storage limit exceeded: ${projectedMB.toFixed(
-          2
-        )} / ${maxStorageMB} MB`,
-      });
-    }
-
-    // 3) Insert clone
-    const { data, error } = await adminSupabase
-      .from("menu_templates")
-      .insert([
-        {
-          user_id: userId,
-          library_id: libraryId,
-          name: lib.name,
-          preview_url: lib.preview_url,
-          config: lib.config,
-          size_bytes: newBytes,
-        },
-      ])
-      .select("id, name, preview_url, config, size_bytes")
-      .single();
-    // .single<{
-    //   id: string;
-    //   name: string;
-    //   preview_url: string;
-    //   config: any;
-    //   size_bytes: number;
-    // }>();
-    if (error) throw error;
-    const clonedId = data.id;
+    const clonedId = inserted.id;
     // 4) Generate QR right away
     const url = `${process.env.FRONTEND_URL}/templates/qr/${clonedId}`;
     const qrDataUrl = await QRCode.toDataURL(url);
 
     res.json({
-      ...data,
+      ...inserted,
       qr: qrDataUrl,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 };
-
 // POST /:id/view
 export async function recordTemplateView(req: AuthRequest, res: Response) {
   const templateId = req.params.id;

@@ -37,7 +37,7 @@ const CheckoutPage: React.FC = () => {
     try {
       // 1) (Optional) call your backend /api/checkout if using Stripe
 
-      
+       
       // 2) For each item, do the right thing
       await Promise.all(
         items.map(async (i) => {
