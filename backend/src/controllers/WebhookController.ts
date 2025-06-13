@@ -261,21 +261,30 @@ export async function handleCheckoutSession(
   }
   const userPlan = profile.plan as "Free" | "Pro" | "Enterprise";
 
-  // 7) Clone each template under the user's new plan
-  await Promise.all(
-    cartItems.map(async (item) => {
-      try {
-        await cloneTemplateService(item.id, userId, userPlan);
-      } catch (cloneErr) {
-        console.error(
-          `❌ [Webhooks] cloneTemplateService failed for item ${item.id}:`,
-          cloneErr
-        );
-        // decide whether to rethrow or continue – here we rethrow to reject the webhook
-        throw cloneErr;
-      }
-    })
+  // 6) Separate out template purchases vs. plan purchases
+  const templateItems = cartItems.filter(
+    (item) => !item.id.startsWith("plan-")
   );
+
+  // 7) Clone each template under the user's new plan (if any)
+  if (templateItems.length) {
+    await Promise.all(
+      templateItems.map(async (item) => {
+        try {
+          console.log(`🔨 Cloning template ${item.id} for user ${userId}`);
+          await cloneTemplateService(item.id, userId, userPlan);
+          console.log(`✅ Cloned template ${item.id}`);
+        } catch (cloneErr) {
+          console.error(
+            `❌ [Webhooks] cloneTemplateService failed for ${item.id}:`,
+            cloneErr
+          );
+          // if you want to continue even on individual clone failures, comment out the next line:
+          throw cloneErr;
+        }
+      })
+    );
+  }
 
   // 8) Create an invoice record in your database
   await createInvoiceRecord({
