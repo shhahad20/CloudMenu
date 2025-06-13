@@ -177,28 +177,40 @@ export async function handleCheckoutSession(
     throw new Error("Missing userId in session.metadata");
   }
 
-  // planIds: expecting a JSON array string, e.g. '["plan_free","plan_pro"]'
-  let planIds: string[] = [];
-  if (metadata.planIds) {
+  // Parse plan IDs from metadata.plans (or fallback to metadata.planIds)
+  type RawPlan = string | { id: string; [k: string]: any };
+  let planIdsRaw: RawPlan[] = [];
+  const rawPlans = metadata.plans || metadata.planIds;
+  if (rawPlans) {
     try {
-      planIds = JSON.parse(metadata.planIds);
-      if (!Array.isArray(planIds)) throw new Error();
+      const parsed = JSON.parse(rawPlans) as RawPlan[];
+      if (!Array.isArray(parsed)) throw new Error();
+      planIdsRaw = parsed;
     } catch {
-      throw new Error("Invalid planIds metadata; must be JSON array");
+      throw new Error(
+        "Invalid plans metadata; must be JSON array of strings or objects with `id`"
+      );
     }
   }
 
-  // cartItems: expecting a JSON array string of items
-  // type CartItem = { id: string; name: string; price: number; quantity: number };
-  // let cartItems: CartItem[] = [];
-  // if (metadata.cartItems) {
-  //   try {
-  //     cartItems = JSON.parse(metadata.cartItems);
-  //     if (!Array.isArray(cartItems)) throw new Error();
-  //   } catch {
-  //     throw new Error('Invalid cartItems metadata; must be JSON array of items');
-  //   }
-  // }
+  // 2) Normalize into exactly "Free" | "Pro" | "Enterprise"
+  const PLAN_MAP: Record<string, "Free" | "Pro" | "Enterprise"> = {
+    "plan-Free": "Free",
+    "plan-Pro": "Pro",
+    "plan-Enterprise": "Enterprise",
+  };
+
+  const planIds = planIdsRaw.map((p) => {
+    const rawId = typeof p === "string" ? p : p.id;
+    const normalized = PLAN_MAP[rawId];
+    if (!normalized) {
+      throw new Error(`Unknown plan ID "${rawId}" in metadata`);
+    }
+    return normalized;
+  });
+
+  console.log("📦 [Webhooks] normalized planIds:", planIds);
+
   // 3) Retrieve the session with line items expanded
   const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
     expand: ["line_items"],
@@ -229,7 +241,12 @@ export async function handleCheckoutSession(
 
   // 5) Update user plan(s)
   if (planIds.length) {
-    await Promise.all(planIds.map((planId) => updateUserPlan(userId, planId)));
+    await Promise.all(
+      planIds.map((planId) => {
+        console.log(`🔄 Updating user ${userId} → ${planId}`);
+        return updateUserPlan(userId, planId);
+      })
+    );
   }
 
   // 6) Fetch the user's (new) plan from Supabase
