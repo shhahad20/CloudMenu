@@ -1,52 +1,54 @@
-import { stripe } from '../config/stripe.js';
-import { adminSupabase } from '../config/supabaseClient.js';
-import 'dotenv/config';
-import { updateUserPlan } from './PlansController.js';
-import { cloneTemplateService } from '../services/templateService.js';
+import { stripe } from "../config/stripe.js";
+import { adminSupabase } from "../config/supabaseClient.js";
+import "dotenv/config";
+import { updateUserPlan } from "./PlansController.js";
+import { cloneTemplateService } from "../services/templateService.js";
 export const config = {
     api: { bodyParser: false }, // raw body needed for signature verification
 };
 const getRawBody = (req) => {
     return new Promise((resolve, reject) => {
         const chunks = [];
-        req.on('data', (chunk) => {
+        req.on("data", (chunk) => {
             chunks.push(chunk);
         });
-        req.on('end', () => {
+        req.on("end", () => {
             resolve(Buffer.concat(chunks));
         });
-        req.on('error', (error) => {
+        req.on("error", (error) => {
             reject(error);
         });
     });
 };
 // This is your fulfillment logic
 export async function handleCheckoutSessionCompleted(session) {
-    console.log('   ➡️  handleCheckoutSessionCompleted start');
+    console.log("   ➡️  handleCheckoutSessionCompleted start");
     const userId = session.metadata?.userId;
-    console.log('   session metadata.userId =', userId);
+    console.log("   session metadata.userId =", userId);
     if (!userId)
-        throw new Error('Missing userId');
+        throw new Error("Missing userId");
     const amountCents = session.amount_total;
     const currency = session.currency.toUpperCase();
     const createdAt = new Date(session.created * 1000).toISOString();
     const { data: invoice, error: invErr } = await adminSupabase
-        .from('invoices')
+        .from("invoices")
         .insert({
         user_id: userId,
         amount_cents: amountCents,
         currency,
-        status: 'paid',
+        status: "paid",
         created_at: createdAt,
     })
-        .select('id')
+        .select("id")
         .single();
-    console.log('   inserted invoice:', invoice, 'error:', invErr);
+    console.log("   inserted invoice:", invoice, "error:", invErr);
     if (invErr)
         throw invErr;
-    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 100 });
+    const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+        limit: 100,
+    });
     console.log(`   got ${lineItems.data.length} line items from Stripe`);
-    const itemsToInsert = lineItems.data.map(li => ({
+    const itemsToInsert = lineItems.data.map((li) => ({
         invoice_id: invoice.id,
         description: li.description,
         quantity: li.quantity,
@@ -54,36 +56,37 @@ export async function handleCheckoutSessionCompleted(session) {
         total_cents: li.amount_subtotal,
     }));
     const { error: itemsErr } = await adminSupabase
-        .from('invoice_items')
+        .from("invoice_items")
         .insert(itemsToInsert);
-    console.log('   inserted invoice_items error:', itemsErr);
+    console.log("   inserted invoice_items error:", itemsErr);
     if (itemsErr)
         throw itemsErr;
-    console.log('   ✔️  handleCheckoutSessionCompleted done');
+    console.log("   ✔️  handleCheckoutSessionCompleted done");
 }
 // Internal helper for creating an invoice record (same logic as your controller)
 async function createInvoiceRecord(params) {
     const { userId, items, currency, stripeSessionId, amountTotal } = params;
     // 1) Insert invoice header
     const { data: invData, error: invError } = await adminSupabase
-        .from('invoices')
+        .from("invoices")
         .insert({
         user_id: userId,
         subtotal: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
         tax: 0,
         total: amountTotal / 100,
-        status: 'paid',
+        status: "paid",
         stripe_txn_id: stripeSessionId,
         currency,
     })
-        .select('id')
+        .select("id")
         .single();
     if (invError || !invData) {
-        throw new Error('Could not create invoice header');
+        console.error("createInvoiceRecord header error:", invError);
+        throw new Error(`Could not create invoice header: ${invError?.message}`);
     }
     const invoiceId = invData.id;
     // 2) Insert line items
-    const lineItems = items.map(i => ({
+    const lineItems = items.map((i) => ({
         invoice_id: invoiceId,
         product_id: i.id,
         description: i.name,
@@ -92,77 +95,96 @@ async function createInvoiceRecord(params) {
         line_total: i.price * i.quantity,
     }));
     const { error: itemsError } = await adminSupabase
-        .from('invoice_items')
+        .from("invoice_items")
         .insert(lineItems);
     if (itemsError) {
-        throw new Error('Could not create invoice items');
+        throw new Error("Could not create invoice items");
     }
     return invoiceId;
 }
 export const stripeWebhook = async (req, res) => {
-    console.log('👉 Received webhook:', req.method, req.url, JSON.stringify(req.headers));
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', 'POST');
-        return res.status(405).end('Method Not Allowed');
+    // 1) Only POST
+    if (req.method !== "POST") {
+        res.setHeader("Allow", "POST");
+        return res.status(405).end("Method Not Allowed");
     }
-    console.log('🔥  Webhook received at', new Date().toISOString());
-    const sig = req.headers['stripe-signature'];
+    // 2) Read & verify signature
+    const sig = req.headers["stripe-signature"];
     const rawBody = await getRawBody(req);
     let event;
     try {
         event = stripe.webhooks.constructEvent(rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET);
-        console.log('✔️  Signature verified, event type:', event.type);
+        console.log("✔️  Signature verified, event type:", event.type);
     }
     catch (err) {
-        console.error('❌  Webhook signature verification failed:', err.message);
+        console.error("❌  Webhook signature verification failed:", err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
-    // 2) React only to a successful payment
-    if (event.type === 'checkout.session.completed') {
+    // 3) Immediately ACKNOWLEDGE
+    res.status(200).json({ received: true });
+    // 4) Fire‑and‑forget your fulfillment logic
+    if (event.type === "checkout.session.completed") {
         const session = event.data.object;
-        // Safely unwrap metadata
-        const metadata = session.metadata ?? {};
-        const userId = metadata.userId;
-        if (!userId) {
-            console.error('⚠️  Missing userId in session.metadata');
-            return res.status(400).end();
-        }
-        // Parse plan IDs and cart items
-        let planIds = [];
-        let cartItems = [];
+        void handleCheckoutSession(session).catch(err => {
+            // if this errors, Stripe will not retry (we already sent 200).
+            // log so you can debug in your log aggregator
+            console.error('❌ Error in background job:', err);
+        });
+    }
+};
+export async function handleCheckoutSession(session) {
+    // 1) Unwrap metadata
+    const metadata = session.metadata || {};
+    const userId = metadata.userId;
+    if (!userId) {
+        throw new Error('Missing userId in session.metadata');
+    }
+    // planIds: expecting a JSON array string, e.g. '["plan_free","plan_pro"]'
+    let planIds = [];
+    if (metadata.planIds) {
         try {
-            // 1) First, update user plan(s)
-            if (planIds.length) {
-                await Promise.all(planIds.map(planId => updateUserPlan(userId, planId)));
-            }
-            // 2) Then fetch the updated plan from your DB
-            const { data: profile, error: profErr } = await adminSupabase
-                .from('profiles')
-                .select('plan')
-                .eq('id', userId)
-                .single();
-            if (profErr || !profile?.plan) {
-                throw new Error('Could not retrieve user plan');
-            }
-            const userPlan = profile.plan;
-            // 3) Now clone templates under that plan
-            await Promise.all(cartItems.map(item => cloneTemplateService(item.id, userId, userPlan)));
-            // 4) Create an invoice
-            await createInvoiceRecord({
-                userId,
-                items: cartItems,
-                currency: session.currency,
-                stripeSessionId: session.id,
-                amountTotal: session.amount_total, // in cents
-            });
-            console.log(`✅ Fulfilled order for session ${session.id}`);
+            planIds = JSON.parse(metadata.planIds);
+            if (!Array.isArray(planIds))
+                throw new Error();
         }
-        catch (fulfillErr) {
-            console.error('❌ Error fulfilling order:', fulfillErr);
-            // Returning non-2xx tells Stripe to retry this webhook
-            return res.status(500).end();
+        catch {
+            throw new Error('Invalid planIds metadata; must be JSON array');
         }
     }
-    // 5) Always respond 2xx to acknowledge receipt
-    res.json({ received: true });
-};
+    let cartItems = [];
+    if (metadata.cartItems) {
+        try {
+            cartItems = JSON.parse(metadata.cartItems);
+            if (!Array.isArray(cartItems))
+                throw new Error();
+        }
+        catch {
+            throw new Error('Invalid cartItems metadata; must be JSON array of items');
+        }
+    }
+    // 2) Update user plan(s)
+    if (planIds.length) {
+        await Promise.all(planIds.map(planId => updateUserPlan(userId, planId)));
+    }
+    // 3) Fetch the user's (new) plan from Supabase
+    const { data: profile, error: profErr } = await adminSupabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', userId)
+        .single();
+    if (profErr || !profile?.plan) {
+        throw new Error(profErr?.message || 'Could not retrieve updated user plan');
+    }
+    const userPlan = profile.plan;
+    // 4) Clone each template under the user's new plan
+    await Promise.all(cartItems.map(item => cloneTemplateService(item.id, userId, userPlan)));
+    // 5) Create an invoice record in your database
+    await createInvoiceRecord({
+        userId,
+        items: cartItems,
+        currency: session.currency,
+        stripeSessionId: session.id,
+        amountTotal: session.amount_total, // cents
+    });
+    console.log(`✅ [Webhooks] Successfully processed session ${session.id} for user ${userId}`);
+}
