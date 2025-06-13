@@ -80,7 +80,7 @@ export async function handleCheckoutSessionCompleted(
 }
 // Internal helper for creating an invoice record (same logic as your controller)
 async function createInvoiceRecord(params: {
-userId: string;
+  userId: string;
   items: Array<{ id: string; name: string; price: number; quantity: number }>;
   currency: string;
   stripeSessionId: string;
@@ -159,10 +159,10 @@ export const stripeWebhook = async (req: Request, res: Response) => {
   // 4) Fire‑and‑forget your fulfillment logic
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    void handleCheckoutSession(session).catch(err => {
+    void handleCheckoutSession(session).catch((err) => {
       // if this errors, Stripe will not retry (we already sent 200).
       // log so you can debug in your log aggregator
-      console.error('❌ Error in background job:', err);
+      console.error("❌ Error in background job:", err);
     });
   }
 };
@@ -174,7 +174,7 @@ export async function handleCheckoutSession(
   const metadata = session.metadata || {};
   const userId = metadata.userId;
   if (!userId) {
-    throw new Error('Missing userId in session.metadata');
+    throw new Error("Missing userId in session.metadata");
   }
 
   // planIds: expecting a JSON array string, e.g. '["plan_free","plan_pro"]'
@@ -184,49 +184,83 @@ export async function handleCheckoutSession(
       planIds = JSON.parse(metadata.planIds);
       if (!Array.isArray(planIds)) throw new Error();
     } catch {
-      throw new Error('Invalid planIds metadata; must be JSON array');
+      throw new Error("Invalid planIds metadata; must be JSON array");
     }
   }
 
   // cartItems: expecting a JSON array string of items
-  type CartItem = { id: string; name: string; price: number; quantity: number };
+  // type CartItem = { id: string; name: string; price: number; quantity: number };
+  // let cartItems: CartItem[] = [];
+  // if (metadata.cartItems) {
+  //   try {
+  //     cartItems = JSON.parse(metadata.cartItems);
+  //     if (!Array.isArray(cartItems)) throw new Error();
+  //   } catch {
+  //     throw new Error('Invalid cartItems metadata; must be JSON array of items');
+  //   }
+  // }
+  // 3) Retrieve the session with line items expanded
+  const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+    expand: ["line_items"],
+  });
+  const lineItems = (fullSession.line_items?.data || []) as Stripe.LineItem[];
+
+  // 4) Build cartItems from actual Stripe line items
+  type CartItem = {
+    id: string;
+    name: string;
+    price: number;
+    quantity: number;
+  };
   let cartItems: CartItem[] = [];
-  if (metadata.cartItems) {
+  const rawCart = metadata.cart || metadata.cartItems;
+  if (rawCart) {
     try {
-      cartItems = JSON.parse(metadata.cartItems);
+      cartItems = JSON.parse(rawCart);
       if (!Array.isArray(cartItems)) throw new Error();
     } catch {
-      throw new Error('Invalid cartItems metadata; must be JSON array of items');
+      throw new Error("Invalid cart metadata; must be JSON array of items");
     }
+  } else {
+    throw new Error("Missing cart metadata in session.metadata");
   }
 
-  // 2) Update user plan(s)
+  console.log(`🛒 [Webhooks] Parsed cartItems:`, cartItems);
+
+  // 5) Update user plan(s)
   if (planIds.length) {
-    await Promise.all(planIds.map(planId => updateUserPlan(userId, planId)));
+    await Promise.all(planIds.map((planId) => updateUserPlan(userId, planId)));
   }
 
-  // 3) Fetch the user's (new) plan from Supabase
+  // 6) Fetch the user's (new) plan from Supabase
   const { data: profile, error: profErr } = await adminSupabase
-    .from('profiles')
-    .select('plan')
-    .eq('id', userId)
+    .from("profiles")
+    .select("plan")
+    .eq("id", userId)
     .single();
 
   if (profErr || !profile?.plan) {
-    throw new Error(
-      profErr?.message || 'Could not retrieve updated user plan'
-    );
+    throw new Error(profErr?.message || "Could not retrieve updated user plan");
   }
-  const userPlan = profile.plan as 'Free' | 'Pro' | 'Enterprise';
+  const userPlan = profile.plan as "Free" | "Pro" | "Enterprise";
 
-  // 4) Clone each template under the user's new plan
+  // 7) Clone each template under the user's new plan
   await Promise.all(
-    cartItems.map(item =>
-      cloneTemplateService(item.id, userId, userPlan)
-    )
+    cartItems.map(async (item) => {
+      try {
+        await cloneTemplateService(item.id, userId, userPlan);
+      } catch (cloneErr) {
+        console.error(
+          `❌ [Webhooks] cloneTemplateService failed for item ${item.id}:`,
+          cloneErr
+        );
+        // decide whether to rethrow or continue – here we rethrow to reject the webhook
+        throw cloneErr;
+      }
+    })
   );
 
-  // 5) Create an invoice record in your database
+  // 8) Create an invoice record in your database
   await createInvoiceRecord({
     userId,
     items: cartItems,
