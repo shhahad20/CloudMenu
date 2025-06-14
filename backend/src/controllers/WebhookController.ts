@@ -7,6 +7,7 @@ import { updateUserPlan } from "./PlansController.js";
 import { cloneTemplate } from "./TemplateController.js";
 import { createInvoice } from "./InvoiceController.js";
 import { cloneTemplateService } from "../services/templateService.js";
+import { sendInvoiceEmail } from "../services/emailService.js";
 
 export const config = {
   api: { bodyParser: false }, // raw body needed for signature verification
@@ -127,7 +128,20 @@ async function createInvoiceRecord(params: {
     throw new Error("Could not create invoice items");
   }
 
-  return invoiceId;
+  // return invoiceId;
+    // 3) Return complete invoice object for email
+  return {
+    id: invoiceId,
+    userId,
+    items: items.map(item => ({
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price // This should already be in cents if that's what your email expects
+    })),
+    amountTotal, // in cents
+    currency,
+    stripeSessionId
+  };
 }
 
 export const stripeWebhook = async (req: Request, res: Response) => {
@@ -173,11 +187,12 @@ export async function handleCheckoutSession(
   // 1) Unwrap metadata
   const metadata = session.metadata || {};
   const userId = metadata.userId;
+
   if (!userId) {
     throw new Error("Missing userId in session.metadata");
   }
 
-  // Parse plan IDs from metadata.plans (or fallback to metadata.planIds)
+  // 2) Parse & normalize plans exactly as before…
   type RawPlan = string | { id: string; [k: string]: any };
   let planIdsRaw: RawPlan[] = [];
   const rawPlans = metadata.plans || metadata.planIds;
@@ -192,14 +207,11 @@ export async function handleCheckoutSession(
       );
     }
   }
-
-  // 2) Normalize into exactly "Free" | "Pro" | "Enterprise"
   const PLAN_MAP: Record<string, "Free" | "Pro" | "Enterprise"> = {
     "plan-Free": "Free",
     "plan-Pro": "Pro",
     "plan-Enterprise": "Enterprise",
   };
-
   const planIds = planIdsRaw.map((p) => {
     const rawId = typeof p === "string" ? p : p.id;
     const normalized = PLAN_MAP[rawId];
@@ -208,22 +220,10 @@ export async function handleCheckoutSession(
     }
     return normalized;
   });
-
   console.log("📦 [Webhooks] normalized planIds:", planIds);
 
-  // 3) Retrieve the session with line items expanded
-  const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-    expand: ["line_items"],
-  });
-  const lineItems = (fullSession.line_items?.data || []) as Stripe.LineItem[];
-
-  // 4) Build cartItems from actual Stripe line items
-  type CartItem = {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-  };
+  // 3) Parse cart items…
+  type CartItem = { id: string; name: string; price: number; quantity: number };
   let cartItems: CartItem[] = [];
   const rawCart = metadata.cart || metadata.cartItems;
   if (rawCart) {
@@ -236,10 +236,9 @@ export async function handleCheckoutSession(
   } else {
     throw new Error("Missing cart metadata in session.metadata");
   }
+  console.log("🛒 [Webhooks] Parsed cartItems:", cartItems);
 
-  console.log(`🛒 [Webhooks] Parsed cartItems:`, cartItems);
-
-  // 5) Update user plan(s)
+  // 4) Update user plan(s)
   if (planIds.length) {
     await Promise.all(
       planIds.map((planId) => {
@@ -249,53 +248,65 @@ export async function handleCheckoutSession(
     );
   }
 
-  // 6) Fetch the user's (new) plan from Supabase
+  // 5) Fetch updated user plan & email
   const { data: profile, error: profErr } = await adminSupabase
     .from("profiles")
-    .select("plan")
+    .select("plan, email")
     .eq("id", userId)
     .single();
-
   if (profErr || !profile?.plan) {
     throw new Error(profErr?.message || "Could not retrieve updated user plan");
   }
   const userPlan = profile.plan as "Free" | "Pro" | "Enterprise";
 
-  // 6) Separate out template purchases vs. plan purchases
-  const templateItems = cartItems.filter(
-    (item) => !item.id.startsWith("plan-")
-  );
-
-  // 7) Clone each template under the user's new plan (if any)
+  // 6) Clone templates only (skip plan items)
+  const templateItems = cartItems.filter(item => !item.id.startsWith("plan-"));
   if (templateItems.length) {
     await Promise.all(
       templateItems.map(async (item) => {
         try {
-          console.log(`🔨 Cloning template ${item.id} for user ${userId}`);
+          console.log(`🔨 Cloning template ${item.id}`);
           await cloneTemplateService(item.id, userId, userPlan);
-          console.log(`✅ Cloned template ${item.id}`);
-        } catch (cloneErr) {
-          console.error(
-            `❌ [Webhooks] cloneTemplateService failed for ${item.id}:`,
-            cloneErr
-          );
-          // if you want to continue even on individual clone failures, comment out the next line:
-          throw cloneErr;
+        } catch (err) {
+          console.error(`❌ cloneTemplateService failed for ${item.id}`, err);
+          throw err;
         }
       })
     );
   }
 
-  // 8) Create an invoice record in your database
-  await createInvoiceRecord({
-    userId,
-    items: cartItems,
-    currency: session.currency!,
-    stripeSessionId: session.id,
-    amountTotal: session.amount_total!, // cents
-  });
+  // 7) Create ONE invoice record
+  let invoice;
+  try {
+    invoice = await createInvoiceRecord({
+      userId,
+      items: cartItems,
+      currency: session.currency!,
+      stripeSessionId: session.id,
+      amountTotal: session.amount_total!, // in cents
+    });
+    console.log(`💾 Created invoice ${invoice.id}`);
+  } catch (err) {
+    console.error("❌ Failed to create invoice record:", err);
+    throw err; // stop here—no point sending an email if there’s no invoice
+  }
+
+  // 8) Send the invoice email (but don’t block the success of the webhook)
+  if (!profile.email) {
+    console.warn(`⚠️ No email for user ${userId}, skipping email`);
+  } else {
+    try {
+      console.log(`✉️ Sending invoice email to ${profile.email}`);
+      await sendInvoiceEmail(profile.email, invoice);
+      console.log("✅ Invoice email sent");
+    } catch (err) {
+      console.error("❌ Failed to send invoice email:", err);
+      // deliberate: we do NOT throw here, so the webhook still succeeds
+    }
+  }
 
   console.log(
     `✅ [Webhooks] Successfully processed session ${session.id} for user ${userId}`
   );
 }
+

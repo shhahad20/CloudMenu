@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { createClient } from '@supabase/supabase-js';
-import { supabase } from '../config/supabaseClient.js';
+import { adminSupabase, supabase } from '../config/supabaseClient.js';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 
 // GET /plans
@@ -51,17 +51,25 @@ export async function updateUserPlan(userId: string, plan: string) {
     throw new Error('Invalid plan.');
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from('profiles')
     .update({ plan })
     .eq('id', userId)
     .select('id,plan')
-    .single();
+    .maybeSingle(); 
 
   if (error) {
     console.error('Error updating plan:', error);
     throw new Error(error.message);
   }
+    // 3) Handle the case where no row was updated
+  if (!data) {
+    console.warn(`⚠️ No profile found for user ${userId}; plan not updated`);
+    // You can choose to throw here or simply return null
+    return null;
+  }
+
+  console.log(`✅ Updated plan for user ${userId} → ${data.plan}`);
 
   return data;
 }

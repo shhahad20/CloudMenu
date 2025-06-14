@@ -20,7 +20,7 @@ export const signup = async (req, res) => {
     // 2) Insert into your own profiles table via service role
     const { error: profileError } = await adminSupabase
         .from('profiles')
-        .insert({ id: userId, username });
+        .insert({ id: userId, username, email });
     if (profileError) {
         console.error('Error inserting profile:', profileError);
         // we don't fail signup for this—profile can be incomplete
