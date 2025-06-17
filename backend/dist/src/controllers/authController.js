@@ -1,17 +1,19 @@
-import { supabase, adminSupabase } from '../config/supabaseClient.js';
-import 'dotenv/config';
-import jwt from 'jsonwebtoken';
+import { supabase, adminSupabase } from "../config/supabaseClient.js";
+import "dotenv/config";
+import jwt from "jsonwebtoken";
 export const signup = async (req, res) => {
     const { email, password, username } = req.body;
     if (!email || !password || !username) {
-        return res.status(400).json({ error: 'Missing required fields.' });
+        return res.status(400).json({ error: "Missing required fields." });
     }
     // 1) Create the user in Supabase Auth
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username },
-            emailRedirectTo: `${process.env.BACKEND_URL}/confirm-email` }
+        options: {
+            data: { username },
+            emailRedirectTo: `${process.env.BACKEND_URL}/confirm-email`,
+        },
     });
     if (signUpError) {
         return res.status(400).json({ error: signUpError.message });
@@ -19,90 +21,122 @@ export const signup = async (req, res) => {
     const userId = signUpData.user?.id;
     // 2) Insert into your own profiles table via service role
     const { error: profileError } = await adminSupabase
-        .from('profiles')
+        .from("profiles")
         .insert({ id: userId, username, email });
     if (profileError) {
-        console.error('Error inserting profile:', profileError);
+        console.error("Error inserting profile:", profileError);
         // we don't fail signup for this—profile can be incomplete
     }
     // 3) Success response
     return res.json({
-        message: 'Signup successful! Please confirm your email before signing in.'
+        message: "Signup successful! Please confirm your email before signing in.",
     });
 };
 export const signin = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password required.' });
+        return res.status(400).json({ error: "Email and password required." });
     }
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
     });
     if (error) {
         return res.status(401).json({ error: error.message });
     }
+    const { session, user } = data;
     // data.session contains the access_token (JWT)
     return res.json({
-        message: 'Signin successful!',
-        user: data.user,
-        access_token: data.session?.access_token,
-        expires_in: data.session?.expires_in,
-        refresh_token: data.session?.refresh_token
+        message: "Signin successful!",
+        user,
+        access_token: session?.access_token,
+        expires_in: session?.expires_in,
+        refresh_token: session?.refresh_token,
     });
 };
 export const signout = async (req, res) => {
     const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Missing or invalid token.' });
+    if (!header?.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Missing or invalid token." });
     }
-    const token = header.split(' ')[1];
+    const token = header.split(" ")[1];
     try {
         // Admin API approach for token revocation
         const { error } = await supabase.auth.admin.signOut(token);
         if (error)
             throw error;
-        return res.json({ message: 'Successfully logged out.' });
+        return res.json({ message: "Successfully logged out." });
     }
     catch (error) {
         return res.status(400).json({
-            error: error instanceof Error ? error.message : 'Logout failed'
+            error: error instanceof Error ? error.message : "Logout failed",
+        });
+    }
+};
+export const refreshToken = async (req, res) => {
+    try {
+        const { refresh_token } = req.body;
+        if (!refresh_token) {
+            return res.status(400).json({
+                error: "Missing refresh_token",
+            });
+        }
+        // Exchange the old refresh token for a new session
+        const { data, error } = await adminSupabase.auth.refreshSession({
+            refresh_token,
+        });
+        if (error || !data.session) {
+            console.error("[POST /auth/refresh] error:", error);
+            return res.status(401).json({ error: "Invalid refresh token" });
+        }
+        // Return the new session tokens
+        const session = data.session;
+        res.json({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token,
+            expires_at: session.expires_at,
+        });
+    }
+    catch (error) {
+        console.error("[POST /auth/refresh] error:", error);
+        return res.status(500).json({
+            error: error instanceof Error ? error.message : "Internal server error",
         });
     }
 };
 export const forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) {
-        return res.status(400).json({ error: 'Email is required.' });
+        return res.status(400).json({ error: "Email is required." });
     }
     // Step 1: send reset email via Supabase
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.FRONTEND_URL}/reset-password`
+        redirectTo: `${process.env.FRONTEND_URL}/reset-password`,
     });
     if (error) {
         return res.status(400).json({ error: error.message });
     }
-    return res.json({ message: 'Password reset email sent.' });
+    return res.json({ message: "Password reset email sent." });
 };
 export const resetPassword = async (req, res) => {
     const header = req.headers.authorization;
     const { newPassword } = req.body;
     // 1) Basic validation
-    if (!header?.startsWith('Bearer ')) {
-        return res.status(401).json({ error: 'Missing or invalid token.' });
+    if (!header?.startsWith("Bearer ")) {
+        return res.status(401).json({ error: "Missing or invalid token." });
     }
     if (!newPassword || newPassword.length < 8) {
         return res
             .status(400)
-            .json({ error: 'New password must be at least 8 characters.' });
+            .json({ error: "New password must be at least 8 characters." });
     }
-    const token = header.split(' ')[1];
+    const token = header.split(" ")[1];
     // 2) Decode the recovery JWT (no signature verification needed here)
     const decoded = jwt.decode(token);
     if (!decoded ||
-        typeof decoded !== 'object' ||
-        typeof decoded.sub !== 'string') {
-        return res.status(400).json({ error: 'Invalid token payload.' });
+        typeof decoded !== "object" ||
+        typeof decoded.sub !== "string") {
+        return res.status(400).json({ error: "Invalid token payload." });
     }
     const userId = decoded.sub;
     // 3) Use service-role client to update the user’s password by ID
@@ -110,10 +144,10 @@ export const resetPassword = async (req, res) => {
         password: newPassword,
     });
     if (error) {
-        console.error('Error updating password via admin:', error);
+        console.error("Error updating password via admin:", error);
         return res.status(400).json({ error: error.message });
     }
-    return res.json({ message: 'Password successfully updated.' });
+    return res.json({ message: "Password successfully updated." });
 };
 export const confirmEmail = async (req, res) => {
     return res.send(`
@@ -140,12 +174,12 @@ export const changeUserRole = async (req, res) => {
     const userId = req.params.id;
     const { role } = req.body;
     if (!role) {
-        return res.status(400).json({ error: 'Role is required.' });
+        return res.status(400).json({ error: "Role is required." });
     }
     const { data, error } = await adminSupabase
-        .from('profiles')
+        .from("profiles")
         .update({ role })
-        .eq('id', userId)
+        .eq("id", userId)
         .single();
     if (error) {
         return res.status(400).json({ error: error.message });
@@ -161,13 +195,15 @@ export const deleteUser = async (req, res) => {
     }
     // 2) profile row is removed via ON DELETE CASCADE, but if not:
     // await adminSupabase.from('profiles').delete().eq('id', userId);
-    return res.json({ message: 'User account deleted.' });
+    return res.json({ message: "User account deleted." });
 };
 export const updateUser = async (req, res) => {
     const userId = req.params.id;
     const { email, username } = req.body;
     if (!email && !username) {
-        return res.status(400).json({ error: 'At least one field (email or username) is required.' });
+        return res
+            .status(400)
+            .json({ error: "At least one field (email or username) is required." });
     }
     try {
         // 1) Update email in Supabase Auth if provided
@@ -182,18 +218,20 @@ export const updateUser = async (req, res) => {
         // 2) Update username in profiles table if provided
         if (username) {
             const { error: usernameError } = await adminSupabase
-                .from('profiles')
+                .from("profiles")
                 .update({ username })
-                .eq('id', userId);
+                .eq("id", userId);
             if (usernameError) {
                 return res.status(400).json({ error: usernameError.message });
             }
         }
-        return res.json({ message: 'User information updated successfully.' });
+        return res.json({ message: "User information updated successfully." });
     }
     catch (error) {
         return res.status(500).json({
-            error: error instanceof Error ? error.message : 'An unexpected error occurred.',
+            error: error instanceof Error
+                ? error.message
+                : "An unexpected error occurred.",
         });
     }
 };

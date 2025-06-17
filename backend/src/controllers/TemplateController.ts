@@ -41,7 +41,7 @@ export const listUserTemplates = async (req: AuthRequest, res: Response) => {
       sort: { column: sortBy, order: sortOrder },
       pagination: { page, pageSize },
     };
-    const { data, total } = await listService(supabase, opts);
+    const { data, total } = await listService(adminSupabase, opts);
 
     res.json({
       data,

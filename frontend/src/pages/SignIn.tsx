@@ -1,17 +1,28 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { API_URL } from "../api/api";
-
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import "../styles/signup.scss";
+import { signIn } from "../utils/authUtils";
 
 const SignIn: React.FC = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: Location } };
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      const to = location.state?.from?.pathname || "/dashboard";
+      navigate(to, { replace: true });
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [navigate, location.state]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,37 +34,30 @@ const SignIn: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-
     try {
-      const res = await fetch(`${API_URL}/auth/signin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const json = await res.json();
-
-      if (!res.ok) {
-        throw new Error(json.error || "Signin failed");
-      }
-
-      // Persist JWT
-      localStorage.setItem("access_token", json.access_token);
-
-      // Go to dashboard or home
-      const from = location.state?.from?.pathname || "/";
-      navigate(from, { replace: true });
-      
+      await signIn(formData.email, formData.password);
+      const to = location.state?.from?.pathname || "/dashboard";
+      navigate(to, { replace: true });
     } catch (err: unknown) {
-      let errorMessage = "An unknown error occurred";
       if (err instanceof Error) {
-        errorMessage = err.message;
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
       }
-      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  if (isCheckingAuth) {
+    return (
+      <div className="signup-container">
+        <div className="loading-container">
+          <p>Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="signup-container">
       {/* left image/noise panel */}
@@ -129,7 +133,7 @@ const SignIn: React.FC = () => {
             </div>
           </div>
           <p className="forgot-password">
-            <a href="/forgot-password">Forgot your password?</a>
+            <Link to="/forgot-password">Forgot your password?</Link>
           </p>
           <button type="submit" disabled={loading}>
             {" "}
@@ -138,7 +142,7 @@ const SignIn: React.FC = () => {
         </form>
 
         <p className="sign-in-note">
-          Don’t have an account? <a href="/sign-up">Sign Up</a>
+          Don’t have an account? <Link to="/sign-up">Sign Up</Link>
         </p>
       </div>
     </div>

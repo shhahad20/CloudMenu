@@ -1,3 +1,4 @@
+import { apiFetch } from "../hooks/useApiCall";
 import { API_URL } from "./api";
 export interface Section {
   id: string;
@@ -120,9 +121,10 @@ export async function fetchUserTemplates(
   if (q) params.append("q", q);
 
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API_URL}/templates?${params.toString()}`, {
+  const res = await apiFetch(`/templates?${params.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+  console.log("fetchUserTemplates response:", res);
   if (!res.ok) throw new Error("Failed to fetch your menus");
   return res.json();
 }
@@ -206,26 +208,6 @@ export const updateTemplate = (
     return res.json();
   });
 
-// export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
-//   const token = localStorage.getItem("access_token");
-//   if (!token) {
-//     throw new Error("You need to be logged in to clone a template.");
-//   }
-//   const res = await fetch(`${API_URL}/templates/clone/${id}`, {
-//     method: "POST",
-//     headers: getHeaders(),
-//   });
-// const body = await res.json().catch(() => null);
-//   if (!res.ok || !body || !body.id) {
-//     throw new Error(
-//       body?.error
-//         ? `Clone failed: ${body.error}`
-//         : `Clone failed: HTTP ${res.status}`
-//     );
-//   }
-//   return body as ClonedTemplate;
-// };
-
 export const cloneTemplate = async (id: string): Promise<ClonedTemplate> => {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -288,17 +270,6 @@ export const plans = () =>
     return res.json();
   });
 
-// export const userInvoices = () =>
-//   fetch(`${API_URL}/invoices`, {
-//     method: "GET",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-//     },
-//   }).then((res) => {
-//     if (!res.ok) throw new Error("Invoices not found");
-//     return res.json();
-//   });
 
 export async function fetchUserInvoices(
   opts: {
@@ -327,9 +298,10 @@ export async function fetchUserInvoices(
     if (q) params.append("q", q);
   if (status) params.append("status", status);
   const token = localStorage.getItem("access_token");
-  const res = await fetch(`${API_URL}/invoices?${params}`, {
+  const res = await apiFetch(`/invoices?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
   if (!res.ok) throw new Error("Failed to fetch invoices");
   return res.json();
 }

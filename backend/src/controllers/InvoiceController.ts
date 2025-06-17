@@ -1,4 +1,3 @@
-// src/controllers/invoices.ts
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/verifyAuth.js';
 import { adminSupabase } from '../config/supabaseClient.js';

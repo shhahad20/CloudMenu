@@ -12,12 +12,17 @@ interface Profile {
   plan: PlanType;
 }
 
-import { API_URL } from "../api/api";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-// import PlanUsage from "../components/UI/PlanUsage";
 import AnalyticsPage from "../components/UI/Analytics";
-import { fetchUserInvoices, fetchUserTemplates, InvoiceType, PaginatedResult, Template } from "../api/templates";
+import {
+  fetchUserInvoices,
+  fetchUserTemplates,
+  InvoiceType,
+  PaginatedResult,
+  Template,
+} from "../api/templates";
+import { apiFetch } from "../hooks/useApiCall";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -30,64 +35,61 @@ const Dashboard: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loadingTemplates, setLoadingTemplates] = useState(true);
 
-useEffect(() => {
-  const token = localStorage.getItem("access_token");
-  if (!token) {
-    navigate("/sign-in", { replace: true });
-    return;
-  }
+  useEffect(() => {
 
-  (async () => {
-    try {
-      // 1) load profile (same as before)…
-      const pRes = await fetch(`${API_URL}/profiles/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!pRes.ok) throw new Error("Not authorized");
-      const profileData: Profile = await pRes.json();
-      setProfile(profileData);
+    (async () => {
+      try {
 
-      // 2) load last 3 templates via your helper
-      setLoadingTemplates(true);
-      const {
-        data: templList,
-      }: PaginatedResult<Template> = await fetchUserTemplates({
-        page: 1,
-        pageSize: 3,
-        sortBy: "updated_at",
-        order: "desc",
-      });
-      setTemplates(templList);
-      setLoadingTemplates(false);
+        const pRes = await apiFetch("/profiles/me");
+        if (pRes.status === 401) {
+          // not signed in (or token expired & refresh failed)
+          return navigate("/sign-in", { replace: true });
+        }
 
-      // 3) load last 5 invoices via similar helper
-      setLoadingInvoices(true);
-      const {
-        data: invList,
-      }: PaginatedResult<InvoiceType> = await fetchUserInvoices({
-        page: 1,
-        pageSize: 5,
-        sortBy: "invoice_date",
-        order: "desc",
-      });
-      setInvoices(invList);
-      setLoadingInvoices(false);
-    } catch (err: unknown) {
-      console.error(err);
-      if (err instanceof Error && err.message === "Not authorized") {
-        navigate("/sign-in", { replace: true });
-      } else if (err instanceof Error) {
-        setErrorInvoices(err.message);
-      } else {
-        setErrorInvoices("An unknown error occurred.");
+        if (!pRes.ok) throw new Error("Failed to load profile");
+        const profileData: Profile = await pRes.json();
+        console.log("Profile data:", profileData);
+        setProfile(profileData);
+
+        // 2) load last 3 templates via your helper
+        setLoadingTemplates(true);
+        const { data: templList }: PaginatedResult<Template> =
+          await fetchUserTemplates({
+            page: 1,
+            pageSize: 3,
+            sortBy: "updated_at",
+            order: "desc",
+          });
+        setTemplates(templList);
+        setLoadingTemplates(false);
+
+        // 3) load last 5 invoices via similar helper
+        setLoadingInvoices(true);
+        const { data: invList }: PaginatedResult<InvoiceType> =
+          await fetchUserInvoices({
+            page: 1,
+            pageSize: 5,
+            sortBy: "invoice_date",
+            order: "desc",
+          });
+        setInvoices(invList);
+        setLoadingInvoices(false);
+      } catch (err: unknown) {
+        console.error(err);
+        if (err instanceof Error && err.message === "Not authorized") {
+          navigate("/sign-in", { replace: true });
+        } else if (err instanceof Error) {
+          setErrorInvoices(err.message);
+        } else {
+          setErrorInvoices("An unknown error occurred.");
+        }
+        setLoadingTemplates(false);
+        setLoadingInvoices(false);
+      } finally {
+        setLoading(false);
       }
-      setLoadingTemplates(false);
-      setLoadingInvoices(false);
-    } finally {
-      setLoading(false);
-    }
-  })();
-}, [navigate]);
+    })();
+  }, [navigate]);
 
   if (loading) {
     return <div className="dashboard-loading">Loading…</div>;
@@ -161,31 +163,7 @@ useEffect(() => {
         </header>
 
         <section className="dashboard-content">
-          <div className="dashboard-left-content">
-            {/* <PlanUsage
-              usedStorageMB={10}
-              usedMenus={1}
-              limitStorageMB={50}
-              limitMenus={5}
-            /> */}
-            {/* {invoiceCount !== null && (
-              <div className="invoice-count">
-              <strong>{invoiceCount} - invoices</strong>
-              <button
-                className="manage-invoices-button"
-                onClick={() => navigate("/dashboard/invoices")}
-              >
-                Manage invoices
-              </button>
-              </div>
-            )}
-            {invoiceCount !== null && (
-              <div className="invoice-status">
-              <strong>2 - overdue invoices</strong>
-              <strong>5 - paid invoices</strong>
-              </div>
-            )} */}
-          </div>
+          <div className="dashboard-left-content"></div>
 
           <div className="dashboard-right-content">
             <AnalyticsPage />
