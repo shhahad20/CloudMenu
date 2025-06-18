@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { useNavigate, NavLink, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "../styles/dashboard.scss";
 import "../styles/dashboardMenus.scss";
 import { API_URL } from "../api/api";
-import { SortOption, useListControls } from "../hooks/userListControls";
 import { fetchUserTemplates, PaginatedResult } from "../api/templates";
-import ListToolbar from "../components/UI/ListToolbar";
-import Pagination from "../components/UI/Pagination";
+import { usePagination } from "../hooks/usePagination";
+import { SortOption } from "../components/UI/SearchBar2";
+import { ListToolbar } from "../components/UI/ListToolbar";
+import { PaginationControls } from "../components/UI/PageSizeSelect";
 
 interface UserTemplate {
   id: string;
@@ -17,48 +18,49 @@ interface UserTemplate {
   created_at: string;
   updated_at: string;
 }
-const SORT_OPTIONS: SortOption[] = [
+type MenuSortBy = "updated_at" | "created_at" | "name";
+
+const MENU_SORT_OPTIONS: SortOption<MenuSortBy>[] = [
   { value: "updated_at", label: "Recently Updated" },
   { value: "created_at", label: "Date Created" },
-  { value: "name", label: "Name" },
+  { value: "name", label: "Name" }
 ];
-
 const DashboardMenus: React.FC = () => {
   const navigate = useNavigate();
-  const [templates, setTemplates] = useState<UserTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
-    pageSize: 12,
-    sortBy: "updated_at",
-    order: "desc",
+  // ─── 1) CONTROL STATE ───────────────────────────────
+  // const [page, setPage] = useState(1);
+  // const [pageSize, setPageSize] = useState(8);
+  // const [sortBy, setSortBy] = useState<"updated_at" | "created_at" | "name">(
+  //   "updated_at"
+  // );
+  // const [order, setOrder] = useState<"asc" | "desc">("asc");
+  // const [query, setQuery] = useState("");
+  // ─── 2) DATA STATE ─────────────────────────────────
+  // const [templates, setTemplates] = useState<UserTemplate[]>([]);
+  // const [totalPages, setTotalPages] = useState(1);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
+  // Use the pagination hook
+  const {
+    state,
+    totalPages,
+    setTotalPages,
+    goToPage,
+    toggleOrder,
+    setSortBy,
+    setQuery,
+    setPageSize,
+  } = usePagination<MenuSortBy>({
+    initialPageSize: 8,
+    initialSortBy: "updated_at",
+    initialOrder: "asc"
   });
+// Data state
+  const [templates, setTemplates] = useState<UserTemplate[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("access_token");
-  //   if (!token) {
-  //     navigate("/sign-in", { replace: true });
-  //     return;
-  //   }
-
-  //   fetch(`${API_URL}/templates`, {
-  //     headers: { Authorization: `Bearer ${token}` },
-  //   })
-  //     .then(async (res) => {
-  //       if (!res.ok) throw new Error("Failed to fetch your menus");
-  //       return res.json();
-  //     })
-  //     .then((data: UserTemplate[]) => setTemplates(data))
-  //     .catch((err) => {
-  //       console.error(err);
-  //       setError(err.message);
-  //     })
-  //     .finally(() => setLoading(false));
-  // }, [navigate]);
-
-  // // fetch whenever any control changes
+  // fetch whenever any control changes
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
@@ -69,7 +71,11 @@ const DashboardMenus: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    fetchUserTemplates({ page, pageSize, sortBy, order, q: query })
+    fetchUserTemplates({  page: state.page,
+      pageSize: state.pageSize,
+      sortBy: state.sortBy,
+      order: state.order,
+      q: state.query })
       .then((res: PaginatedResult<UserTemplate>) => {
         setTemplates(res.data);
         setTotalPages(res.pagination.totalPages);
@@ -79,7 +85,7 @@ const DashboardMenus: React.FC = () => {
         setError(err.message);
       })
       .finally(() => setLoading(false));
-  }, [page, pageSize, sortBy, order, query, navigate]);
+  }, [state, navigate, setTotalPages]);
 
   const handleView = async (id: string) => {
     try {
@@ -100,12 +106,42 @@ const DashboardMenus: React.FC = () => {
     }
   };
 
-  // if (loading) {
-  //   return <div className="dashboard-loading">Loading your menus…</div>;
-  // }
-  // if (error) {
-  //   return <div className="dashboard-error">Error: {error}</div>;
-  // }
+  // ─── 4) CONTROL HANDLERS ────────────────────────────
+  // const goToPage = useCallback(
+  //   (p: number) => {
+  //     setPage(Math.max(1, Math.min(totalPages, p)));
+  //   },
+  //   [totalPages]
+  // );
+
+  // const toggleOrder = useCallback(() => {
+  //   setOrder((o) => (o === "asc" ? "desc" : "asc"));
+  //   setPage(1);
+  // }, []);
+
+  // const onSortChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //     setSortBy(e.target.value as "updated_at" | "created_at" | "name");
+  //     setPage(1);
+  //   },
+  //   []
+  // );
+
+  // const onSearchChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     setQuery(e.target.value);
+  //     setPage(1);
+  //   },
+  //   []
+  // );
+
+  // const onPageSizeChange = useCallback(
+  //   (e: React.ChangeEvent<HTMLSelectElement>) => {
+  //     setPageSize(Number(e.target.value));
+  //     setPage(1);
+  //   },
+  //   []
+  // );
 
   return (
     <>
@@ -176,11 +212,61 @@ const DashboardMenus: React.FC = () => {
         <div className="user-menus">
           <section className="dashboard-content menus-grid">
             {/* Toolbar: search + sort */}
-            <ListToolbar
+            {/* <ListToolbar
               state={{ page, pageSize, sortBy, order, query }}
               handlers={handlers}
               sortOptions={SORT_OPTIONS}
+            /> */}
+            {/* — Toolbar — */}
+            {/* <div className="toolbar" style={{ marginBottom: 16 }}>
+              <input
+                type="text"
+                placeholder="Search…"
+                value={query}
+                onChange={onSearchChange}
+                style={{ marginRight: 8 }}
+              />
+
+              <select
+                value={sortBy}
+                onChange={onSortChange}
+                style={{ marginRight: 8 }}
+              >
+                <option value="updated_at">Recently Updated</option>
+                <option value="created_at">Date Created</option>
+                <option value="name">Name</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={toggleOrder}
+                style={{ marginRight: 8 }}
+              >
+                {order === "asc" ? "Asc ↑" : "Desc ↓"}
+              </button>
+
+              <select value={pageSize} onChange={onPageSizeChange}>
+                {[4, 8, 16, 32].map((n) => (
+                  <option key={n} value={n}>
+                    {n} / page
+                  </option>
+                ))}
+              </select>
+            </div> */}
+{/* Reusable Toolbar */}
+            <ListToolbar
+              searchValue={state.query}
+              onSearchChange={setQuery}
+              searchPlaceholder="Search menus…"
+              sortBy={state.sortBy}
+              onSortChange={setSortBy}
+              sortOptions={MENU_SORT_OPTIONS}
+              order={state.order}
+              onOrderToggle={toggleOrder}
+              pageSize={state.pageSize}
+              onPageSizeChange={setPageSize}
             />
+
             {loading && <div className="dashboard-loading">Loading…</div>}
             {error && <div className="dashboard-error">Error: {error}</div>}
 
@@ -232,10 +318,35 @@ const DashboardMenus: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <Pagination
-                  page={page}
+                {/* — Pagination Controls — */}
+                {/* <div className="pagination-controls" style={{ marginTop: 16 }}>
+                  <button
+                    type="button"
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page <= 1}
+                    style={{ marginRight: 8 }}
+                  >
+                    Prev
+                  </button>
+
+                  <span>
+                    Page {page} of {totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => goToPage(page + 1)}
+                    disabled={page >= totalPages}
+                    style={{ marginLeft: 8 }}
+                  >
+                    Next
+                  </button>
+                </div> */}
+                {/* Reusable Pagination Controls */}
+                <PaginationControls
+                  currentPage={state.page}
                   totalPages={totalPages}
-                  onPageChange={handlers.setPage}
+                  onPageChange={goToPage}
                 />
               </>
             )}

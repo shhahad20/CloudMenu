@@ -35,17 +35,26 @@ export function useListControls(
   const [order, setOrder] = useState<"asc" | "desc">(initial.order ?? "asc");
   const [query, setQuery] = useState(initial.query ?? "");
 
+    // Add debugging
+  const setPageWithLog = useCallback((newPage: number) => {
+    console.log('Setting page to:', newPage);
+    console.trace('Page change called from:'); // This will show you the call stack
+    setPage(newPage);
+  }, []);
+
   const toggleOrder = useCallback(
     () => setOrder((o) => (o === "asc" ? "desc" : "asc")),
     []
   );
   const reset = useCallback(() => {
+    console.log('RESET CALLED - setting page back to 1');
+    console.trace('Reset called from:');
     setPage(1);
     setQuery("");
   }, []);
 
   return [
     { page, pageSize, sortBy, order, query },
-    { setPage, setPageSize, setSortBy, toggleOrder, setQuery, reset },
+    { setPage: setPageWithLog, setPageSize, setSortBy, toggleOrder, setQuery, reset  },
   ];
 }

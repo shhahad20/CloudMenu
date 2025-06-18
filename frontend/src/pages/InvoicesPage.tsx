@@ -6,10 +6,10 @@ import "../styles/invoices.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
-import { SortOption, useListControls } from "../hooks/userListControls";
+// import { SortOption, useListControls } from "../hooks/userListControls";
 import { fetchUserInvoices, InvoiceType, PaginatedResult } from "../api/templates";
-import ListToolbar from "../components/UI/ListToolbar";
-import Pagination from "../components/UI/Pagination";
+// import ListToolbar from "../components/UI/ListToolbar";
+// import Pagination from "../components/UI/Pagination";
 // import { Link } from 'react-router-dom';
 
 // export interface Invoice {
@@ -20,46 +20,39 @@ import Pagination from "../components/UI/Pagination";
 //   status: "Paid" | "Draft" | "Canceled";
 //   invoice_date: string;
 // }
-const SORT_OPTIONS: SortOption[] = [
-  { value: "invoice_date", label: "Date" },
-  { value: "total", label: "Total" },
-  { value: "status", label: "Status" },
-];
-const STATUS_OPTIONS = ["", "Paid", "Draft", "Canceled"];
+// const SORT_OPTIONS: SortOption[] = [
+//   { value: "invoice_date", label: "Date" },
+//   { value: "total", label: "Total" },
+//   { value: "status", label: "Status" },
+// ];
+// const STATUS_OPTIONS = ["", "Paid", "Draft", "Canceled"];
 
 const InvoicesPage: React.FC = () => {
   const [invoices, setInvoices] = useState<InvoiceType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
 
-  const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
-    pageSize: 10,
-    sortBy: "invoice_date",
-    order: "desc",
-  });
-  const [statusFilter, setStatusFilter] = useState("");
+  // const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
+  //   pageSize: 10,
+  //   sortBy: "invoice_date",
+  //   order: "desc",
+  // });
+  // const [statusFilter, setStatusFilter] = useState("");
 
   // whenever controls change, refetch
   useEffect(() => {
     setLoading(true);
     setError(null);
 
-    fetchUserInvoices({
-      page,
-      pageSize,
-      sortBy,
-      order,
-      q: query,
-      status: statusFilter,
-    })
+    fetchUserInvoices()
       .then((res: PaginatedResult<InvoiceType>) => {
         setInvoices(res.data);
-        setTotalPages(res.pagination.totalPages);
+        // setTotalPages(res.pagination.totalPages);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [page, pageSize, sortBy, order, query, statusFilter]);
+  }, []);
 
   return (
     <>
@@ -108,13 +101,13 @@ const InvoicesPage: React.FC = () => {
             <option>Draft</option>
             <option>Canceled</option>
           </select> */}
-            <ListToolbar
+            {/* <ListToolbar
               state={{ page, pageSize, sortBy, order, query }}
               handlers={handlers}
               sortOptions={SORT_OPTIONS}
-            />
+            /> */}
 
-            <select
+            {/* <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value);
@@ -126,7 +119,7 @@ const InvoicesPage: React.FC = () => {
                   {s === "" ? "All Status" : s}
                 </option>
               ))}
-            </select>
+            </select> */}
             <button className="support-btn">Support</button>
           </div>
         </header>
@@ -188,11 +181,11 @@ const InvoicesPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            <Pagination
+            {/* <Pagination
               page={page}
               totalPages={totalPages}
               onPageChange={handlers.setPage}
-            />
+            /> */}
           </>
         )}
       </div>

@@ -1,55 +1,73 @@
-import React from "react";
-import SearchBar from "../UI/SearchBar";
-import {
-  SortOption,
-  ListControlsState,
-  ListControlsHandlers,
-} from "../../hooks/userListControls";
+import React from 'react';
+import { SearchBar, SortOption, SortSelect } from './SearchBar2';
 
-interface Props {
-  state: ListControlsState;
-  handlers: ListControlsHandlers;
-  sortOptions: SortOption[];
+import { OrderToggle } from './OrderToggle';
+import { PageSizeSelect } from './PageSizeSelect';
+
+interface ListToolbarProps<T extends string> {
+  // Search
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  searchPlaceholder?: string;
+  
+  // Sort
+  sortBy: T;
+  onSortChange: (value: T) => void;
+  sortOptions: SortOption<T>[];
+  
+  // Order
+  order: 'asc' | 'desc';
+  onOrderToggle: () => void;
+  
+  // Page size
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  pageSizeOptions?: number[];
+  
+  // Styling
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-/**
- * Renders a SearchBar + sort dropdown + order toggle button.
- * - resets page to 1 on new search or new sort.
- */
-const ListToolbar: React.FC<Props> = ({ state, handlers, sortOptions }) => {
-  const { sortBy, order, query } = state;
-  const { setPage, setQuery, setSortBy, toggleOrder } = handlers;
-
+export function ListToolbar<T extends string>({
+  searchValue,
+  onSearchChange,
+  searchPlaceholder,
+  sortBy,
+  onSortChange,
+  sortOptions,
+  order,
+  onOrderToggle,
+  pageSize,
+  onPageSizeChange,
+  pageSizeOptions,
+  className = "toolbar",
+  style = { marginBottom: 16 }
+}: ListToolbarProps<T>) {
   return (
-    <div className="list-toolbar">
-      <div className="search-bar list-search">
-        <SearchBar
-          initialValue={query}
-          onSearch={(q) => {
-            setQuery(q);
-            setPage(1);
-          }}
-        />
-      </div>
-      <div className="sort-controls">
-        <select
-          value={sortBy}
-          onChange={(e) => {
-            setSortBy(e.target.value);
-            setPage(1);
-          }}
-        >
-          {sortOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        <button onClick={toggleOrder}>{order === "desc" ? "↓" : "↑"}</button>
-      </div>
+    <div className={className} style={style}>
+      <SearchBar
+        value={searchValue}
+        onChange={onSearchChange}
+        placeholder={searchPlaceholder}
+      />
+      
+      <SortSelect
+        value={sortBy}
+        onChange={onSortChange}
+        options={sortOptions}
+      />
+      
+      <OrderToggle
+        order={order}
+        onToggle={onOrderToggle}
+      />
+      
+      <PageSizeSelect
+        value={pageSize}
+        onChange={onPageSizeChange}
+        options={pageSizeOptions}
+      />
     </div>
   );
-};
-
-export default ListToolbar;
+}

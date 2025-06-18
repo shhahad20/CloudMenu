@@ -12,15 +12,15 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { API_URL } from "../api/api";
-import { SortOption, useListControls } from "../hooks/userListControls";
-import ListToolbar from "../components/UI/ListToolbar";
-import Pagination from "../components/UI/Pagination";
+// import { SortOption, useListControls } from "../hooks/userListControls";
+// import ListToolbar from "../components/UI/ListToolbar";
+// import Pagination from "../components/UI/Pagination";
 
-const SORT_OPTIONS: SortOption[] = [
-  { value: "view_count", label: "Most Viewed" },
-  { value: "created_at", label: "Newest" },
-  { value: "price", label: "Price" },
-];
+// const SORT_OPTIONS: SortOption[] = [
+//   { value: "view_count", label: "Most Viewed" },
+//   { value: "created_at", label: "Newest" },
+//   { value: "price", label: "Price" },
+// ];
 
 const MenuTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -34,15 +34,15 @@ const MenuTemplates: React.FC = () => {
   // pagination / sorting / search
   // const [page, setPage] = useState(1);
   // const [pageSize] = useState(12);
-  const [totalPages, setTotalPages] = useState(1);
+  // const [totalPages, setTotalPages] = useState(1);
   // const [sortBy, setSortBy] = useState("view_count");
   // const [order, setOrder] = useState<"asc"|"desc">("asc");
   // const [query, setQuery] = useState("");
-  const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
-    pageSize: 12,
-    sortBy: "created_at",
-    order: "asc",
-  });
+  // const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
+  //   pageSize: 12,
+  //   sortBy: "created_at",
+  //   order: "asc",
+  // });
 
   const navigate = useNavigate();
 
@@ -53,22 +53,16 @@ const MenuTemplates: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    fetchLibraryTemplates({
-      page,
-      pageSize,
-      sortBy,
-      order,
-      q: query,
-    })
+    fetchLibraryTemplates()
       .then((res: PaginatedResult<Template>) => {
         setTemplates(res.data);
-        setTotalPages(res.pagination.totalPages);
+        // setTotalPages(res.pagination.totalPages);
       })
       .catch(() => {
         setError("Failed to load templates.");
       })
       .finally(() => setLoading(false));
-  }, [page, pageSize, sortBy, order, query]);
+  }, []);
 
   // const handleClone = async (tplId: string) => {
   //   setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
@@ -148,11 +142,11 @@ const MenuTemplates: React.FC = () => {
           <h2 className="section-title">Menu Templates</h2>
 
           {/* Search + Sort */}
-          <ListToolbar
+          {/* <ListToolbar
             state={{ page, pageSize, sortBy, order, query }}
             handlers={handlers}
             sortOptions={SORT_OPTIONS}
-          />
+          /> */}
 
           {loading && <p>Loading templates…</p>}
           {error && <p className="error">{error}</p>}
@@ -249,11 +243,11 @@ const MenuTemplates: React.FC = () => {
                 ))}
               </div>
               {/* simple pagination */}
-              <Pagination
+              {/* <Pagination
                 page={page}
                 totalPages={totalPages}
                 onPageChange={handlers.setPage}
-              />
+              /> */}
             </>
           )}
         </div>

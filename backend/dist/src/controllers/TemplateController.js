@@ -19,16 +19,27 @@ function bytesToMB(bytes) {
 export const listUserTemplates = async (req, res) => {
     try {
         // parse query-string params
+        const ALLOWED_SORTS = [
+            "created_at",
+            "updated_at",
+            "name",
+            "view_count",
+        ];
+        const requested = req.query.sortBy || "created_at";
+        const sortBy = ALLOWED_SORTS.includes(requested)
+            ? requested
+            : "created_at";
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
-        const sortBy = req.query.sortBy || "created_at";
-        const sortOrder = req.query.order || "desc";
+        const rawSize = parseInt(req.query.pageSize) || 8;
+        const pageSize = Math.min(rawSize, 100); // never more than 100 per page
+        // const sortBy = (req.query.sortBy as string) || "created_at";
+        const sortOrder = req.query.order || "asc";
         const search = req.query.q || "";
         const opts = {
             table: "menu_templates",
             filters: { user_id: req.user.id },
             search: search
-                ? { term: search, columns: ["name", "description"] }
+                ? { term: search, columns: ["name"] }
                 : undefined,
             sort: { column: sortBy, order: sortOrder },
             pagination: { page, pageSize },
@@ -48,13 +59,6 @@ export const listUserTemplates = async (req, res) => {
         console.error(error);
         res.status(400).json({ error: error.message });
     }
-    // const userId = req.user!.id;
-    // const { data, error } = await supabase
-    //   .from("menu_templates")
-    //   .select("*")
-    //   .eq("user_id", userId);
-    // if (error) return res.status(400).json({ error: error.message });
-    // res.json(data);
 };
 export const listLibraryTemplates = async (req, res) => {
     // const { data, error } = await supabase.from("library_templates").select("*");

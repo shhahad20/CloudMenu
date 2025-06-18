@@ -26,17 +26,31 @@ function bytesToMB(bytes: number) {
 export const listUserTemplates = async (req: AuthRequest, res: Response) => {
   try {
     // parse query-string params
+    const ALLOWED_SORTS = [
+      "created_at",
+      "updated_at",
+      "name",
+      "view_count",
+    ] as const;
+    const requested = (req.query.sortBy as string) || "created_at";
+    const sortBy = ALLOWED_SORTS.includes(requested as any)
+      ? requested
+      : "created_at";
+
     const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 10;
-    const sortBy = (req.query.sortBy as string) || "created_at";
-    const sortOrder = (req.query.order as string as "asc" | "desc") || "desc";
+    const rawSize = parseInt(req.query.pageSize as string) || 8;
+    const pageSize = Math.min(rawSize, 100); // never more than 100 per page
+
+    // const sortBy = (req.query.sortBy as string) || "created_at";
+    const sortOrder = (req.query.order as string as "asc" | "desc") || "asc";
     const search = (req.query.q as string) || "";
 
+    
     const opts: ListOptions = {
       table: "menu_templates",
       filters: { user_id: req.user!.id },
       search: search
-        ? { term: search, columns: ["name", "description"] }
+        ? { term: search, columns: ["name"] }
         : undefined,
       sort: { column: sortBy, order: sortOrder },
       pagination: { page, pageSize },
@@ -56,13 +70,6 @@ export const listUserTemplates = async (req: AuthRequest, res: Response) => {
     console.error(error);
     res.status(400).json({ error: error.message });
   }
-  // const userId = req.user!.id;
-  // const { data, error } = await supabase
-  //   .from("menu_templates")
-  //   .select("*")
-  //   .eq("user_id", userId);
-  // if (error) return res.status(400).json({ error: error.message });
-  // res.json(data);
 };
 
 export const listLibraryTemplates = async (req: Request, res: Response) => {
@@ -234,7 +241,7 @@ export const updateTemplate = async (
     console.log("Template id: " + templateId);
     console.debug("👀 req.body:", req.body);
     console.debug("👀 req.file:", req.file ? req.file.originalname : null);
-    
+
     const { data: existing, error: fetchErr } = await adminSupabase
       .from("menu_templates")
       .select("config,size_bytes")
@@ -268,12 +275,15 @@ export const updateTemplate = async (
     if (req.file) {
       const imageUrl = await handleUpload(req.file, templateId, userId);
       console.log("The image received: " + imageUrl);
-      
+
       // Debug: Log what we're looking for
       console.debug("🔍 Looking for sectionId:", req.body.sectionId);
       console.debug("🔍 Looking for itemId:", req.body.itemId);
-      console.debug("🔍 Available sections:", newConfig.sections?.map((s: any) => s.id));
-      
+      console.debug(
+        "🔍 Available sections:",
+        newConfig.sections?.map((s: any) => s.id)
+      );
+
       // update header if present
       if ("header_image" in newConfig) {
         newConfig.header_image = imageUrl;
@@ -282,10 +292,12 @@ export const updateTemplate = async (
       // update the one item in sections
       if (Array.isArray(newConfig.sections)) {
         let itemFound = false;
-        
+
         newConfig.sections = newConfig.sections.map((sec: any) => {
-          console.debug(`→ checking section ${sec.id} vs ${req.body.sectionId}`);
-          
+          console.debug(
+            `→ checking section ${sec.id} vs ${req.body.sectionId}`
+          );
+
           // Make sure we're comparing the right types (string vs string)
           if (String(sec.id) !== String(req.body.sectionId)) {
             console.debug(`   skipping section ${sec.id}`);
@@ -293,30 +305,46 @@ export const updateTemplate = async (
           }
 
           console.debug(`✔ matched section ${sec.id}, checking items...`);
-          console.debug(`   items in section:`, sec.items?.map((i: any) => i.id));
-          
+          console.debug(
+            `   items in section:`,
+            sec.items?.map((i: any) => i.id)
+          );
+
           const updatedItems = sec.items.map((item: any) => {
-            console.debug(`   → checking item ${item.id} vs ${req.body.itemId}`);
-            
+            console.debug(
+              `   → checking item ${item.id} vs ${req.body.itemId}`
+            );
+
             // Make sure we're comparing the right types
             if (String(item.id) !== String(req.body.itemId)) {
               console.debug(`     skipping item ${item.id}`);
               return item;
             }
 
-            console.debug(`     ✔ matched item ${item.id}, setting image to:`, imageUrl);
+            console.debug(
+              `     ✔ matched item ${item.id}, setting image to:`,
+              imageUrl
+            );
             itemFound = true;
             return { ...item, image: imageUrl };
           });
 
           return { ...sec, items: updatedItems };
         });
-        
+
         if (!itemFound) {
-          console.error("❌ Item not found! sectionId:", req.body.sectionId, "itemId:", req.body.itemId);
+          console.error(
+            "❌ Item not found! sectionId:",
+            req.body.sectionId,
+            "itemId:",
+            req.body.itemId
+          );
           console.error("Available sections and items:");
           newConfig.sections.forEach((sec: any) => {
-            console.error(`  Section ${sec.id}:`, sec.items?.map((i: any) => i.id));
+            console.error(
+              `  Section ${sec.id}:`,
+              sec.items?.map((i: any) => i.id)
+            );
           });
         } else {
           console.log("✅ Item found and updated successfully");
@@ -383,13 +411,20 @@ export const updateTemplate = async (
       .select("config")
       .single<{ config: any }>();
     if (updateErr) throw updateErr;
-    
+
     // Debug: Check what we're returning
-    console.log("🎯 Final response config sections:", data.config.sections?.length);
-    const targetSection = data.config.sections?.find((s: any) => String(s.id) === String(req.body.sectionId));
-    const targetItem = targetSection?.items?.find((i: any) => String(i.id) === String(req.body.itemId));
+    console.log(
+      "🎯 Final response config sections:",
+      data.config.sections?.length
+    );
+    const targetSection = data.config.sections?.find(
+      (s: any) => String(s.id) === String(req.body.sectionId)
+    );
+    const targetItem = targetSection?.items?.find(
+      (i: any) => String(i.id) === String(req.body.itemId)
+    );
     console.log("🎯 Target item image URL:", targetItem?.image);
-    
+
     return res.json({ config: data.config });
   } catch (err: any) {
     console.error("Server error:", err);
@@ -535,10 +570,10 @@ export const cloneTemplate = async (req: AuthRequest, res: Response) => {
   const { maxProjects, maxStorageMB } = planLimits[plan];
 
   try {
-   const inserted = await cloneTemplateService(
+    const inserted = await cloneTemplateService(
       req.params.libraryId,
       req.user!.id,
-      req.user!.plan! as 'Free' | 'Pro' | 'Enterprise'
+      req.user!.plan! as "Free" | "Pro" | "Enterprise"
     );
 
     const clonedId = inserted.id;

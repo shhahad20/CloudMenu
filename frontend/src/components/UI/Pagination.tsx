@@ -5,13 +5,11 @@ interface Props {
   totalPages: number;
   onPageChange: (page: number) => void;
 }
-
-/**
- * Renders Prev / Next buttons and “Page X of Y”.
- */
 const Pagination: React.FC<Props> = ({ page, totalPages, onPageChange }) => (
+  
   <div className="pagination-controls">
     <button
+    type="button"
       onClick={() => onPageChange(page - 1)}
       disabled={page <= 1}
     >
@@ -23,6 +21,7 @@ const Pagination: React.FC<Props> = ({ page, totalPages, onPageChange }) => (
     </span>
 
     <button
+        type="button"
       onClick={() => onPageChange(page + 1)}
       disabled={page >= totalPages}
     >

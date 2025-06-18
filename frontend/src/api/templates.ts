@@ -97,34 +97,28 @@ const getHeaders = () => {
 // }
 
 export async function fetchUserTemplates(
-  opts: {
-    page?: number;
-    pageSize?: number;
-    sortBy?: string;
-    order?: "asc" | "desc";
-    q?: string;
-  } = {}
-): Promise<PaginatedResult<Template>> {
-  const {
-    page = 1,
-    pageSize = 10,
-    sortBy = "updated_at",
-    order = "desc",
-    q = "",
-  } = opts;
-  const params = new URLSearchParams({
-    page: String(page),
-    pageSize: String(pageSize),
-    sortBy,
-    order,
+  params: {
+  page: number;
+  pageSize: number;
+  sortBy: string;
+  order: "asc" | "desc";
+  q: string;
+}): Promise<PaginatedResult<Template>> {
+  const query = new URLSearchParams({
+    page:     String(params.page),
+    pageSize: String(params.pageSize),
+    sortBy:   params.sortBy,
+    order:    params.order,
   });
-  if (q) params.append("q", q);
+  if (params.q) {
+    query.set("q", params.q);
+  }
 
   const token = localStorage.getItem("access_token");
-  const res = await apiFetch(`/templates?${params.toString()}`, {
+  const res = await apiFetch(`/templates?${query.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  console.log("fetchUserTemplates response:", res);
+
   if (!res.ok) throw new Error("Failed to fetch your menus");
   return res.json();
 }
