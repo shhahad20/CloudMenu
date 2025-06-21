@@ -266,33 +266,26 @@ export const plans = () =>
 
 
 export async function fetchUserInvoices(
-  opts: {
-    page?: number;
-    pageSize?: number;
-    sortBy?: string;
-    order?: "asc" | "desc";
-    q?: string;
-    status?: string;
-  } = {}
+
+  params: {
+  page: number;
+  pageSize: number;
+  sortBy: string;
+  order: "asc" | "desc";
+  q: string;
+}
 ): Promise<PaginatedResult<InvoiceType>> {
-  const {
-    page = 1,
-    pageSize = 10,
-    sortBy = "invoice_date",
-    order = "desc",
-    q = "",
-    status = "",
-  } = opts;
-  const params = new URLSearchParams({
-    page: String(page),
-    pageSize: String(pageSize),
-    sortBy,
-    order,
+  const query = new URLSearchParams({
+    page:     String(params.page),
+    pageSize: String(params.pageSize),
+    sortBy:   params.sortBy,
+    order:    params.order,
   });
-    if (q) params.append("q", q);
-  if (status) params.append("status", status);
+  if (params.q) {
+    query.set("q", params.q);
+  }
   const token = localStorage.getItem("access_token");
-  const res = await apiFetch(`/invoices?${params}`, {
+  const res = await apiFetch(`/invoices?${query.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 

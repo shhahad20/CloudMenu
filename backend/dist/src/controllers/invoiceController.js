@@ -3,21 +3,34 @@ import { listService } from '../services/listService.js';
 // GET /api/invoices
 export async function listInvoices(req, res) {
     try {
+        const ALLOWED_SORTS = [
+            "invoice_date",
+            "total",
+            "status",
+            "id",
+        ];
+        const requested = req.query.sortBy || "invoice_date";
+        const sortBy = ALLOWED_SORTS.includes(requested)
+            ? requested
+            : "invoice_date";
         // 1) parse query-string
         const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
-        const sortBy = req.query.sortBy || "invoice_date";
-        const order = req.query.order || "desc";
-        const q = req.query.q || "";
+        const rawSize = parseInt(req.query.pageSize) || 8;
+        const pageSize = Math.min(rawSize, 100); // never more than 100 per page
+        // const page     = parseInt(req.query.page  as string) || 1;
+        // const pageSize = parseInt(req.query.pageSize as string) || 10;
+        // const sortBy   = (req.query.sortBy  as string) || "invoice_date";
+        const sortOrder = req.query.order || "asc";
+        // const search = (req.query.q as string) || "";
         // 2) build service options
         const opts = {
             table: "invoices",
             select: "id, invoice_date, subtotal, tax, total, status",
             filters: { user_id: req.user.id },
-            search: q
-                ? { term: q, columns: ["status", "id"] }
-                : undefined,
-            sort: { column: sortBy, order },
+            // search: search
+            //   ? { term: search, columns: ["status", "id", "invoice_date"] }
+            //   : undefined,
+            sort: { column: sortBy, order: sortOrder },
             pagination: { page, pageSize },
         };
         // 3) call listService

@@ -159,7 +159,7 @@ $breakpoint-sm: 600px;
 @media (max-width: 768px) {
   .toolbar {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 1rem;
     // padding: 0 1rem;
     .search-bar {

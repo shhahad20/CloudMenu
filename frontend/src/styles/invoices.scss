@@ -2,7 +2,8 @@
   padding: 2rem;
   color: #333;
   min-height: 80vh;
-  margin-top: 7rem;
+  // margin-top: 7rem;
+  margin-top: clamp(5rem, 10vw, 5rem);
 
   display: flex;
   flex-direction: column;
@@ -245,7 +246,7 @@
 
       .invoices-controls {
         // flex: 2 1 auto;
-        flex-wrap: wrap;
+        // flex-wrap: wrap;
         gap: 0.5rem;
 
         .search input {

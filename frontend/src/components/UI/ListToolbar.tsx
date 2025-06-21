@@ -5,9 +5,9 @@ import { OrderToggle } from './OrderToggle';
 import { PageSizeSelect } from './PageSizeSelect';
 
 interface ListToolbarProps<T extends string> {
-  // Search
-  searchValue: string;
-  onSearchChange: (value: string) => void;
+  // Search (optional)
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   
   // Sort
@@ -27,7 +27,7 @@ interface ListToolbarProps<T extends string> {
   // Styling
   className?: string;
   style?: React.CSSProperties;
-}
+} 
 
 export function ListToolbar<T extends string>({
   searchValue,
@@ -46,11 +46,13 @@ export function ListToolbar<T extends string>({
 }: ListToolbarProps<T>) {
   return (
     <div className={className} style={style}>
-      <SearchBar
-        value={searchValue}
-        onChange={onSearchChange}
-        placeholder={searchPlaceholder}
-      />
+      {searchValue !== undefined && onSearchChange && (
+        <SearchBar
+          value={searchValue}
+          onChange={onSearchChange}
+          placeholder={searchPlaceholder}
+        />
+      )}
       
       <SortSelect
         value={sortBy}

@@ -27,19 +27,7 @@ const MENU_SORT_OPTIONS: SortOption<MenuSortBy>[] = [
 ];
 const DashboardMenus: React.FC = () => {
   const navigate = useNavigate();
-  // ─── 1) CONTROL STATE ───────────────────────────────
-  // const [page, setPage] = useState(1);
-  // const [pageSize, setPageSize] = useState(8);
-  // const [sortBy, setSortBy] = useState<"updated_at" | "created_at" | "name">(
-  //   "updated_at"
-  // );
-  // const [order, setOrder] = useState<"asc" | "desc">("asc");
-  // const [query, setQuery] = useState("");
-  // ─── 2) DATA STATE ─────────────────────────────────
-  // const [templates, setTemplates] = useState<UserTemplate[]>([]);
-  // const [totalPages, setTotalPages] = useState(1);
-  // const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
+
   // Use the pagination hook
   const {
     state,
@@ -108,42 +96,6 @@ const DashboardMenus: React.FC = () => {
     }
   };
 
-  // ─── 4) CONTROL HANDLERS ────────────────────────────
-  // const goToPage = useCallback(
-  //   (p: number) => {
-  //     setPage(Math.max(1, Math.min(totalPages, p)));
-  //   },
-  //   [totalPages]
-  // );
-
-  // const toggleOrder = useCallback(() => {
-  //   setOrder((o) => (o === "asc" ? "desc" : "asc"));
-  //   setPage(1);
-  // }, []);
-
-  // const onSortChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //     setSortBy(e.target.value as "updated_at" | "created_at" | "name");
-  //     setPage(1);
-  //   },
-  //   []
-  // );
-
-  // const onSearchChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     setQuery(e.target.value);
-  //     setPage(1);
-  //   },
-  //   []
-  // );
-
-  // const onPageSizeChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLSelectElement>) => {
-  //     setPageSize(Number(e.target.value));
-  //     setPage(1);
-  //   },
-  //   []
-  // );
 
   return (
     <>
@@ -213,48 +165,6 @@ const DashboardMenus: React.FC = () => {
         {/* content */}
         <div className="user-menus">
           <section className="dashboard-content menus-grid">
-            {/* Toolbar: search + sort */}
-            {/* <ListToolbar
-              state={{ page, pageSize, sortBy, order, query }}
-              handlers={handlers}
-              sortOptions={SORT_OPTIONS}
-            /> */}
-            {/* — Toolbar — */}
-            {/* <div className="toolbar" style={{ marginBottom: 16 }}>
-              <input
-                type="text"
-                placeholder="Search…"
-                value={query}
-                onChange={onSearchChange}
-                style={{ marginRight: 8 }}
-              />
-
-              <select
-                value={sortBy}
-                onChange={onSortChange}
-                style={{ marginRight: 8 }}
-              >
-                <option value="updated_at">Recently Updated</option>
-                <option value="created_at">Date Created</option>
-                <option value="name">Name</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={toggleOrder}
-                style={{ marginRight: 8 }}
-              >
-                {order === "asc" ? "Asc ↑" : "Desc ↓"}
-              </button>
-
-              <select value={pageSize} onChange={onPageSizeChange}>
-                {[4, 8, 16, 32].map((n) => (
-                  <option key={n} value={n}>
-                    {n} / page
-                  </option>
-                ))}
-              </select>
-            </div> */}
             {/* Reusable Toolbar */}
             <ListToolbar
               searchValue={state.query}
@@ -320,30 +230,6 @@ const DashboardMenus: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                {/* — Pagination Controls — */}
-                {/* <div className="pagination-controls" style={{ marginTop: 16 }}>
-                  <button
-                    type="button"
-                    onClick={() => goToPage(page - 1)}
-                    disabled={page <= 1}
-                    style={{ marginRight: 8 }}
-                  >
-                    Prev
-                  </button>
-
-                  <span>
-                    Page {page} of {totalPages}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => goToPage(page + 1)}
-                    disabled={page >= totalPages}
-                    style={{ marginLeft: 8 }}
-                  >
-                    Next
-                  </button>
-                </div> */}
                 {/* Reusable Pagination Controls */}
                 <PaginationControls
                   currentPage={state.page}
