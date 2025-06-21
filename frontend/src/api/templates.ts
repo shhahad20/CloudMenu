@@ -76,7 +76,6 @@ export interface PaginatedResult<T> {
   };
 }
 
-// const API_URL = "http://localhost:4000";
 
 const getHeaders = () => {
   const token = localStorage.getItem("access_token");
@@ -85,16 +84,6 @@ const getHeaders = () => {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
-
-// export const fetchUserTemplates = (): Promise<Template[]> =>
-//   fetch(`${API_URL}/templates`, { headers: getHeaders() }).then((res) => {
-//     if (!res.ok) throw new Error("Failed to fetch templates");
-//     return res.json();
-//   });
-
-// export function fetchLibraryTemplates() {
-//   return fetch(`${API_URL}/templates/lib`).then((r) => r.json());
-// }
 
 export async function fetchUserTemplates(
   params: {

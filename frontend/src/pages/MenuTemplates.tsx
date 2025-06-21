@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "../styles/menuTemplates.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-// import SearchBar from "../components/UI/SearchBar";
 import {
   cloneTemplate,
   fetchLibraryTemplates,
@@ -17,15 +16,6 @@ import { usePagination } from "../hooks/usePagination";
 import { ListToolbar } from "../components/UI/ListToolbar";
 import { PaginationControls } from "../components/UI/PageSizeSelect";
 
-// import { SortOption, useListControls } from "../hooks/userListControls";
-// import ListToolbar from "../components/UI/ListToolbar";
-// import Pagination from "../components/UI/Pagination";
-
-// const SORT_OPTIONS: SortOption[] = [
-//   { value: "view_count", label: "Most Viewed" },
-//   { value: "created_at", label: "Newest" },
-//   { value: "price", label: "Price" },
-// ];
 type MenuSortBy = "view_count" | "created_at" | "price";
 
 const MENU_SORT_OPTIONS: SortOption<MenuSortBy>[] = [
@@ -37,7 +27,6 @@ const MenuTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const navigate = useNavigate();
   // per-template error & loading states:
   const [cloneErrors, setCloneErrors] = useState<Record<string, string>>({});
   const [cloneLoading, setCloneLoading] = useState<Record<string, boolean>>({});
@@ -84,24 +73,6 @@ const MenuTemplates: React.FC = () => {
       .finally(() => setLoading(false));
   }, [state, setTotalPages]);
 
-  // const handleClone = async (tplId: string) => {
-  //   setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
-  //   setCloneLoading((ls) => ({ ...ls, [tplId]: true }));
-  //   try {
-  //     const newTpl = await cloneTemplate(tplId);
-  //     navigate(`/builder/${newTpl.id}`);
-
-  //   } catch (err: unknown) {
-  //     console.error(err);
-  //     setCloneErrors((errs) => ({
-  //       ...errs,
-  //       [tplId]:
-  //         err instanceof Error ? err.message : "Could not create your copy.",
-  //     }));
-  //   } finally {
-  //     setCloneLoading((ls) => ({ ...ls, [tplId]: false }));
-  //   }
-  // };
   const handleClone = async (tplId: string) => {
     setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
     setCloneLoading((ls) => ({ ...ls, [tplId]: true }));

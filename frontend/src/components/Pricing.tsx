@@ -11,53 +11,9 @@ interface Plan {
   name: string;
   price_cents: number;
   features: string[];
-  tag?: string;         
+  tag?: string;  
+  // isPlan: true,         
 }
-
-// const plans: Plan[] = [
-//   {
-//     name: "Basic",
-//     priceMonthly: "19",
-//     priceYearly: "190",
-//     tag: "",
-//     features: [
-//       "10 Projects",
-//       "5 GB Storage",
-//       "Basic Support",
-//       "Community Access",
-//       "Email Notifications",
-//     ],
-//   },
-//   {
-//     name: "Pro",
-//     priceMonthly: "49",
-//     priceYearly: "490",
-//     tag: "Most Popular",
-//     features: [
-//       "100 Projects",
-//       "50 GB Storage",
-//       "Priority Support",
-//       "Advanced Analytics",
-//       "Customizable Templates",
-//       "Team Collaboration",
-//     ],
-//   },
-//   {
-//     name: "Enterprise",
-//     priceMonthly: "99",
-//     priceYearly: "990",
-//     tag: "",
-//     features: [
-//       "Unlimited Projects",
-//       "200 GB Storage",
-//       "Dedicated Support",
-//       "24/7 Customer Service",
-//       "Custom Integrations",
-//       "Unlimited Team Members",
-//       "Advanced Security Features",
-//     ],
-//   },
-// ];
 
 const PricingCard: React.FC<{
   plan: Plan;
@@ -128,6 +84,7 @@ const Pricing: React.FC = () => {
           // priceYearly: p.price * 10, // e.g. 10 months for the price of 10
           tag: p.tag || "", // use tag from the database
           features: p.features || [], // use features from the database
+          // isPlan: true, // this is a plan
         }));
         setPlans(enriched);
       })

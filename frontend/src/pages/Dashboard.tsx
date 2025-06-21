@@ -59,6 +59,7 @@ const Dashboard: React.FC = () => {
             pageSize: 3,
             sortBy: "updated_at",
             order: "desc",
+            q: "",
           });
         setTemplates(templList);
         setLoadingTemplates(false);
@@ -71,6 +72,7 @@ const Dashboard: React.FC = () => {
             pageSize: 5,
             sortBy: "invoice_date",
             order: "desc",
+            q: "",
           });
         setInvoices(invList);
         setLoadingInvoices(false);
