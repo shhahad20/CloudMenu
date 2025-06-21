@@ -9,14 +9,14 @@ $radius: 4px;
 $gap: 1rem;
 $breakpoint-sm: 600px;
 
-.list-toolbar {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   // margin-bottom: $gap;
-  width: 50%;
-    // border: 1px solid red;
+  width: 100%;
+  // border: 1px solid red;
   // SearchBar wrapper
   .search-bar {
     flex: 1 1 200px;
@@ -27,7 +27,49 @@ $breakpoint-sm: 600px;
       width: 100%;
     }
   }
+  input {
+    border: 1px solid $border-color;
+    border-radius: $radius;
+    padding: 0.3em 0.6em;
+    width: 25%;
+    font-size: 0.9rem;
+  }
+  select {
+    padding: 0.4em 0.6em;
+    border: 1px solid $border-color;
+    border-radius: $radius;
+    background: white;
+    color: $primary-color;
+    font-size: 0.9rem;
 
+    &:focus {
+      outline: none;
+      border-color: $highlight-color;
+      box-shadow: 0 0 0 2px rgba($highlight-color, 0.2);
+    }
+  }
+  button {
+    padding: 0.3em 0.6em;
+    border: 1px solid $border-color;
+    border-radius: $radius;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: $primary-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: lighten($border-color, 20%);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $highlight-color;
+      box-shadow: 0 0 0 2px rgba($highlight-color, 0.2);
+    }
+  }
   .sort-controls {
     display: flex;
     align-items: center;
@@ -74,7 +116,6 @@ $breakpoint-sm: 600px;
   }
 }
 
-
 // Pagination controls
 .pagination-controls {
   display: flex;
@@ -114,14 +155,13 @@ $breakpoint-sm: 600px;
   }
 }
 
-
 // Mobile tweaks
 @media (max-width: 768px) {
-  .list-toolbar {
-      width: 100%;
+  .toolbar {
+    width: 100%;
     justify-content: center;
     gap: 1rem;
-    padding: 0 1rem;
+    // padding: 0 1rem;
     .search-bar {
       flex: 1 1 250px;
       margin-bottom: $gap / 2;
@@ -135,8 +175,8 @@ $breakpoint-sm: 600px;
   }
 }
 @media (max-width: $breakpoint-sm) {
-  .list-toolbar {
-      width: 90%;
+  .toolbar {
+    width: 90%;
 
     .search-bar {
       flex: 1 1 100%;

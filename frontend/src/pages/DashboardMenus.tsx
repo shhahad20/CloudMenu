@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, NavLink, Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -23,7 +23,7 @@ type MenuSortBy = "updated_at" | "created_at" | "name";
 const MENU_SORT_OPTIONS: SortOption<MenuSortBy>[] = [
   { value: "updated_at", label: "Recently Updated" },
   { value: "created_at", label: "Date Created" },
-  { value: "name", label: "Name" }
+  { value: "name", label: "Name" },
 ];
 const DashboardMenus: React.FC = () => {
   const navigate = useNavigate();
@@ -53,9 +53,9 @@ const DashboardMenus: React.FC = () => {
   } = usePagination<MenuSortBy>({
     initialPageSize: 8,
     initialSortBy: "updated_at",
-    initialOrder: "asc"
+    initialOrder: "asc",
   });
-// Data state
+  // Data state
   const [templates, setTemplates] = useState<UserTemplate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,11 +71,13 @@ const DashboardMenus: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    fetchUserTemplates({  page: state.page,
+    fetchUserTemplates({
+      page: state.page,
       pageSize: state.pageSize,
       sortBy: state.sortBy,
       order: state.order,
-      q: state.query })
+      q: state.query,
+    })
       .then((res: PaginatedResult<UserTemplate>) => {
         setTemplates(res.data);
         setTotalPages(res.pagination.totalPages);
@@ -253,7 +255,7 @@ const DashboardMenus: React.FC = () => {
                 ))}
               </select>
             </div> */}
-{/* Reusable Toolbar */}
+            {/* Reusable Toolbar */}
             <ListToolbar
               searchValue={state.query}
               onSearchChange={setQuery}
