@@ -12,6 +12,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { API_URL } from "../api/api";
+import { SortOption } from "../components/UI/SearchBar2";
+import { usePagination } from "../hooks/usePagination";
+import { ListToolbar } from "../components/UI/ListToolbar";
+import { PaginationControls } from "../components/UI/PageSizeSelect";
+
 // import { SortOption, useListControls } from "../hooks/userListControls";
 // import ListToolbar from "../components/UI/ListToolbar";
 // import Pagination from "../components/UI/Pagination";
@@ -21,7 +26,13 @@ import { API_URL } from "../api/api";
 //   { value: "created_at", label: "Newest" },
 //   { value: "price", label: "Price" },
 // ];
+type MenuSortBy = "view_count" | "created_at" | "price";
 
+const MENU_SORT_OPTIONS: SortOption<MenuSortBy>[] = [
+  { value: "view_count", label: "Most Viewed" },
+  { value: "created_at", label: "Newest" },
+  { value: "price", label: "Price" },
+];
 const MenuTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,18 +42,21 @@ const MenuTemplates: React.FC = () => {
   const [cloneErrors, setCloneErrors] = useState<Record<string, string>>({});
   const [cloneLoading, setCloneLoading] = useState<Record<string, boolean>>({});
 
-  // pagination / sorting / search
-  // const [page, setPage] = useState(1);
-  // const [pageSize] = useState(12);
-  // const [totalPages, setTotalPages] = useState(1);
-  // const [sortBy, setSortBy] = useState("view_count");
-  // const [order, setOrder] = useState<"asc"|"desc">("asc");
-  // const [query, setQuery] = useState("");
-  // const [{ page, pageSize, sortBy, order, query }, handlers] = useListControls({
-  //   pageSize: 12,
-  //   sortBy: "created_at",
-  //   order: "asc",
-  // });
+  // Use the pagination hook
+  const {
+    state,
+    totalPages,
+    setTotalPages,
+    goToPage,
+    toggleOrder,
+    setSortBy,
+    setQuery,
+    setPageSize,
+  } = usePagination<MenuSortBy>({
+    initialPageSize: 8,
+    initialSortBy: "created_at",
+    initialOrder: "asc",
+  });
 
   const navigate = useNavigate();
 
@@ -53,16 +67,22 @@ const MenuTemplates: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    fetchLibraryTemplates()
+    fetchLibraryTemplates({
+      page: state.page,
+      pageSize: state.pageSize,
+      sortBy: state.sortBy,
+      order: state.order,
+      q: state.query,
+    })
       .then((res: PaginatedResult<Template>) => {
         setTemplates(res.data);
-        // setTotalPages(res.pagination.totalPages);
+        setTotalPages(res.pagination.totalPages);
       })
       .catch(() => {
         setError("Failed to load templates.");
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [state, setTotalPages]);
 
   // const handleClone = async (tplId: string) => {
   //   setCloneErrors((errs) => ({ ...errs, [tplId]: "" }));
@@ -142,11 +162,18 @@ const MenuTemplates: React.FC = () => {
           <h2 className="section-title">Menu Templates</h2>
 
           {/* Search + Sort */}
-          {/* <ListToolbar
-            state={{ page, pageSize, sortBy, order, query }}
-            handlers={handlers}
-            sortOptions={SORT_OPTIONS}
-          /> */}
+          <ListToolbar
+            searchValue={state.query}
+            onSearchChange={setQuery}
+            searchPlaceholder="Search menus…"
+            sortBy={state.sortBy}
+            onSortChange={setSortBy}
+            sortOptions={MENU_SORT_OPTIONS}
+            order={state.order}
+            onOrderToggle={toggleOrder}
+            pageSize={state.pageSize}
+            onPageSizeChange={setPageSize}
+          />
 
           {loading && <p>Loading templates…</p>}
           {error && <p className="error">{error}</p>}
@@ -243,11 +270,11 @@ const MenuTemplates: React.FC = () => {
                 ))}
               </div>
               {/* simple pagination */}
-              {/* <Pagination
-                page={page}
-                totalPages={totalPages}
-                onPageChange={handlers.setPage}
-              /> */}
+                <PaginationControls
+                  currentPage={state.page}
+                  totalPages={totalPages}
+                  onPageChange={goToPage}
+                />
             </>
           )}
         </div>
