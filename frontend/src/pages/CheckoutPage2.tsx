@@ -104,13 +104,45 @@ const CheckoutPage2: React.FC = () => {
   }
 
   return (
-    <div className="checkout-page">
-      <h1>Checkout</h1>
+    <div className="cart-page checkout-page">
+            {/* Header */}
+      <div className="cart-header">
+        <h1>Checkout</h1>
+        <button className="btn secondary" onClick={() => navigate("/cart")}>
+          ← Back to Cart
+        </button>
+      </div>
 
       {/* Cart Summary */}
-      <div className="cart-summary">
+      <div className="checkout-content">
         <h2>Order Summary</h2>
-        <ul>
+                <table className="cart-table-checkout">
+          <thead>
+            <tr>
+              <th>PRODUCT</th>
+              <th>PRICE</th>
+              <th>QTY</th>
+              <th>TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((i) => (
+              <tr key={i.id}>
+                <td className="product-cell">
+                  <div className="product-img-placeholder" />
+                  <div className="product-info">
+                    <div className="product-name">{i.name}</div>
+                    <div className="product-meta">#{i.id}</div>
+                  </div>
+                </td>
+                <td>{i.price.toFixed(2)} SAR</td>
+                <td>{i.quantity}</td>
+                <td>{(i.price * i.quantity).toFixed(2)} SAR</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {/* <ul>
           {items.map((item) => (
             <li key={item.id}>
               <span>{item.name}</span>
@@ -119,15 +151,15 @@ const CheckoutPage2: React.FC = () => {
               </span>
             </li>
           ))}
-        </ul>
+        </ul> */}
         <div className="total">
-          <strong>Total:</strong>
-          <strong>SAR {subtotal.toFixed(2)}</strong>
+          <strong>Total: </strong>
+          <strong>{subtotal.toFixed(2)} SAR</strong>
         </div>
       </div>
 
       {/* Payment Section */}
-      <div className="payment-section">
+      <div className="checkout-summary">
         <h2>Payment</h2>
         <p>You'll be redirected to Stripe for secure payment processing</p>
  
