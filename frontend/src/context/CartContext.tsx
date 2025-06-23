@@ -42,14 +42,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
 
   const PLAN_IDS = new Set(["plan-Pro", "plan-Enterprise", "plan-Free"]);
 
+// Separate effect for localStorage - runs on every items change
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(items));
-    (async () => {
+  }, [items]);
+
+  // Separate effect for profile fetching - runs only once on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
       try {
         const res = await apiFetch("/profiles/me");
         if (res.status === 401) {
-          // not signed in (or token expired & refresh failed)
-         window.alert("You have to signin.");
+          window.alert("You have to signin.");
+          return;
         }
         if (!res.ok) throw new Error("Failed to load profile");
         const profile = (await res.json()) as { plan?: string };
@@ -57,8 +62,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
       } catch {
         setCurrentPlanId(null);
       }
-    })();
-  }, [items]);
+    };
+
+    fetchProfile();
+  }, []); // Only runs once on mount
 
   // Add or increase
   const addItem = (item: CartItem) => {

@@ -87,7 +87,7 @@ export async function signIn(email: string, password: string): Promise<SignInRes
   // Persist all three tokens
   localStorage.setItem('access_token', payload.access_token);
   localStorage.setItem('refresh_token', payload.refresh_token);
-  localStorage.setItem('expires_at', payload.expires_at.toString());
+  localStorage.setItem('expires_at', payload.expires_at);
 
   return payload;
 }

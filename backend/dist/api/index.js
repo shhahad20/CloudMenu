@@ -55,7 +55,6 @@ app.get('/usage/analytics', verifyAuth, getAnalytics);
 app.get('/profiles/me', verifyAuth, async (req, res) => {
     // req is typed as Request, so cast to AuthRequest to get .user
     const { user } = req;
-    console.log("User in /profiles/me:", user);
     if (!user) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
