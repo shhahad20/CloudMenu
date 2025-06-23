@@ -4,6 +4,7 @@ import React, {
   useState,
   ReactNode,
   useEffect,
+  useCallback,
 } from "react";
 import { apiFetch } from "../hooks/useApiCall";
 
@@ -17,12 +18,19 @@ export interface CartItem {
 
 interface CartContextValue {
   items: CartItem[];
+  userProfile: UserProfile | null;
   addItem: (item: CartItem) => void;
   removeOne: (id: string) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
+  refreshProfile: () => Promise<void>;
 }
-
+interface UserProfile {
+  id: string;
+  email: string;
+  plan: string;
+  updatedAt: string;
+}
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const useCart = () => {
@@ -38,62 +46,87 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     const json = localStorage.getItem("cartItems");
     return json ? (JSON.parse(json) as CartItem[]) : [];
   });
-  const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  // const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const PLAN_IDS = new Set(["plan-Pro", "plan-Enterprise", "plan-Free"]);
 
-// Separate effect for localStorage - runs on every items change
+  // Separate effect for localStorage - runs on every items change
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(items));
   }, [items]);
 
-  // Separate effect for profile fetching - runs only once on mount
-  useEffect(() => {
-    const fetchProfile = async () => {
+  // Fetch user profile (with caching)
+  const fetchProfile = useCallback(
+    async (force: boolean = false) => {
+      if (isLoadingProfile && !force) return;
+
+      setIsLoadingProfile(true);
       try {
-        const res = await apiFetch("/profiles/me");
+        const res = await apiFetch("/api/profiles/me");
         if (res.status === 401) {
-          window.alert("You have to signin.");
+          setUserProfile(null);
           return;
         }
-        if (!res.ok) throw new Error("Failed to load profile");
-        const profile = (await res.json()) as { plan?: string };
-        setCurrentPlanId(profile.plan ?? null);
-      } catch {
-        setCurrentPlanId(null);
-      }
-    };
+        if (!res.ok) throw new Error("Failed to fetch profile");
 
+        const profile = await res.json();
+        setUserProfile(profile);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+        setUserProfile(null);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    },
+    [isLoadingProfile]
+  );
+
+  // Load profile on mount
+  useEffect(() => {
     fetchProfile();
-  }, []); // Only runs once on mount
+  }, [fetchProfile]);
+
+  // Manual refresh function
+  const refreshProfile = () => fetchProfile(true);
+
+  // Optimistic client-side validation
+  const validatePlanAddition = (item: CartItem): string | null => {
+    const isPlan = PLAN_IDS.has(item.id);
+    if (!isPlan) return null; // Non-plan items are always ok
+
+    // Check: multiple plans in cart
+    const inCartPlan = items.find((i) => PLAN_IDS.has(i.id));
+    if (inCartPlan) {
+      return "Your cart already has a plan. You can only have one plan at a time.";
+    }
+
+    // Check: user already has this plan (if profile loaded)
+    if (userProfile) {
+      const targetPlan = item.id.replace("plan-", "");
+      if (userProfile.plan === targetPlan) {
+        return `You already have the ${targetPlan} plan active on your account.`;
+      }
+
+      // Check: trying to switch between paid plans
+      if (
+        userProfile.plan &&
+        userProfile.plan !== "Free" &&
+        targetPlan !== "Free"
+      ) {
+        return `You're currently on the ${userProfile.plan} plan. To switch, please contact support.`;
+      }
+    }
+
+    return null; // Validation passed
+  };
 
   // Add or increase
   const addItem = (item: CartItem) => {
-    const isPlan = PLAN_IDS.has(item.id);
-    const inCartPlan = items.find((i) => PLAN_IDS.has(i.id));
-
-    // 2) If they already have that plan in their profile:
-    if (isPlan && item.id === currentPlanId) {
-      window.alert("You already have that plan active on your account.");
-      return;
-    }
-
-    // 3) If they have a **different** plan active in profile:
-    if (isPlan && currentPlanId && item.id !== currentPlanId) {
-      window.alert(
-        `You’re currently on the ${currentPlanId.replace(
-          "plan-",
-          ""
-        )} plan. To switch, please contact support or remove your existing subscription first.`
-      );
-      return;
-    }
-
-    // 4) If they already added a plan to the cart:
-    if (isPlan && inCartPlan) {
-      window.alert(
-        "Your cart already has a plan. You can only have one plan at a time."
-      );
+    const validationError = validatePlanAddition(item);
+    if (validationError) {
+      alert(validationError);
       return;
     }
     setItems((prev) => {
@@ -125,7 +158,15 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeOne, removeItem, clearCart }}
+      value={{
+        items,
+        userProfile,
+        addItem,
+        removeOne,
+        removeItem,
+        clearCart,
+        refreshProfile,
+      }}
     >
       {children}
     </CartContext.Provider>

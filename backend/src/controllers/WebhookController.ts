@@ -129,18 +129,18 @@ async function createInvoiceRecord(params: {
   }
 
   // return invoiceId;
-    // 3) Return complete invoice object for email
+  // 3) Return complete invoice object for email
   return {
     id: invoiceId,
     userId,
-    items: items.map(item => ({
+    items: items.map((item) => ({
       name: item.name,
       quantity: item.quantity,
-      price: item.price // This should already be in cents if that's what your email expects
+      price: item.price, // This should already be in cents if that's what your email expects
     })),
     amountTotal, // in cents
     currency,
-    stripeSessionId
+    stripeSessionId,
   };
 }
 
@@ -220,6 +220,33 @@ export async function handleCheckoutSession(
     }
     return normalized;
   });
+  if (planIds.length > 1) {
+    throw new Error("MULTIPLE_PLANS_NOT_ALLOWED");
+  }
+  if (planIds.length === 1) {
+    // fetch current plan
+    const { data: profile, error: profErr } = await adminSupabase
+      .from("profiles")
+      .select("plan")
+      .eq("id", userId)
+      .single();
+
+    if (profErr) throw new Error("Unable to verify current plan in webhook");
+
+    const currentPlan = profile.plan as "Free" | "Pro" | "Enterprise";
+    const newPlan = planIds[0];
+
+    if (currentPlan === newPlan) {
+      // this should never happen if you guard at session creation,
+      // but cover your bases:
+      throw new Error("PLAN_ALREADY_ACTIVE");
+    }
+
+    // block paid⇄paid switches
+    if (currentPlan !== "Free" && newPlan !== "Free") {
+      throw new Error("PLAN_CONFLICT");
+    }
+  }
   console.log("📦 [Webhooks] normalized planIds:", planIds);
 
   // 3) Parse cart items…
@@ -260,7 +287,9 @@ export async function handleCheckoutSession(
   const userPlan = profile.plan as "Free" | "Pro" | "Enterprise";
 
   // 6) Clone templates only (skip plan items)
-  const templateItems = cartItems.filter(item => !item.id.startsWith("plan-"));
+  const templateItems = cartItems.filter(
+    (item) => !item.id.startsWith("plan-")
+  );
   if (templateItems.length) {
     await Promise.all(
       templateItems.map(async (item) => {
@@ -309,4 +338,3 @@ export async function handleCheckoutSession(
     `✅ [Webhooks] Successfully processed session ${session.id} for user ${userId}`
   );
 }
-
