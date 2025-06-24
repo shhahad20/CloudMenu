@@ -16,24 +16,6 @@ import { usePagination } from "../hooks/usePagination";
 import { PaginationControls } from "../components/UI/PageSizeSelect";
 import { ListToolbar } from "../components/UI/ListToolbar";
 
-// import ListToolbar from "../components/UI/ListToolbar";
-// import Pagination from "../components/UI/Pagination";
-// import { Link } from 'react-router-dom';
-
-// export interface Invoice {
-//   id: string;
-//   subtotal: number;
-//   total: number;
-//   tax: number;
-//   status: "Paid" | "Draft" | "Canceled";
-//   invoice_date: string;
-// }
-// const SORT_OPTIONS: SortOption[] = [
-//   { value: "invoice_date", label: "Date" },
-//   { value: "total", label: "Total" },
-//   { value: "status", label: "Status" },
-// ];
-// const STATUS_OPTIONS = ["", "Paid", "Draft", "Canceled"];
 type MenuSortBy = "invoice_date" | "total" | "status";
 
 const SORT_OPTIONS: SortOption<MenuSortBy>[] = [

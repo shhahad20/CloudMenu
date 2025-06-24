@@ -243,9 +243,9 @@ export async function handleCheckoutSession(
     }
 
     // block paid⇄paid switches
-    if (currentPlan !== "Free" && newPlan !== "Free") {
-      throw new Error("PLAN_CONFLICT");
-    }
+    // if (currentPlan !== "Free" && newPlan !== "Free") {
+    //   throw new Error("PLAN_CONFLICT");
+    // }
   }
   console.log("📦 [Webhooks] normalized planIds:", planIds);
 

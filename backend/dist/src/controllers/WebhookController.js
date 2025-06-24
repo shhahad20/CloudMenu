@@ -199,9 +199,9 @@ export async function handleCheckoutSession(session) {
             throw new Error("PLAN_ALREADY_ACTIVE");
         }
         // block paid⇄paid switches
-        if (currentPlan !== "Free" && newPlan !== "Free") {
-            throw new Error("PLAN_CONFLICT");
-        }
+        // if (currentPlan !== "Free" && newPlan !== "Free") {
+        //   throw new Error("PLAN_CONFLICT");
+        // }
     }
     console.log("📦 [Webhooks] normalized planIds:", planIds);
     let cartItems = [];

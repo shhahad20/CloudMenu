@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import "../styles/dashboard.scss";
 
-type PlanType = "Free" | "Pro" | "Enterprise";
+// type PlanType = "Free" | "Pro" | "Enterprise";
 
-interface Profile {
-  id: string;
-  username: string;
-  role: string;
-  created_at: string;
-  plan: PlanType;
-}
+// interface Profile {
+//   id: string;
+//   username: string;
+//   role: string;
+//   created_at: string;
+//   plan: PlanType;
+// }
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -18,84 +19,125 @@ import AnalyticsPage from "../components/UI/Analytics";
 import {
   fetchUserInvoices,
   fetchUserTemplates,
-  InvoiceType,
-  PaginatedResult,
-  Template,
+  // InvoiceType,
+  // PaginatedResult,
+  // Template,
 } from "../api/templates";
-import { apiFetch } from "../hooks/useApiCall";
+import { useUser } from "../hooks/useUser";
+import { useQuery } from "@tanstack/react-query";
+// import { useUser } from "../context/UserContext";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [invoices, setInvoices] = useState<InvoiceType[]>([]);
-  const [loadingInvoices, setLoadingInvoices] = useState(true);
-  const [errorInvoices, setErrorInvoices] = useState<string | null>(null);
+  // const [profile, setProfile] = useState<Profile | null>(null);
+  // const { userProfile, isLoading } = useUser();
+  const { data: user, isLoading: userLoading, error: userErr } = useUser();
 
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [loadingTemplates, setLoadingTemplates] = useState(true);
+  // const [loading, setLoading] = useState(true);
+  // const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+  // const [loadingInvoices, setLoadingInvoices] = useState(true);
+  // const [errorInvoices, setErrorInvoices] = useState<string | null>(null);
 
-  useEffect(() => {
+  // const [templates, setTemplates] = useState<Template[]>([]);
+  // const [loadingTemplates, setLoadingTemplates] = useState(true);
 
-    (async () => {
-      try {
+  //   useEffect(() => {
+  // if (!userProfile) return;
+  //     (async () => {
+  //       try {
 
-        const pRes = await apiFetch("/profiles/me");
-        if (pRes.status === 401) {
-          // not signed in (or token expired & refresh failed)
-          return navigate("/sign-in", { replace: true });
-        }
+  //         const pRes = await apiFetch("/profiles/me");
+  //         if (pRes.status === 401) {
+  //           // not signed in (or token expired & refresh failed)
+  //           return navigate("/sign-in", { replace: true });
+  //         }
 
-        if (!pRes.ok) throw new Error("Failed to load profile");
-        const profileData: Profile = await pRes.json();
-        console.log("Profile data:", profileData);
-        setProfile(profileData);
+  //         if (!pRes.ok) throw new Error("Failed to load profile");
+  //         const profileData: Profile = await pRes.json();
+  //         console.log("Profile data:", profileData);
+  //         setProfile(profileData);
 
-        // 2) load last 3 templates via your helper
-        setLoadingTemplates(true);
-        const { data: templList }: PaginatedResult<Template> =
-          await fetchUserTemplates({
-            page: 1,
-            pageSize: 3,
-            sortBy: "updated_at",
-            order: "desc",
-            q: "",
-          });
-        setTemplates(templList);
-        setLoadingTemplates(false);
+  //         // 2) load last 3 templates via your helper
+  //         setLoadingTemplates(true);
+  //         const { data: templList }: PaginatedResult<Template> =
+  //           await fetchUserTemplates({
+  //             page: 1,
+  //             pageSize: 3,
+  //             sortBy: "updated_at",
+  //             order: "desc",
+  //             q: "",
+  //           });
+  //         setTemplates(templList);
+  //         setLoadingTemplates(false);
 
-        // 3) load last 5 invoices via similar helper
-        setLoadingInvoices(true);
-        const { data: invList }: PaginatedResult<InvoiceType> =
-          await fetchUserInvoices({
-            page: 1,
-            pageSize: 5,
-            sortBy: "invoice_date",
-            order: "desc",
-            q: "",
-          });
-        setInvoices(invList);
-        setLoadingInvoices(false);
-      } catch (err: unknown) {
-        console.error(err);
-        if (err instanceof Error && err.message === "Not authorized") {
-          navigate("/sign-in", { replace: true });
-        } else if (err instanceof Error) {
-          setErrorInvoices(err.message);
-        } else {
-          setErrorInvoices("An unknown error occurred.");
-        }
-        setLoadingTemplates(false);
-        setLoadingInvoices(false);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [navigate]);
+  //         // 3) load last 5 invoices via similar helper
+  //         setLoadingInvoices(true);
+  //         const { data: invList }: PaginatedResult<InvoiceType> =
+  //           await fetchUserInvoices({
+  //             page: 1,
+  //             pageSize: 5,
+  //             sortBy: "invoice_date",
+  //             order: "desc",
+  //             q: "",
+  //           });
+  //         setInvoices(invList);
+  //         setLoadingInvoices(false);
+  //       } catch (err: unknown) {
+  //         console.error(err);
+  //         if (err instanceof Error && err.message === "Not authorized") {
+  //           navigate("/sign-in", { replace: true });
+  //         } else if (err instanceof Error) {
+  //           setErrorInvoices(err.message);
+  //         } else {
+  //           setErrorInvoices("An unknown error occurred.");
+  //         }
+  //         setLoadingTemplates(false);
+  //         setLoadingInvoices(false);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     })();
+  //   }, [userProfile, navigate]);
 
-  if (loading) {
-    return <div className="dashboard-loading">Loading…</div>;
-  }
+  // redirect if not authenticated
+  React.useEffect(() => {
+    if (!userLoading && userErr?.message === "Unauthenticated") {
+      navigate("/sign-in", { replace: true });
+    }
+  }, [userLoading, userErr, navigate]);
+
+  // only fire once user is loaded
+  const templatesQuery = useQuery({
+    queryKey: ["templates", { userId: user?.id, page: 1, size: 3 }],
+    queryFn: () =>
+      fetchUserTemplates({
+        page: 1,
+        pageSize: 3,
+        sortBy: "updated_at",
+        order: "desc",
+        q: "",
+      }),
+    enabled: !!user,
+  });
+
+  const invoicesQuery = useQuery({
+    queryKey: ["invoices", { userId: user?.id, page: 1, size: 5 }],
+    queryFn: () =>
+      fetchUserInvoices({
+        page: 1,
+        pageSize: 5,
+        sortBy: "invoice_date",
+        order: "desc",
+        q: "",
+      }),
+    enabled: !!user,
+  });
+
+  // if (loading || !userProfile || isLoading) {
+  //   return <div className="dashboard-loading">Loading…</div>;
+  // }
+  if (userLoading) return <p>Loading…</p>;
+  if (userErr) return <p>Error: {userErr.message}</p>;
 
   return (
     <>
@@ -104,12 +146,12 @@ const Dashboard: React.FC = () => {
       <main className="dashboard-container">
         <header className="dashboard-header">
           <h1 className="dashboard-title">
-            Welcome, {profile?.username.split(" ")[0]}!
-            <span className={`plan-badge plan-badge--${profile?.plan}`}>
-              {profile?.plan}
+            Welcome, {user?.username}!
+            <span className={`plan-badge plan-badge--${user?.plan}`}>
+              {user?.plan}
             </span>
           </h1>
-          <p className="dashboard-role">{profile?.role}</p>
+          <p className="dashboard-role">{user?.role}</p>
 
           <nav className="dashboard-tabs">
             <NavLink
@@ -187,16 +229,16 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loadingTemplates ? (
+                  {templatesQuery.isLoading ? (
                     <tr>
                       <td colSpan={6}>Loading…</td>
                     </tr>
-                  ) : templates.length === 0 ? (
+                  ) : templatesQuery.isError ? (
                     <tr>
-                      <td colSpan={6}>No templates found.</td>
+                      <td colSpan={6}>Error: {templatesQuery.error.message}</td>
                     </tr>
                   ) : (
-                    templates.slice(0, 3).map((t) => {
+                    templatesQuery.data?.data.slice(0, 3).map((t) => {
                       const dt = new Date(t.updated_at || "");
                       const date = dt
                         .toLocaleDateString("en-GB")
@@ -227,9 +269,9 @@ const Dashboard: React.FC = () => {
           <section className="dashboard-section">
             <h2 className="section-title">
               Last Invoices{" "}
-              {invoices.some((inv) => inv.status === "Overdue") ? (
+              {invoicesQuery.data?.data.some((inv) => inv.status === "Overdue") ? (
                 <span className="badge badge--warning">
-                  {invoices.filter((inv) => inv.status === "Overdue").length} –
+                  {invoicesQuery.data.data.filter((inv) => inv.status === "Overdue").length} –
                   Overdue
                 </span>
               ) : (
@@ -249,22 +291,22 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {loadingInvoices ? (
+                  {invoicesQuery.isLoading ? (
                     <tr>
                       <td colSpan={6}>Loading…</td>
                     </tr>
-                  ) : errorInvoices ? (
+                  ) : invoicesQuery.isError ? (
                     +(
                       <tr>
-                        <td colSpan={6}>Error: {errorInvoices}</td>
+                        <td colSpan={6}>Error: {invoicesQuery.error.message}</td>
                       </tr>
                     )
-                  ) : invoices.length === 0 ? (
+                  ) : invoicesQuery.data?.data.length === 0 ? (
                     <tr>
                       <td colSpan={6}>No invoices found.</td>
                     </tr>
                   ) : (
-                    invoices.map((inv) => {
+                    invoicesQuery.data?.data.map((inv) => {
                       const dt = new Date(inv.invoice_date);
                       const date = dt
                         .toLocaleDateString("en-GB")

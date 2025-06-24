@@ -4,9 +4,8 @@ import React, {
   useState,
   ReactNode,
   useEffect,
-  useCallback,
 } from "react";
-import { apiFetch } from "../hooks/useApiCall";
+import { useUser } from "../hooks/useUser";
 
 export interface CartItem {
   id: string;
@@ -18,19 +17,12 @@ export interface CartItem {
 
 interface CartContextValue {
   items: CartItem[];
-  userProfile: UserProfile | null;
   addItem: (item: CartItem) => void;
   removeOne: (id: string) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
-  refreshProfile: () => Promise<void>;
 }
-interface UserProfile {
-  id: string;
-  email: string;
-  plan: string;
-  updatedAt: string;
-}
+
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 export const useCart = () => {
@@ -46,9 +38,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     const json = localStorage.getItem("cartItems");
     return json ? (JSON.parse(json) as CartItem[]) : [];
   });
-  // const [currentPlanId, setCurrentPlanId] = useState<string | null>(null);
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
+  const { data: userProfile } = useUser();
 
   const PLAN_IDS = new Set(["plan-Pro", "plan-Enterprise", "plan-Free"]);
 
@@ -57,79 +48,43 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem("cartItems", JSON.stringify(items));
   }, [items]);
 
-  // Fetch user profile (with caching)
-  const fetchProfile = useCallback(
-    async (force: boolean = false) => {
-      if (isLoadingProfile && !force) return;
-
-      setIsLoadingProfile(true);
-      try {
-        const res = await apiFetch("/api/profiles/me");
-        if (res.status === 401) {
-          setUserProfile(null);
-          return;
-        }
-        if (!res.ok) throw new Error("Failed to fetch profile");
-
-        const profile = await res.json();
-        setUserProfile(profile);
-      } catch (error) {
-        console.error("Failed to fetch profile:", error);
-        setUserProfile(null);
-      } finally {
-        setIsLoadingProfile(false);
-      }
-    },
-    [isLoadingProfile]
-  );
-
-  // Load profile on mount
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  // Manual refresh function
-  const refreshProfile = () => fetchProfile(true);
-
-  // Optimistic client-side validation
   const validatePlanAddition = (item: CartItem): string | null => {
-    const isPlan = PLAN_IDS.has(item.id);
-    if (!isPlan) return null; // Non-plan items are always ok
+    if (!PLAN_IDS.has(item.id)) return null;
 
-    // Check: multiple plans in cart
-    const inCartPlan = items.find((i) => PLAN_IDS.has(i.id));
-    if (inCartPlan) {
-      return "Your cart already has a plan. You can only have one plan at a time.";
+    const existing = items.find((i) => PLAN_IDS.has(i.id));
+    const targetPlan = item.id.replace("plan-", "") as
+      | "Free"
+      | "Pro"
+      | "Enterprise";
+
+    if (existing) {
+      return existing.id === item.id
+        ? "You already added this plan to your cart."
+        : "You already have a different plan in your cart. Remove it first.";
     }
 
-    // Check: user already has this plan (if profile loaded)
     if (userProfile) {
-      const targetPlan = item.id.replace("plan-", "");
       if (userProfile.plan === targetPlan) {
-        return `You already have the ${targetPlan} plan active on your account.`;
+        return `You already have the ${targetPlan} plan on your account.`;
       }
-
-      // Check: trying to switch between paid plans
-      if (
-        userProfile.plan &&
-        userProfile.plan !== "Free" &&
-        targetPlan !== "Free"
-      ) {
-        return `You're currently on the ${userProfile.plan} plan. To switch, please contact support.`;
-      }
+      // if (userProfile.plan !== 'Free' && targetPlan !== 'Free') {
+      //   return `You’re on the ${userProfile.plan} plan. To switch to ${targetPlan}, contact support.`;
+      // }
     }
 
-    return null; // Validation passed
+    return null;
   };
 
   // Add or increase
   const addItem = (item: CartItem) => {
-    const validationError = validatePlanAddition(item);
-    if (validationError) {
-      alert(validationError);
-      return;
-    }
+    const err = validatePlanAddition(item);
+    if (err) return alert(err);
+
     setItems((prev) => {
+      if (PLAN_IDS.has(item.id)) {
+        return [...prev, { ...item, quantity: 1 }];
+      }
+
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
         return prev.map((i) =>
@@ -160,12 +115,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     <CartContext.Provider
       value={{
         items,
-        userProfile,
         addItem,
         removeOne,
         removeItem,
         clearCart,
-        refreshProfile,
       }}
     >
       {children}

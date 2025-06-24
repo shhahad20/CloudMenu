@@ -72,16 +72,16 @@ export const createCheckoutSession: RequestHandler<
           code: 'PLAN_ALREADY_ACTIVE'
         });
       }
-      
-      // Check: Business rule - can't switch between paid plans
-      if (currentUserPlan && 
-          currentUserPlan !== 'Free' && 
-          targetPlan !== 'Free') {
-        return res.status(400).json({ 
-          error: `You're currently on the ${currentUserPlan} plan. Please contact support to switch plans.`,
-          code: 'PLAN_CONFLICT'
-        });
-      }
+
+      // !!!🧧!!! Check: Business rule - can't switch between paid plans
+      // if (currentUserPlan &&
+      //     currentUserPlan !== 'Free' &&
+      //     targetPlan !== 'Free') {
+      //   return res.status(400).json({ 
+      //     error: `You're currently on the ${currentUserPlan} plan. Please contact support to switch plans.`,
+      //     code: 'PLAN_CONFLICT'
+      //   });
+      // }
       
       console.log(`✅ Plan validation passed: ${currentUserPlan} → ${targetPlan}`);
     }

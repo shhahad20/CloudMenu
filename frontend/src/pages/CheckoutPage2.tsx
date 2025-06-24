@@ -12,7 +12,7 @@ const CheckoutPage2: React.FC = () => {
   const [clientSecret, setClientSecret] = useState(""); // For Stripe Elements (optional)
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-
+ 
   // Handle payment completion after redirect from Stripe
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
