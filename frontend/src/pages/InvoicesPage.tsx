@@ -1,20 +1,21 @@
-// src/pages/InvoicesPage.tsx
-import React, { useEffect, useState } from "react";
+import React from "react";
 // import { Link } from 'react-router-dom';
 // import { API_URL } from '../api/api';
 import "../styles/invoices.scss";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SortOption } from "../components/UI/SearchBar2";
 import {
   fetchUserInvoices,
-  InvoiceType,
-  PaginatedResult,
+  // InvoiceType,
+  // PaginatedResult,
 } from "../api/templates";
 import { usePagination } from "../hooks/usePagination";
 import { PaginationControls } from "../components/UI/PageSizeSelect";
 import { ListToolbar } from "../components/UI/ListToolbar";
+import { useUser } from "../hooks/useUser";
+import { useQuery } from "@tanstack/react-query";
 
 type MenuSortBy = "invoice_date" | "total" | "status";
 
@@ -25,14 +26,31 @@ const SORT_OPTIONS: SortOption<MenuSortBy>[] = [
 ];
 
 const InvoicesPage: React.FC = () => {
-  const [invoices, setInvoices] = useState<InvoiceType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [invoices, setInvoices] = useState<InvoiceType[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
   // const [totalPages, setTotalPages] = useState(1);
+  const { data: user, isLoading: userLoading, error: userError } = useUser();
+  const navigate = useNavigate();
 
   // Use the pagination hook
+  // const {
+  //   state,
+  //   totalPages,
+  //   setTotalPages,
+  //   goToPage,
+  //   toggleOrder,
+  //   setSortBy,
+  //   // setQuery,
+  //   setPageSize,
+  // } = usePagination<MenuSortBy>({
+  //   initialPageSize: 8,
+  //   initialSortBy: "invoice_date",
+  //   initialOrder: "asc",
+  // });
+
   const {
-    state,
+    state: { page, pageSize, sortBy, order, query },
     totalPages,
     setTotalPages,
     goToPage,
@@ -46,25 +64,50 @@ const InvoicesPage: React.FC = () => {
     initialOrder: "asc",
   });
 
-  // whenever controls change, refetch
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
+    React.useEffect(() => {
+      if (!userLoading && userError?.message === "Unauthenticated") {
+        navigate("/sign-in", { replace: true });
+      }
+    }, [userLoading, userError, navigate]);
 
-    fetchUserInvoices({
-      page: state.page,
-      pageSize: state.pageSize,
-      sortBy: state.sortBy,
-      order: state.order,
-      q: state.query,
-    })
-      .then((res: PaginatedResult<InvoiceType>) => {
-        setInvoices(res.data);
-        setTotalPages(res.pagination.totalPages);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [state, setTotalPages]);
+
+  // whenever controls change, refetch
+  // useEffect(() => {
+  //   setLoading(true);
+  //   setError(null);
+
+  //   fetchUserInvoices({
+  //     page: state.page,
+  //     pageSize: state.pageSize,
+  //     sortBy: state.sortBy,
+  //     order: state.order,
+  //     q: state.query,
+  //   })
+  //     .then((res: PaginatedResult<InvoiceType>) => {
+  //       setInvoices(res.data);
+  //       setTotalPages(res.pagination.totalPages);
+  //     })
+  //     .catch((err) => setError(err.message))
+  //     .finally(() => setLoading(false));
+  // }, [state, setTotalPages]);
+
+    const {
+    data: invoiceResult,
+    isLoading,
+    error,
+    isFetching,
+  } = useQuery({
+    queryKey: ["invoices", { page, pageSize, sortBy, order, query }],
+    queryFn: () =>
+      fetchUserInvoices({ page, pageSize, sortBy, order, q: query }),
+    enabled: !!user,
+  });
+
+  React.useEffect(() => {
+    if (invoiceResult) {
+      setTotalPages(invoiceResult.pagination.totalPages);
+    }
+  }, [invoiceResult, setTotalPages]);
 
   return (
     <>
@@ -92,7 +135,7 @@ const InvoicesPage: React.FC = () => {
                   />
                 </svg>
               </span>
-              <span className="count">{invoices.length}</span>
+              <span className="count">{invoiceResult?.data.length}</span>
               <span className="label">Total Invoices</span>
             </div>
           </div>
@@ -133,25 +176,26 @@ const InvoicesPage: React.FC = () => {
               ))}
             </select> */}
             <ListToolbar
-              searchValue={state.query}
+              searchValue={query}
               // onSearchChange={setQuery}
               // searchPlaceholder="Search by date, #num, status ..."
-              sortBy={state.sortBy}
+              sortBy={sortBy}
               onSortChange={setSortBy}
               sortOptions={SORT_OPTIONS}
-              order={state.order}
+              order={order}
               onOrderToggle={toggleOrder}
-              pageSize={state.pageSize}
+              pageSize={pageSize}
               onPageSizeChange={setPageSize}
             />
             <button className="support-btn">Support</button>
           </div>
         </header>
 
-        {loading && <p>Loading invoices…</p>}
-        {error && <p className="error">Error: {error}</p>}
+        {isLoading && <p>Loading invoices…</p>}
+        {error && <p className="error">Error: {error.message}</p>}
+            {isFetching && <p>Updating…</p>}
 
-        {!loading && !error && (
+        {!isLoading && !error && (
           <>
             <div className="table-container">
               <table className="invoices-table">
@@ -166,7 +210,7 @@ const InvoicesPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {invoices.map((inv) => {
+                  {invoiceResult?.data.map((inv) => {
                     const dt = new Date(inv.invoice_date);
                     const date = dt
                       .toLocaleDateString("en-GB")
@@ -206,7 +250,7 @@ const InvoicesPage: React.FC = () => {
               </table>
             </div>
             <PaginationControls
-              currentPage={state.page}
+              currentPage={page}
               totalPages={totalPages}
               onPageChange={goToPage}
             />
