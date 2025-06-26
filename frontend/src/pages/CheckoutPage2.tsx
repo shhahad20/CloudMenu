@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 // import "../styles/cart.scss";
 import { useCart } from "../context/CartContext";
-import { API_URL } from "../api/api";
+// import { API_URL } from "../api/api";
+import { apiFetch } from "../hooks/useApiCall";
 
 const CheckoutPage2: React.FC = () => {
   const { items, clearCart } = useCart();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [clientSecret, setClientSecret] = useState(""); // For Stripe Elements (optional)
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
@@ -26,8 +26,8 @@ const CheckoutPage2: React.FC = () => {
 
   const verifyPayment = async (sessionId: string) => {
     try {
-      const response = await fetch(
-        `${API_URL}/api/payments/verify?session_id=${sessionId}`,
+      const response = await apiFetch(
+        `api/payments/verify?session_id=${sessionId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -54,7 +54,7 @@ const CheckoutPage2: React.FC = () => {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/checkout/session`, {
+      const response = await apiFetch(`api/checkout/session`, {
         method: "POST", // <-- must be POST
         headers: {
           "Content-Type": "application/json",
