@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/cart.scss";
+// import "../styles/cart.scss";
 import { useCart } from "../context/CartContext";
 import { API_URL } from "../api/api";
 
@@ -12,7 +12,7 @@ const CheckoutPage2: React.FC = () => {
   const [clientSecret, setClientSecret] = useState(""); // For Stripe Elements (optional)
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
- 
+
   // Handle payment completion after redirect from Stripe
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -80,7 +80,6 @@ const CheckoutPage2: React.FC = () => {
       // 3) Pull the session URL and redirect
       const { url } = await response.json();
       window.location.href = url;
-
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Payment initialization failed");
@@ -94,9 +93,12 @@ const CheckoutPage2: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="cart-page empty">
-        <h1>No items to checkout</h1>
-        <button className="btn primary" onClick={() => navigate("/menus")}>
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-6">
+        <h1 className="text-2xl font-semibold">No items to checkout</h1>
+        <button
+          className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0"
+          onClick={() => navigate("/menus")}
+        >
           Continue Shopping
         </button>
       </div>
@@ -104,69 +106,82 @@ const CheckoutPage2: React.FC = () => {
   }
 
   return (
-    <div className="cart-page checkout-page">
-            {/* Header */}
-      <div className="cart-header">
-        <h1>Checkout</h1>
-        <button className="btn secondary" onClick={() => navigate("/cart")}>
+    <div className="max-w-4xl mx-auto p-4 space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-4 md:space-y-0">
+        <h1 className="text-3xl font-bold">Checkout</h1>
+        <button
+          className="px-4 py-2"
+          style={{
+            background: "#f5f5f5",
+            color: "#333",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            transition: "background 0.2s",
+          }}
+          onClick={() => navigate("/cart")}
+          onMouseOver={(e) => (e.currentTarget.style.background = "#e5e5e5")}
+          onMouseOut={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+        >
           ← Back to Cart
         </button>
       </div>
 
-      {/* Cart Summary */}
-      <div className="checkout-content">
-        <h2>Order Summary</h2>
-                <table className="cart-table-checkout">
-          <thead>
-            <tr>
-              <th>PRODUCT</th>
-              <th>PRICE</th>
-              <th>QTY</th>
-              <th>TOTAL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((i) => (
-              <tr key={i.id}>
-                <td className="product-cell">
-                  <div className="product-img-placeholder" />
-                  <div className="product-info">
-                    <div className="product-name">{i.name}</div>
-                    <div className="product-meta">#{i.id}</div>
-                  </div>
-                </td>
-                <td>{i.price.toFixed(2)} SAR</td>
-                <td>{i.quantity}</td>
-                <td>{(i.price * i.quantity).toFixed(2)} SAR</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {/* <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              <span>{item.name}</span>
-              <span>
-                {item.quantity} x SAR {item.price.toFixed(2)}
-              </span>
-            </li>
+      {/* Order Summary */}
+      <div className="bg-white shadow rounded p-6 space-y-4">
+        <h2 className="text-xl font-semibold">Order Summary</h2>
+
+        {/* Items List */}
+        <div className="space-y-4">
+          {items.map((i) => (
+            <div
+              key={i.id}
+              className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between bg-gray-50 rounded p-4"
+            >
+              {/* Product info */}
+              <div className="flex items-center space-x-4 flex-1">
+                <div className="w-12 h-12 bg-gray-200 rounded" />
+                <div>
+                  <div className="font-medium">{i.name}</div>
+                  <div className="text-sm text-gray-500">#{i.id}</div>
+                </div>
+              </div>
+
+              {/* Qty & Total */}
+              <div className="mt-3 sm:mt-0 flex items-center space-x-6">
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium">Qty:</span>
+                  <span>{i.quantity}</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="font-medium">Total:</span>
+                  <span>{(i.price * i.quantity).toFixed(2)} SAR</span>
+                </div>
+              </div>
+            </div>
           ))}
-        </ul> */}
-        <div className="total">
-          <strong>Total: </strong>
-          <strong>{subtotal.toFixed(2)} SAR</strong>
+        </div>
+
+        {/* Subtotal */}
+        <div className="flex justify-between text-lg font-semibold border-t pt-4">
+          <span>Subtotal</span>
+          <span>{subtotal.toFixed(2)} SAR</span>
         </div>
       </div>
 
       {/* Payment Section */}
-      <div className="checkout-summary">
-        <h2>Payment</h2>
-        <p>You'll be redirected to Stripe for secure payment processing</p>
- 
-        {error && <div className="error">{error}</div>}
+      <div className="bg-white shadow rounded p-6 space-y-4">
+        <h2 className="text-xl font-semibold">Payment</h2>
+        <p className="text-gray-600">
+          You&apos;ll be redirected to Stripe for secure payment processing.
+        </p>
+
+        {error && (
+          <div className="text-red-600 bg-red-100 p-2 rounded">{error}</div>
+        )}
 
         <button
-          className="btn primary"
+          className="w-full py-3 bg-[#1e1e1e] text-white rounded hover:bg-green-700 transition flex items-center justify-center"
           onClick={handlePay}
           disabled={processing}
         >

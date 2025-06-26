@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import React from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../api/api";
 import "../styles/invoices.scss";
-import { Invoice } from "./InvoicesPage";
+import { useUser } from "../hooks/useUser";
+import { useQuery } from "@tanstack/react-query";
+import { InvoiceType } from "../api/templates";
 
 interface Item {
   id: string;
@@ -15,40 +17,69 @@ interface Item {
 
 const InvoiceDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [invoice, setInvoice] = useState<Invoice | null>(null);
+  // const [items, setItems] = useState<Item[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { data: user, isLoading: userLoading, error: userError } = useUser();
 
-  useEffect(() => {
-    fetch(`${API_URL}/invoices/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load invoice");
-        return res.json();
-      })
-      .then((data: { invoice: Invoice; items: Item[] }) => {
-        setInvoice(data.invoice);
-        setItems(data.items);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, [id]);
+  // Redirect if not authenticated
+  React.useEffect(() => {
+    if (!userLoading && userError?.message === 'Unauthenticated') {
+      navigate('/sign-in', { replace: true });
+    }
+  }, [userLoading, userError, navigate]);
 
-  if (loading) return <p>Loading…</p>;
+  
+  // useEffect(() => {
+  //   fetch(`${API_URL}/invoices/${id}`, {
+  //     headers: {
+  //       Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+  //     },
+  //   })
+  //     .then((res) => {
+  //       if (!res.ok) throw new Error("Failed to load invoice");
+  //       return res.json();
+  //     })
+  //     .then((data: { invoice: Invoice; items: Item[] }) => {
+  //       setInvoice(data.invoice);
+  //       setItems(data.items);
+  //     })
+  //     .catch((err) => setError(err.message))
+  //     .finally(() => setLoading(false));
+  // }, [id]);
+
+  // React Query replaces your useEffect
+  const { data: invoice, isLoading, error } = useQuery({
+    queryKey: ["invoice", id],
+    queryFn: async () => {
+      const res = await fetch(`${API_URL}/invoices/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to load invoice");
+      return (await res.json()) as { invoice: InvoiceType; items: Item[] };
+    },
+    enabled: !!user,               // wait until we know who the user is
+    staleTime: 5 * 60_000,         // cache for 5 minutes
+  });
+
+
+  if (isLoading) return <p>Loading…</p>;
   if (error || !invoice)
-    return <p className="error">Error: {error || "Missing invoice"}</p>;
-  const dt = new Date(invoice.invoice_date);
+    return <p className="error">Error: {error?.message || "Missing invoice"}</p>;
+
+
+  const dt = new Date(invoice.invoice.invoice_date);
   const date = dt.toLocaleDateString("en-GB").replace(/\//g, ".");
   const time = dt.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "numeric",
     hour12: true,
   });
-  const grandTotal = items
+  const grandTotal = invoice.items
     .reduce((sum, it) => sum + it.line_total, 0)
     .toFixed(2);
   return (
@@ -56,7 +87,7 @@ const InvoiceDetails: React.FC = () => {
       <div className="details-card">
         <div className="details-row">
           <span className="label">Invoice #</span>
-          <span className="value">{invoice.id}</span>
+          <span className="value">{invoice.invoice.id}</span>
         </div>
         <div className="details-row">
           <span className="label">Date</span>
@@ -69,9 +100,9 @@ const InvoiceDetails: React.FC = () => {
         <div className="details-row">
           <span className="label">Status</span>
           <span
-            className={`status-pill status-${invoice.status.toLowerCase()}`}
+            className={`status-pill status-${invoice.invoice.status.toLowerCase()}`}
           >
-            {invoice.status}
+            {invoice.invoice.status}
           </span>
         </div>
       </div>
@@ -87,7 +118,7 @@ const InvoiceDetails: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {items.map((it) => (
+            {invoice.items.map((it) => (
               <tr key={it.id}>
                 <td>{it.description}</td>
                 <td>{it.quantity}</td>
